@@ -30,8 +30,12 @@
    (fix any merge issues on your personal branch — NOT during a main merge):
 
 
+
    git fetch origin
+
+   
    git merge origin/main
+
 
 
    If there are merge issues:
@@ -39,7 +43,7 @@
    - It will prompt you to resolve the merge.
    - Accept ALL the incoming changes AND your changes.
 
-8) Commit and push your changes.
+9) Commit and push your changes.
 
    To set your branch as upstream use:
    
