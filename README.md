@@ -36,9 +36,12 @@
 
 7) Commit and push your changes.
 
-8) Go to the GitHub browser page for this repo and create a PR.
+   To set your branch as upstream use:
+   git push --set-upstream origin "your personal branch name here"
+
+9) Go to the GitHub browser page for this repo and create a PR.
    Add one or more other team members as a reviewer.
 
-9) Check if any other team members have requested that you approve their PR.
+10) Check if any other team members have requested that you approve their PR.
 
-10) Send a message to the Discord that you are done!!!
+11) Send a message to the Discord that you are done!!!
