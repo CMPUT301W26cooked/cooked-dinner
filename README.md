@@ -4,7 +4,7 @@ This repo is the **project repo** for our CMPUT 301 team (Org: `CMPUT301W26cooke
 It contains **everything** 
 
 ## Current Phase
-- **Project Part 2 (Preparation)** — product backlog, UI mockups + storyboard sequences, CRC cards, and consistent GitHub usage.
+- **Project Part 2** — product backlog, UI mockups + storyboard sequences, CRC cards, and consistent GitHub usage.
 
 ## Where everything lives
 
@@ -17,7 +17,7 @@ It contains **everything**
 - The rules for columns, story points, risk, and issue making in general are in the Wiki!!!
 
 ### Wiki (Documentation + Instructions)
-- Location: **Repo → Wiki**
+- Location: **Repo → Wiki** it's an actual tab in github like Pull Requests and Projects
 - The Wiki contains:
   - board rules + definitions
   - git workflow + PR rules
