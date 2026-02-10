@@ -1,5 +1,5 @@
 name: User Story
-description: Full user story issue (US ID, points, risk, acceptance criteria).
+description: Create a full user story issue with points, risk, role, and acceptance criteria.
 title: "US XX.XX.XX - <short title>"
 labels: ["type:user-story"]
 body:
@@ -7,14 +7,28 @@ body:
     id: us_id
     attributes:
       label: User Story ID
+      description: Copy exactly from the project description (e.g., US 01.01.01)
       placeholder: "US 01.01.01"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: role
+    attributes:
+      label: Role
+      description: Which user role this story is written for.
+      options:
+        - Entrant
+        - Organizer
+        - Admin
     validations:
       required: true
 
   - type: dropdown
     id: risk
     attributes:
-      label: Risk Level
+      label: Risk Level (Low/Medium/High)
+      description: Risk = how critical to basic app functioning + uncertainty.
       options:
         - Low
         - Medium
@@ -25,7 +39,8 @@ body:
   - type: dropdown
     id: points
     attributes:
-      label: Story Points
+      label: Story Points (1,2,3,5,8)
+      description: Use team rubric (see Wiki).
       options:
         - "1"
         - "2"
@@ -35,21 +50,42 @@ body:
     validations:
       required: true
 
-  - type: textarea
-    id: description
+  - type: dropdown
+    id: release
     attributes:
-      label: Description
-      description: 3–8 sentences describing the story and constraints.
+      label: Release Target
+      options:
+        - P3 (Half-way)
+        - P4 (Final)
+        - Stretch/Optional
+        - TBD
     validations:
       required: true
 
   - type: textarea
-    id: acceptance
+    id: description
+    attributes:
+      label: Description
+      description: 3–8 sentences. Clarify scope, constraints, and edge cases.
+      placeholder: "As a <role>, I want <goal> so that <benefit>..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
     attributes:
       label: Acceptance Criteria
-      description: 3–7 testable bullet points.
+      description: 3–7 bullet points. Must be testable/checkable.
       placeholder: |
         - Given ... when ... then ...
         - The app must ...
     validations:
       required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes / Implementation Hints (optional)
+      placeholder: "Dependencies, UI references, edge cases..."
+    validations:
+      required: false
