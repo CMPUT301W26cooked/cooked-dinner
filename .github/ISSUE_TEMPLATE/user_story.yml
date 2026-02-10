@@ -1,0 +1,55 @@
+name: User Story
+description: Full user story issue (US ID, points, risk, acceptance criteria).
+title: "US XX.XX.XX - <short title>"
+labels: ["type:user-story"]
+body:
+  - type: input
+    id: us_id
+    attributes:
+      label: User Story ID
+      placeholder: "US 01.01.01"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risk Level
+      options:
+        - Low
+        - Medium
+        - High
+    validations:
+      required: true
+
+  - type: dropdown
+    id: points
+    attributes:
+      label: Story Points
+      options:
+        - "1"
+        - "2"
+        - "3"
+        - "5"
+        - "8"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: 3–8 sentences describing the story and constraints.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: 3–7 testable bullet points.
+      placeholder: |
+        - Given ... when ... then ...
+        - The app must ...
+    validations:
+      required: true
