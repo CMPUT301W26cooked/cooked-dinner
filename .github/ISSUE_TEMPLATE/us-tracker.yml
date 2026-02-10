@@ -1,0 +1,22 @@
+name: US Tracker (Not Claimed)
+description: Title-only tracker issue for each user story number (used to track conversion coverage).
+title: "US XX.XX.XX"
+labels: ["type:us-tracker"]
+body:
+  - type: input
+    id: us_id
+    attributes:
+      label: User Story Number (Title must match this exactly)
+      description: Enter the user story number only (e.g., US 01.01.01). Also make the ISSUE TITLE exactly the same.
+      placeholder: "US 01.01.01"
+    validations:
+      required: true
+
+  - type: textarea
+    id: story_text
+    attributes:
+      label: User Story Text (paste from the assignment description)
+      description: Paste the full user story sentence here (the “As a … I want …” text).
+      placeholder: "As a ..., I want ..."
+    validations:
+      required: true
