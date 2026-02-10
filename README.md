@@ -1,57 +1,111 @@
-# cooked-dinner Project 1 Instructions
+# cooked-dinner (CMPUT 301 Team Project)
 
-## What To Do (EVERYONE PLEASE COMPLETE THESE STEPS)
+This repo is the **project repo** for our CMPUT 301 team (Org: `CMPUT301W26cooked`, Repo: `cooked-dinner`).
+It contains **everything** 
 
-1) Clone this repo onto your computer.
+## Current Phase
+- **Project Part 2 (Preparation)** — product backlog, UI mockups + storyboard sequences, CRC cards, and consistent GitHub usage.
 
-2) Use "checkout" or "switch" to create and move to a personal branch
-   (named "your-first-name"):
+## Where everything lives
 
-   git checkout -b add-"Your Name"
-   
-   OR
-   
-   git switch -c add-"Your Name"
-   
+### Project Board (Backlog + Task Tracking)
+- Location: **Organization → Projects → "Project Board"**
+- This is where we have:
+  - converting user stories into issues
+  - story points + risk
+  - progress (In Progress → Review → Done)
+- The rules for columns, story points, risk, and issue making in general are in the Wiki!!!
 
-4) Use git status to confirm that you are on your personal branch and NOT main:
+### Wiki (Documentation + Instructions)
+- Location: **Repo → Wiki**
+- The Wiki contains:
+  - board rules + definitions
+  - git workflow + PR rules
+  - UI mockup & storyboard workflow (and where images go)
+  - CRC card workflow
 
-   git status
+### Code
+- Android Studio project code lives at the repo root 
+- If we create additional documentation, it goes under `docs/`.
 
-5) Open doc/team.txt, create a newline, and add ONLY your GitHub username.
-   Example: rebeccairving
+### UI Mockups + Storyboards (MUST be stored in GitHub)
+- Folder: `docs/ui/`
+  - `docs/ui/mockups/` (images/PDFs)
+  - `docs/ui/storyboards/` (storyboard diagrams)
+  - `docs/ui/decisions/` (decision notes like which library were using, colors, etc...)
 
-6) Stage your changes, but BEFORE you commit, confirm again that you are on your
-   personal branch:
-
-   git status
-
-7) Run the following to ensure your personal branch is up to date with main
-   (fix any merge issues on your personal branch — NOT during a main merge):
-
-
-
-   git fetch origin
-
-   
-   git merge origin/main
+### CRC Cards
+- Folder: `docs/crc/`
+- Store CRC cards as images (PNG) pls
 
 
+## Quick links (inside GitHub)
+- **Board:** Org → Projects → Project Board
+- **Wiki:** Repo → Wiki
+- **Issues:** Repo → Issues
+- **Pull Requests:** Repo → Pull requests
 
-   If there are merge issues:
-   - Open doc/team.txt in VS Code.
-   - It will prompt you to resolve the merge.
-   - Accept ALL the incoming changes AND your changes.
+---
 
-9) Commit and push your changes.
 
-   To set your branch as upstream use:
-   
-   git push --set-upstream origin "your personal branch name here"
+## Team Workflow (Git + PR)
 
-10) Go to the GitHub browser page for this repo and create a PR.
-   Add one or more other team members as a reviewer.
+### 1) Clone the repo
 
-11) Check if any other team members have requested that you approve their PR.
+```bash
+git clone <repo-url>
+cd cooked-dinner
+```
 
-12) Send a message to the Discord that you are done!!!
+### 2) Make a personal branch (never work directly on main)
+
+Use your first name or a short handle:
+
+```bash
+git switch -c <your-branch-name>
+# Example: git switch -c rebecca
+```
+
+### 3) Confirm you're not on main
+
+```bash
+git status
+```
+
+### 4) Keep your branch up-to-date with main
+
+Do this before you open a PR:
+
+```bash
+git fetch origin
+git merge origin/main
+```
+
+If you hit merge conflicts:
+- resolve conflicts on **your branch**
+- do **not** commit directly to `main`
+
+### 5) Commit and push
+
+```bash
+git add -A
+git commit -m "Short, clear message"
+git push --set-upstream origin <your-branch-name>
+```
+
+### 6) Open a Pull Request (PR)
+
+- Open PR from your branch → `main`
+- Add at least 1 reviewer 
+- Link the related Issue(s) in the PR description (example: `Closes #123`)
+
+### 7) Review teammates’ PRs
+
+- If someone requests your review pls try to respond quickly
+
+---
+
+## Notes
+
+- Our submission must be **self-contained in GitHub** (no external submission links).
+- UI diagrams/storyboards must be **embedded as images in the team wiki** (not external links).
