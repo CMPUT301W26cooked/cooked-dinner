@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "366367757183",
+    "project_id": "cooked-dinner",
+    "storage_bucket": "cooked-dinner.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:366367757183:android:82797a481999a98db0004a",
+        "android_client_info": {
+          "package_name": "com.eventwise"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWE7QzJU-Ti21rj1Zm9tiDVdFY6AwTgRw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
