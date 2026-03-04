@@ -3,18 +3,22 @@ package com.eventwise;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class Profile {
+public abstract class Profile {
+    private String profileID;
     private String name;
     private String email;
     private String phone;
-    private final String profileID;
     private boolean notificationsEnabled;
-    private final ArrayList<EventHistoryEntry> eventHistory;
+    private ProfileType profileType;
+    public Profile(){}
 
-    public Profile(){
-        this.profileID = UUID.randomUUID().toString();
-        this.notificationsEnabled = true;
-        this.eventHistory = new ArrayList<>();
+    public Profile(String profileID, String name, String email, String phone, boolean notificationsEnabled, ProfileType profileType) {
+        this.profileID = profileID;
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.notificationsEnabled = notificationsEnabled;
+        this.profileType = profileType;
     }
 
 
@@ -34,8 +38,8 @@ public class Profile {
     public boolean getNotificationsEnabled() {
         return notificationsEnabled;
     }
-    public ArrayList<EventHistoryEntry> getEventHistory() {
-        return eventHistory;
+    public ProfileType getProfileType() {
+        return profileType;
     }
     public void setName(String name) {
         this.name = name;
@@ -54,9 +58,6 @@ public class Profile {
     //General Methods
     public void toggleNotifications() {
         this.notificationsEnabled = !this.notificationsEnabled;
-    }
-    public void addEntry(EventHistoryEntry entry) {
-        this.eventHistory.add(entry);
     }
     public void updateProfile(String name, String email, String phone) {
         setName(name);
