@@ -1,7 +1,16 @@
-package com.eventwise;
+package com.eventwise.database;
 
 import android.util.Log;
 
+import com.eventwise.Admin;
+import com.eventwise.Entrant;
+import com.eventwise.Event;
+import com.eventwise.Location;
+import com.eventwise.Organizer;
+import com.eventwise.Profile;
+import com.eventwise.ProfileType;
+import com.eventwise.Topic;
+import com.eventwise.database.exceptions.DatabaseException;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -10,7 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 
 /**
- * The DatabaseManager class handles all transactions to Firestore.
+ * The DatabaseManager class handles transaction of basic data from and to Firestore.
  * It provides methods to create, retrieve, and manage profiles, events, locations, and topics.
  *
  * @author Pablo Osorio
@@ -23,14 +32,14 @@ import java.util.ArrayList;
 //Create Test Cases
 //Break down into multiple subclasses (for profiles, events, )
 
-public class DatabaseManager {
+public abstract class DatabaseManager {
 
     private FirebaseFirestore db;
 
-    private CollectionReference profiles;
-    private CollectionReference events;
-    private CollectionReference locations;
-    private CollectionReference topics;
+    protected CollectionReference profiles;
+    protected CollectionReference events;
+    protected CollectionReference locations;
+    protected CollectionReference topics;
 
 
 
@@ -39,20 +48,46 @@ public class DatabaseManager {
      * This constructor sets up references to the "profiles", "events", "locations",
      * and "topics" collections.
      */
-    public DatabaseManager() {
+    protected DatabaseManager() {
         db = FirebaseFirestore.getInstance();
         profiles = db.collection("profiles");
         events = db.collection("events");
         locations = db.collection("locations");;
         topics = db.collection("topics");
     }
+    /**************************************************************************************************
+     *                                            Profiles
+     *************************************************************************************************/
+    String PROFILE_TAG = "Database - Profile:";
 
 
     //Setters
-    public void addProfile(Profile profile) {
+    protected void addProfile(Profile profile) {
 
         DocumentReference profileRef = profiles.document(profile.getProfileID());
-        profileRef.set(profile);
+        profileRef.set(profile)
+                .addOnSuccessListener(aVoid -> Log.d(PROFILE_TAG, "Profile added successfully"))
+                .addOnFailureListener(e ->{
+                    Log.w(PROFILE_TAG, "Error adding profile", e);
+                    throw new DatabaseException("Error adding profile");
+                });
+    }
+
+    /**
+     * Updates the profile information of an existing entrant in the database.
+     * Overwrites the document in the profiles collection with the provided entrant's data.
+     *
+     * @param profile The entrant object containing updated information and a valid profile ID.
+     * @throws DatabaseException If there is an error communicating with the database or if the update fails.
+     */
+    protected void updateProfile(Profile profile) throws DatabaseException{
+        DocumentReference docRef = profiles.document(profile.getProfileID());
+        docRef.set(profile)
+                .addOnSuccessListener(aVoid -> Log.d("EntrantDatabaseManager", "Entrant updated successfully"))
+                .addOnFailureListener(e -> {
+                    Log.w(PROFILE_TAG, "Error updating entrant", e);
+                    throw new DatabaseException("Could not update Entrant");
+                });
     }
 
     /**
@@ -62,13 +97,13 @@ public class DatabaseManager {
      *
      * @return An {@link ArrayList} containing {@link Entrant} objects found in the database.
      */
-    public ArrayList<Entrant> getEntrants(){
+    protected ArrayList<Entrant> getEntrants(){
 
         ArrayList<Entrant> entrants_array = new ArrayList<Entrant>();
 
         profiles.get().addOnSuccessListener( result -> {
             for (DocumentSnapshot document : result) {
-                Log.d("Got Profile", document.getId() + " => " + document.getData());
+                Log.d(PROFILE_TAG, "Got Profile " + document.getId() + " => " + document.getData());
                 if (document.getData().get("profileType").equals(ProfileType.ENTRANT.toString())){
                     entrants_array.add(document.toObject(Entrant.class));
                 }
@@ -87,13 +122,13 @@ public class DatabaseManager {
      *
      * @return An {@link ArrayList} containing {@link Admin} objects found in the database.
      */
-    public ArrayList<Admin> getAdmins(){
+    protected ArrayList<Admin> getAdmins(){
 
         ArrayList<Admin> admins_array = new ArrayList<Admin>();
 
         profiles.get().addOnSuccessListener( result -> {
             for (DocumentSnapshot document : result) {
-                Log.d("Got Profile", document.getId() + " => " + document.getData());
+                Log.d(PROFILE_TAG, "Got Profile " + document.getId() + " => " + document.getData());
                 if (document.getData().get("profileType").equals(ProfileType.ADMIN.toString())){
                     admins_array.add(document.toObject(Admin.class));
                 }
@@ -111,13 +146,13 @@ public class DatabaseManager {
      *
      * @return An {@link ArrayList} containing {@link Organizer} objects found in the database.
      */
-    public ArrayList<Organizer> getOrganizers(){
+    protected ArrayList<Organizer> getOrganizers(){
 
         ArrayList<Organizer> organizers_array = new ArrayList<Organizer>();
 
         profiles.get().addOnSuccessListener( result -> {
             for (DocumentSnapshot document : result) {
-                Log.d("Got Profile", document.getId() + " => " + document.getData());
+                Log.d(PROFILE_TAG, "Got Profile " + document.getId() + " => " + document.getData());
                 if (document.getData().get("profileType").equals(ProfileType.ORGANIZER.toString())){
                     organizers_array.add(document.toObject(Organizer.class));
                 }
@@ -127,6 +162,14 @@ public class DatabaseManager {
         });
         return organizers_array;
     }
+/**************************************************************************************************
+ *                                            Events
+ *************************************************************************************************/
+
+    String EVENTS_TAG = "Database - Events:";
+
+
+
 
     /**
      * Retrieves a list of all events from the Firestore database.
@@ -135,18 +178,27 @@ public class DatabaseManager {
      *
      * @return An {@link ArrayList} containing {@link Event} objects found in the database.
      */
-    public ArrayList<Event> getEvents(){
+    protected ArrayList<Event> getEvents(){
         ArrayList<Event> events_array = new ArrayList<Event>();
         events.get().addOnSuccessListener( result -> {
             for (DocumentSnapshot document : result) {
-                Log.d("Got Events", document.getId() + " => " + document.getData());
+                Log.d("EVENTS_TAG", "Got Event " +  document.getId() + " => " + document.getData());
                 events_array.add(document.toObject(Event.class));
             }
         }).addOnFailureListener(exception -> {
-            Log.d("Error", "Error getting events: ", exception);
+            Log.d("EVENTS_TAG", "Error getting events: ", exception);
         });
         return events_array;
     }
+
+    protected void addEvent(Event event) {
+        DocumentReference eventRef = events.document(event.getEventId());
+        eventRef.set(event);
+    }
+/**************************************************************************************************
+ *                                            Location
+ *************************************************************************************************/
+    String LOCATION_TAG = "Database - Location:";
 
     /**
      * Retrieves a list of all locations from the Firestore database.
@@ -167,6 +219,12 @@ public class DatabaseManager {
         });
         return locations_array;
     }
+
+    /**************************************************************************************************
+     *                                            Topic
+     *************************************************************************************************/
+    String TOPIC_TAG = "Database - Location:";
+
 
     /**
      * Retrieves a list of all topics from the Firestore database.
@@ -191,10 +249,7 @@ public class DatabaseManager {
 
 
 
-//    public void addEvent(Event event) {
-//        DocumentReference eventRef = events.document(event.getEventID());
-//        eventRef.set(event);
-//    }
+
 //    public void addLocation(Location location) {
 //        DocumentReference locationRef = locations.document(location.getName());
 //        locationRef.set(location);
