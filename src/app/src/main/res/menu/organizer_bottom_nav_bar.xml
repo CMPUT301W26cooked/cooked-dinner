@@ -11,13 +11,16 @@
     <item
         android:id="@+id/events_icon"
         android:icon="@drawable/events_icon"
+        android:title="Events"
         />
     <item
         android:id="@+id/notifications_icon"
         android:icon="@drawable/notifications_icon"
+        android:title="Notifications"
         />
     <item
         android:id="@+id/qr_scanner_icon"
         android:icon="@drawable/qr_scanner_icon"
+        android:title="QR Scanner"
         />
 </menu>
