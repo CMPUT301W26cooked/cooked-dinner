@@ -5,7 +5,7 @@
     LastRevAuthor: Luke Forster
     Version: 1
     Date: 2026-03-05
-    TODO: I have to implement a top toggle menu for the header. this should be a seperate item in menu not just hardcoded in each view.
+    TODO: I have to implement a top toggle menu for the header. this should be a separate item in menu not just hardcoded in each view.
 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -22,7 +22,6 @@
         android:gravity="center"
         android:background="@color/moss_green"
         android:orientation="vertical"
-        android:paddingLeft="11dp"
         android:paddingVertical="26dp">
 
         <TextView
