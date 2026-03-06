@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 /**
  * The DatabaseManager class handles all transactions to Firestore.
+ * It provides methods to create, retrieve, and manage profiles, events, locations, and topics.
  *
  * @author Pablo Osorio
  * @version 1.0
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 //TODO:
 //Uncomment Other 'setters' when other classes get made (Just want it to compile rn)
 //Create Test Cases
+//Break down into multiple subclasses (for profiles, events, )
 
 public class DatabaseManager {
 
@@ -32,6 +34,11 @@ public class DatabaseManager {
 
 
 
+    /**
+     * Constructs a new DatabaseManager and initializes the connection to Firebase Firestore.
+     * This constructor sets up references to the "profiles", "events", "locations",
+     * and "topics" collections.
+     */
     public DatabaseManager() {
         db = FirebaseFirestore.getInstance();
         profiles = db.collection("profiles");
@@ -48,6 +55,13 @@ public class DatabaseManager {
         profileRef.set(profile);
     }
 
+    /**
+     * Retrieves a list of all users with the profile type of ENTRANT from the Firestore database.
+     * Note: This method initiates an asynchronous Firestore fetch; the returned list may
+     * be empty initially as the data is loaded in the background.
+     *
+     * @return An {@link ArrayList} containing {@link Entrant} objects found in the database.
+     */
     public ArrayList<Entrant> getEntrants(){
 
         ArrayList<Entrant> entrants_array = new ArrayList<Entrant>();
@@ -66,7 +80,13 @@ public class DatabaseManager {
     }
 
 
-
+    /**
+     * Retrieves a list of all users with the profile type of ADMIN from the Firestore database.
+     * Note: This method initiates an asynchronous Firestore fetch; the returned list may
+     * be empty initially as the data is loaded in the background.
+     *
+     * @return An {@link ArrayList} containing {@link Admin} objects found in the database.
+     */
     public ArrayList<Admin> getAdmins(){
 
         ArrayList<Admin> admins_array = new ArrayList<Admin>();
@@ -84,6 +104,13 @@ public class DatabaseManager {
         return admins_array;
     }
 
+    /**
+     * Retrieves a list of all users with the profile type of ORGANIZER from the Firestore database.
+     * Note: This method initiates an asynchronous Firestore fetch; the returned list may
+     * be empty initially as the data is loaded in the background.
+     *
+     * @return An {@link ArrayList} containing {@link Organizer} objects found in the database.
+     */
     public ArrayList<Organizer> getOrganizers(){
 
         ArrayList<Organizer> organizers_array = new ArrayList<Organizer>();
@@ -101,7 +128,13 @@ public class DatabaseManager {
         return organizers_array;
     }
 
-
+    /**
+     * Retrieves a list of all events from the Firestore database.
+     * Note: This method initiates an asynchronous Firestore fetch; the returned list may
+     * be empty initially as the data is loaded in the background.
+     *
+     * @return An {@link ArrayList} containing {@link Event} objects found in the database.
+     */
     public ArrayList<Event> getEvents(){
         ArrayList<Event> events_array = new ArrayList<Event>();
         events.get().addOnSuccessListener( result -> {
@@ -115,6 +148,13 @@ public class DatabaseManager {
         return events_array;
     }
 
+    /**
+     * Retrieves a list of all locations from the Firestore database.
+     * Note: This method initiates an asynchronous Firestore fetch; the returned list may
+     * be empty initially as the data is loaded in the background.
+     *
+     * @return An {@link ArrayList} containing {@link Location} objects found in the database.
+     */
     public ArrayList<Location> getLocations(){
         ArrayList<Location> locations_array = new ArrayList<Location>();
         locations.get().addOnSuccessListener( result -> {
@@ -128,6 +168,13 @@ public class DatabaseManager {
         return locations_array;
     }
 
+    /**
+     * Retrieves a list of all topics from the Firestore database.
+     * Note: This method initiates an asynchronous Firestore fetch; the returned list may
+     * be empty initially as the data is loaded in the background.
+     *
+     * @return An {@link ArrayList} containing {@link Topic} objects found in the database.
+     */
     public ArrayList<Topic> getTopics(){
         ArrayList<Topic> topics_array = new ArrayList<Topic>();
         topics.get().addOnSuccessListener( result -> {
