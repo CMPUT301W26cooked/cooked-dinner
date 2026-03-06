@@ -29,4 +29,4 @@ jobs:
         run: chmod +x ./src/gradlew
 
       - name: Clean then Build
-        run: ./src/gradlew clean build
+        run: ./src/gradlew -p ./src/ clean build
