@@ -2,6 +2,15 @@ package com.eventwise;
 
 import java.util.ArrayList;
 import java.util.UUID;
+/**
+ * The profile class is a basic abstract 
+ * 
+ * 
+ * @author Luke Forster
+ * @version 1
+ * @since 2026-03-02
+ */
+
 
 public abstract class Profile {
     private String profileID;
