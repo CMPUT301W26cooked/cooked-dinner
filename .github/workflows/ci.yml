@@ -26,7 +26,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        run: chmod +x ./src/gradlew
 
-      - name: Build and run unit tests
-        run: ./gradlew clean testDebugUnitTest
+      - name: Clean then Build
+        run: ./src/gradlew -p ./src/ clean build
