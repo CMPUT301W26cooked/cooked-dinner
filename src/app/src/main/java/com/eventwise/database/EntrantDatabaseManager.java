@@ -5,6 +5,8 @@ import android.util.Log;
 import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.database.exceptions.DatabaseException;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 
@@ -27,17 +29,14 @@ public class EntrantDatabaseManager extends DatabaseManager {
         super();
     }
 
-    String ENTRANT_TAG = "Database - Entrants:";
-
-
     /**
      * Adds a new entrant profile to the database.
      *
      * @param entrant The entrant object to be added.
      * @throws DatabaseException If an error occurs while adding the entrant to the database.
      */
-    public void addEntrant(Entrant entrant) throws DatabaseException {
-        super.addProfile(entrant);
+    public Task<Void> addEntrant(Entrant entrant) {
+        return super.addProfile(entrant);
     }
 
 
@@ -48,7 +47,7 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * @param entrant The entrant object containing the updated information.
      * @throws DatabaseException If an error occurs during the database update process.
      */
-    public void updateEntrantInfo(Entrant entrant) throws DatabaseException{
+    public void updateEntrantInfo(Entrant entrant) {
         super.updateProfile(entrant);
     }
 
@@ -62,15 +61,17 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * @param event   The event for which the entrant is registering.
      * @throws DatabaseException If there is an error updating the database or if the entrant cannot be added.
      */
-    public void registerEntrantInEvent(Entrant entrant, Event event) throws DatabaseException{
+
+    public Task<Void> registerEntrantInEvent(Entrant entrant, Event event) {
         DocumentReference docRef = events.document(event.getEventId());
-        docRef.update("waitingList", FieldValue.arrayUnion(entrant.getProfileID()))
-                .addOnSuccessListener(aVoid -> Log.d("EntrantDatabaseManager", "Entrant registered successfully"))
-                .addOnFailureListener(e -> {
-                    Log.w(ENTRANT_TAG, "Error registering entrant", e);
-                    throw new DatabaseException("Could not add Entrant to Event");
-            });
-    }
+        return docRef.update("waitingList", FieldValue.arrayUnion(entrant.getProfileID()))
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        return Tasks.forException(new DatabaseException("Could not add Entrant to Event"));
+                    }
+                    return task;
+                });
+        }
     /**
      * US 01.01.02
      * Unregisters an entrant in the waiting list for a specific event in the database.
@@ -80,16 +81,17 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * @param event   The event for which the entrant is unregistering.
      * @throws DatabaseException If there is an error updating the database or if the entrant cannot be added.
      */
-    public void unregisterEntrantInEvent(Entrant entrant, Event event) throws DatabaseException{
+
+    public Task<Void> unregisterEntrantInEvent(Entrant entrant, Event event) {
         DocumentReference docRef = events.document(event.getEventId());
-        docRef.update("waitingList", FieldValue.arrayRemove(entrant.getProfileID()))
-                .addOnSuccessListener(aVoid -> Log.d("EntrantDatabaseManager", "Entrant unregistered successfully"))
-                .addOnFailureListener(e -> {
-                    Log.w(ENTRANT_TAG, "Error unregistering entrant", e);
-                    throw new DatabaseException("Could not remove Entrant from Event");
+        return docRef.update("waitingList", FieldValue.arrayRemove(entrant.getProfileID()))
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        return Tasks.forException(new DatabaseException("Could not remove Entrant from Event"));
+                    }
+                    return task;
                 });
     }
-
 
 
 
