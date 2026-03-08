@@ -11,13 +11,10 @@ import com.eventwise.Profile;
 import com.eventwise.ProfileType;
 import com.eventwise.Topic;
 import com.eventwise.database.exceptions.DatabaseException;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -63,9 +60,9 @@ public abstract class DatabaseManager {
         locations = db.collection("locations");;
         topics = db.collection("topics");
     }
-    /**************************************************************************************************
-     *                                            Profiles
-     *************************************************************************************************/
+    //**************************************************************************************************
+    // *                                            Profiles
+    // *************************************************************************************************/
 
     /**
      * Adds a new profile to the Firestore database.
@@ -207,9 +204,9 @@ public abstract class DatabaseManager {
         });
         return tcs.getTask();
     }
-/**************************************************************************************************
- *                                            Events
- *************************************************************************************************/
+//**************************************************************************************************
+// *                                            Events
+//*************************************************************************************************/
 
     /**
      * Asynchronously retrieves a list of all events from the Firestore database.
@@ -245,9 +242,9 @@ public abstract class DatabaseManager {
     protected Task<Void> addEvent(Event event) {
         return events.document(event.getEventId()).set(event);
     }
-/**************************************************************************************************
- *                                            Location
- *************************************************************************************************/
+//**************************************************************************************************
+//*                                            Location
+//*************************************************************************************************/
 
     /**
      * Asynchronously retrieves a list of all locations from the Firestore database.
@@ -283,9 +280,9 @@ public abstract class DatabaseManager {
 //        return locations.document(location.getName()).set(location);
 //    }
 
-    /**************************************************************************************************
-     *                                            Topic
-     *************************************************************************************************/
+//**************************************************************************************************
+// *                                            Topic
+// *************************************************************************************************/
 
     /**
      * Asynchronously retrieves a list of all topics from the Firestore database.
