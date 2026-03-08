@@ -17,7 +17,15 @@ import com.google.firebase.firestore.DocumentReference;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * Manages database operations specific to entrants, including event creation,
+ * and getting entrants in lists. This class extends {@link DatabaseManager}
+ * to provide specialized Firestore interactions for organizer-related data.
+ *
+ * @author Pablo Osorio
+ * @version 1.0
+ * @since 2026-03-06
+ */
 public class OrganizerDatabaseManager extends DatabaseManager{
 
     public OrganizerDatabaseManager(){
