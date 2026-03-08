@@ -14,13 +14,14 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.common.collect.Lists;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
 /**
- * Manages database operations specific to entrants, including event creation,
- * and getting entrants in lists. This class extends {@link DatabaseManager}
- * to provide specialized Firestore interactions for organizer-related data.
+ * Manages database operations specific to Organizers, including event creation,
+ * and getting Organizers in lists. This class extends {@link DatabaseManager}
+ * to provide specialized Firestore interactions for Organizer-related data.
  *
  * @author Pablo Osorio
  * @version 1.0
@@ -31,8 +32,10 @@ public class OrganizerDatabaseManager extends DatabaseManager{
     public OrganizerDatabaseManager(){
         super();
     }
+    public OrganizerDatabaseManager(FirebaseFirestore db){
+        super(db);
+    }
 
-    String ORGANIZER_TAG = "Database - Organizer:";
 
     /**
      * Adds a new event to the database.

@@ -1,5 +1,6 @@
 package com.eventwise.database;
 
+import android.provider.ContactsContract;
 import android.util.Log;
 
 import com.eventwise.Admin;
@@ -60,6 +61,21 @@ public abstract class DatabaseManager {
         locations = db.collection("locations");;
         topics = db.collection("topics");
     }
+
+    /**
+     * Constructs a new DatabaseManager and initializes the connection to Firebase Firestore.
+     * This constructor sets up references to the "profiles", "events", "locations",
+     * and "topics" collections. Required for using testing database.
+     */
+   protected DatabaseManager(FirebaseFirestore db) {
+        this.db = db;
+        profiles = db.collection("profiles");
+        events = db.collection("events");
+        locations = db.collection("locations");;
+        topics = db.collection("topics");
+   }
+
+
     //**************************************************************************************************
     // *                                            Profiles
     // *************************************************************************************************/
@@ -94,6 +110,12 @@ public abstract class DatabaseManager {
             return profiles.document(profile.getProfileID()).set(profile);
         });
     }
+
+    protected Task<Void> deleteProfileFromID(String profileID) {
+        return profiles.document(profileID).delete();
+    }
+
+
 
     /**
      * Retrieves a profile from the Firestore database using the specified profile ID.
