@@ -40,7 +40,7 @@ import java.util.ArrayList;
 
 public abstract class DatabaseManager {
 
-    private FirebaseFirestore db;
+    protected FirebaseFirestore db;
 
     protected CollectionReference profiles;
     protected CollectionReference events;
