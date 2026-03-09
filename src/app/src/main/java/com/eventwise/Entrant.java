@@ -1,5 +1,7 @@
 package com.eventwise;
 
+import com.google.firebase.firestore.Exclude;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -103,6 +105,7 @@ public class Entrant extends Profile {
      *
      * @return set of event IDs
      */
+    @Exclude
     public Set<String> getWaitlistedEventIds() {
         return getEventIdsForOutcome(EventOutcome.JOINED_WAITLIST);
     }
@@ -112,6 +115,7 @@ public class Entrant extends Profile {
      *
      * @return set of event IDs
      */
+    @Exclude
     public Set<String> getInvitedEventIds() {
         return getEventIdsForOutcome(EventOutcome.INVITED);
     }
@@ -121,6 +125,7 @@ public class Entrant extends Profile {
      *
      * @return set of event IDs
      */
+    @Exclude
     public Set<String> getAcceptedEventIds() {
         return getEventIdsForOutcome(EventOutcome.ACCEPTED);
     }
@@ -130,6 +135,7 @@ public class Entrant extends Profile {
      *
      * @return set of event IDs
      */
+    @Exclude
     public Set<String> getCancelledEventIds() {
         return getEventIdsForOutcome(EventOutcome.CANCELLED);
     }
@@ -140,6 +146,7 @@ public class Entrant extends Profile {
      * @param outcome outcome to filter by
      * @return set of event IDs
      */
+    @Exclude
     private Set<String> getEventIdsForOutcome(EventOutcome outcome) {
         Set<String> result = new HashSet<>();
         if (eventHistory == null || outcome == null) return result;

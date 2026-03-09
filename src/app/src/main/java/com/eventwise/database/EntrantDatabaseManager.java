@@ -5,10 +5,13 @@ import android.util.Log;
 import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.database.exceptions.DatabaseException;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 
 import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
  * Manages database operations specific to entrants, including event registration,
@@ -27,8 +30,9 @@ public class EntrantDatabaseManager extends DatabaseManager {
         super();
     }
 
-    String ENTRANT_TAG = "Database - Entrants:";
-
+    public EntrantDatabaseManager(FirebaseFirestore db){
+        super(db);
+    }
 
     /**
      * Adds a new entrant profile to the database.
@@ -36,8 +40,8 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * @param entrant The entrant object to be added.
      * @throws DatabaseException If an error occurs while adding the entrant to the database.
      */
-    public void addEntrant(Entrant entrant) throws DatabaseException {
-        super.addProfile(entrant);
+    public Task<Void> addEntrant(Entrant entrant) {
+        return super.addProfile(entrant);
     }
 
 
@@ -48,8 +52,8 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * @param entrant The entrant object containing the updated information.
      * @throws DatabaseException If an error occurs during the database update process.
      */
-    public void updateEntrantInfo(Entrant entrant) throws DatabaseException{
-        super.updateProfile(entrant);
+    public Task<Void> updateEntrantInfo(Entrant entrant) {
+        return super.updateProfile(entrant);
     }
 
 
@@ -58,38 +62,41 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * Registers an entrant in the waiting list for a specific event in the database.
      * Updates the event document by adding the entrant's profile ID to the "waitingList" array.
      *
-     * @param entrant The entrant to be registered.
-     * @param event   The event for which the entrant is registering.
+     * @param entrantID The ID of the entrant to be registered.
+     * @param eventID   The ID of the event for which the entrant is registering.
      * @throws DatabaseException If there is an error updating the database or if the entrant cannot be added.
      */
-    public void registerEntrantInEvent(Entrant entrant, Event event) throws DatabaseException{
-        DocumentReference docRef = events.document(event.getEventId());
-        docRef.update("waitingList", FieldValue.arrayUnion(entrant.getProfileID()))
-                .addOnSuccessListener(aVoid -> Log.d("EntrantDatabaseManager", "Entrant registered successfully"))
-                .addOnFailureListener(e -> {
-                    Log.w(ENTRANT_TAG, "Error registering entrant", e);
-                    throw new DatabaseException("Could not add Entrant to Event");
-            });
-    }
+
+    public Task<Void> registerEntrantInEvent(String entrantID, String eventID) {
+        DocumentReference docRef = events.document(eventID);
+        return docRef.update("waitingListEntrantIds", FieldValue.arrayUnion(entrantID))
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        return Tasks.forException(new DatabaseException("Could not add Entrant to Event"));
+                    }
+                    return task;
+                });
+        }
     /**
      * US 01.01.02
      * Unregisters an entrant in the waiting list for a specific event in the database.
      * Updates the event document by removing the entrant's profile ID from the "waitingList" array.
      *
-     * @param entrant The entrant to be unregistered.
-     * @param event   The event for which the entrant is unregistering.
+     * @param entrantID The entrant to be unregistered.
+     * @param eventID   The event for which the entrant is unregistering.
      * @throws DatabaseException If there is an error updating the database or if the entrant cannot be added.
      */
-    public void unregisterEntrantInEvent(Entrant entrant, Event event) throws DatabaseException{
-        DocumentReference docRef = events.document(event.getEventId());
-        docRef.update("waitingList", FieldValue.arrayRemove(entrant.getProfileID()))
-                .addOnSuccessListener(aVoid -> Log.d("EntrantDatabaseManager", "Entrant unregistered successfully"))
-                .addOnFailureListener(e -> {
-                    Log.w(ENTRANT_TAG, "Error unregistering entrant", e);
-                    throw new DatabaseException("Could not remove Entrant from Event");
+
+    public Task<Void> unregisterEntrantInEvent(String entrantID, String eventID) {
+        DocumentReference docRef = events.document(eventID);
+        return docRef.update("waitingListEntrantIds", FieldValue.arrayRemove(entrantID))
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        return Tasks.forException(new DatabaseException("Could not remove Entrant from Event"));
+                    }
+                    return task;
                 });
     }
-
 
 
 
