@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: Create Event Fragment
+    Author: Luke Forster
+    LastRevAuthor: Luke Forster
+    Version: 1
+    Date: 2026-03-05
+    TODO:
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+    <LinearLayout
+        android:id="@+id/top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:background="@color/moss_green"
+        android:orientation="vertical"
+        android:paddingVertical="26dp">
+        <TextView
+            android:id="@+id/header_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your Events"
+            android:textColor="@color/forest_green"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+    <ScrollView
+        android:id="@+id/create_event_scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/bacon_color">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <include layout="@layout/create_event_widget" />
+
+        </LinearLayout>
+    </ScrollView>
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/organizer_bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/moss_green"
+        app:menu="@menu/organizer_bottom_nav_bar"
+        app:itemIconTint="@color/bottom_nav_colors"
+        app:itemTextColor="@color/bottom_nav_colors"
+        app:itemActiveIndicatorStyle="@null"
+        app:labelVisibilityMode="unlabeled"
+        app:itemIconSize="40dp"
+        />
+
+
+</LinearLayout>

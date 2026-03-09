@@ -11,6 +11,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.eventwise.fragments.EntrantEventsCommunityFragment;
+
 /**
  * This is the MainActivity class for the EventWise app. It acts as a starting point for all profile
  * types and will likely eventually become the login page for the app.

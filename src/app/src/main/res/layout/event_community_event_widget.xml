@@ -11,9 +11,9 @@
     android:id="@+id/event_community_event_widget"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="33dp"
-    android:layout_marginEnd="33dp"
-    android:layout_marginTop="33dp"
+    android:layout_marginStart="25dp"
+    android:layout_marginEnd="25dp"
+    android:layout_marginTop="25dp"
     android:background="@drawable/event_card_shape"
     android:orientation="vertical"
     android:padding="16dp">
