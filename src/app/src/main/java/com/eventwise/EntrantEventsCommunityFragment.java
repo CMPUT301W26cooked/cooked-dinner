@@ -1,6 +1,7 @@
 package com.eventwise;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.eventwise.database.EventSearcherDatabaseManager;
+import com.eventwise.database.OrganizerDatabaseManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +50,8 @@ public class EntrantEventsCommunityFragment extends Fragment {
 
         eventList = new ArrayList<>();
 
-        eventList.add(new Event(
+        //Make a new event and add it to the Firebase
+        Event event1 = new Event(
                 "SketchyOrganization",
                 "Totally Safe Event",
                 "A fun workshop that is completely safe",
@@ -62,9 +67,9 @@ public class EntrantEventsCommunityFragment extends Fragment {
                 10,
                 null,
                 null
-        ));
+        );
 
-        eventList.add(new Event(
+        Event event2 = new Event(
                 "org456",
                 "Community Soccer Day",
                 "Join us for a beginner friendly soccer event.",
@@ -80,7 +85,50 @@ public class EntrantEventsCommunityFragment extends Fragment {
                 15,
                 null,
                 null
-        ));
+        );
+
+
+        //IMPORTANT EventID cannot be NULL
+        event1.setEventId("EVENT1ID");
+        event2.setEventId("EVENT2ID");
+
+
+
+        eventList.add(event1);
+        eventList.add(event2);
+
+        //Add the events to Firebase
+        OrganizerDatabaseManager organizerDBMan = new OrganizerDatabaseManager();
+        organizerDBMan.addEvent(event1)
+                .addOnSuccessListener(param-> {
+                    Log.d("Event", "Event added successfully");
+                 })
+                .addOnFailureListener(param-> {
+                    Log.d("Event", "Event failed to add");
+                });
+
+        organizerDBMan.addEvent(event2)
+                .addOnSuccessListener(param-> {
+                    Log.d("Event", "Event added successfully");
+                })
+                .addOnFailureListener(param-> {
+                    Log.d("Event", "Event failed to add");
+                });
+
+
+        //Get events from Firebase
+        EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();
+
+        eventSearcherDBMan.getEvents()
+                .addOnSuccessListener(returnedList ->{
+                for (int i = 0; i < returnedList.size(); i++) {
+                    Log.d("Event", returnedList.get(i).getName());
+                    eventList.add(returnedList.get(i));
+                }
+                })
+                .addOnFailureListener(param-> {
+                    Log.d("Event", "Event failed to get");
+                });
 
         eventAdapter = new EventAdapter(eventList);
         eventListView.setAdapter(eventAdapter);
