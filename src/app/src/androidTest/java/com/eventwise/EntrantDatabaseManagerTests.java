@@ -3,6 +3,7 @@ package com.eventwise;
 import android.content.Context;
 import androidx.test.core.app.ApplicationProvider;
 
+import com.eventwise.database.DatabaseManager;
 import com.eventwise.database.EntrantDatabaseManager;
 import com.eventwise.database.OrganizerDatabaseManager;
 import com.google.android.gms.tasks.Tasks;
@@ -21,32 +22,14 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 
-public class EntrantDatabaseManagerTests {
+public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
 
 
-    static FirebaseFirestore testDb;
+
     private String randomEventID;
     private String randomEntrantID;
 
 
-
-    @BeforeClass
-    public static void FirebaseSetup() {
-        Context context = ApplicationProvider.getApplicationContext();
-//        if (FirebaseApp.getApps(context).isEmpty()) {
-            FirebaseOptions options = new FirebaseOptions.Builder()
-                    .setProjectId("cooked-dinner-test")
-                    .setApplicationId("1:511463316367:android:6b69ce8f5da3f0c4aac9fa")
-                    .setApiKey("AIzaSyDAJGtkpLkM9-zbQT4sOsAX0LMhuD9AZog")
-                    .build();
-                FirebaseApp.initializeApp(context, options, "test");
-//        }
-
-        testDb = FirebaseFirestore.getInstance(FirebaseApp.getInstance("test"));
-
-
-
-    }
 
     @Before
     public void TestCaseSetup() throws InterruptedException {

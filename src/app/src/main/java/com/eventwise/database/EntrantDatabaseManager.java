@@ -57,6 +57,8 @@ public class EntrantDatabaseManager extends DatabaseManager {
     }
 
 
+
+
     /**
      * US 01.01.01
      * Registers an entrant in the waiting list for a specific event in the database.

@@ -7,6 +7,7 @@ import com.eventwise.Admin;
 import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.Location;
+import com.eventwise.Notification;
 import com.eventwise.Organizer;
 import com.eventwise.Profile;
 import com.eventwise.ProfileType;
@@ -40,12 +41,14 @@ import java.util.ArrayList;
 
 public abstract class DatabaseManager {
 
-    private FirebaseFirestore db;
+    protected FirebaseFirestore db;
 
     protected CollectionReference profiles;
     protected CollectionReference events;
     protected CollectionReference locations;
     protected CollectionReference topics;
+    protected CollectionReference notifications;
+
 
 
 
@@ -60,6 +63,7 @@ public abstract class DatabaseManager {
         events = db.collection("events");
         locations = db.collection("locations");;
         topics = db.collection("topics");
+        notifications = db.collection("notifications");
     }
 
     /**
@@ -73,6 +77,7 @@ public abstract class DatabaseManager {
         events = db.collection("events");
         locations = db.collection("locations");;
         topics = db.collection("topics");
+        notifications = db.collection("notifications");
    }
 
 
@@ -131,8 +136,16 @@ public abstract class DatabaseManager {
 
         profiles.document(profileID).get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
-                Profile profile = documentSnapshot.toObject(Profile.class);
-                tcs.setResult(profile);
+                if (documentSnapshot.getData().get("profileType").equals(ProfileType.ENTRANT.toString())){
+                    tcs.setResult(documentSnapshot.toObject(Entrant.class));
+                }
+                else if (documentSnapshot.getData().get("profileType").equals(ProfileType.ORGANIZER.toString())) {
+                    tcs.setResult(documentSnapshot.toObject(Organizer.class));
+                }
+                else if (documentSnapshot.getData().get("profileType").equals(ProfileType.ADMIN.toString())) {
+                    tcs.setResult(documentSnapshot.toObject(Admin.class));
+                }
+
             } else {
                 tcs.setException(new DatabaseException("Error getting Profile"));
             }
@@ -329,22 +342,41 @@ public abstract class DatabaseManager {
         return tcs.getTask();
     }
 
-    /**
-     * Adds a new topic to the Firestore database.
-     * This method creates a document in the "topic" collection using the topic's unique ID
-     * and stores the provided topic object.
-     *
-     * @param topic The {@link Topic} object containing the data to be stored.
-     * @return A {@link Task} representing the asynchronous database write operation.
-     */
+//    /**
+//     * Adds a new topic to the Firestore database.
+//     * This method creates a document in the "topic" collection using the topic's unique ID
+//     * and stores the provided topic object.
+//     *
+//     * @param topic The {@link Topic} object containing the data to be stored.
+//     * @return A {@link Task} representing the asynchronous database write operation.
+//     */
 //    public Task<Void> addTopic(Topic topic) {
 //        return topics.document(topic.getName()).add(topic);
 //    }
 
+//**************************************************************************************************
+// *                                           Notifications
+// *************************************************************************************************/
 
+    protected Task<Void> addNotification(Notification notification){
+        return notifications.document(notification.getNotificationID()).set(notification);
+    }
 
+    protected Task<Notification> getNotificationByID(String notificationID){
+        TaskCompletionSource<Notification> tcs = new TaskCompletionSource<>();
 
-
-
-
-}
+        notifications.document(notificationID).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Notification notification = documentSnapshot.toObject(Notification.class);
+                        tcs.setResult(notification);
+                    } else {
+                        tcs.setException(new DatabaseException("Error getting Notification"));
+                    }
+                })
+                .addOnFailureListener(exception -> {
+                        tcs.setException(new DatabaseException("Error getting Notification"));
+                    });
+                return tcs.getTask();
+                }
+    }
