@@ -1,10 +1,12 @@
 package com.eventwise.database;
 
 
+import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.Location;
 import com.eventwise.Profile;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
  * Manages database operations specific to admins, including event, profile,,
@@ -21,6 +23,10 @@ public class AdminDatabaseManager extends DatabaseManager {
         super();
     }
 
+    public AdminDatabaseManager(FirebaseFirestore db){
+        super(db);
+    }
+
     public Task<Void> removeEvent(Event event) {
         return events.document(event.getEventId()).delete();
     }
@@ -29,6 +35,10 @@ public class AdminDatabaseManager extends DatabaseManager {
         return profiles.document(profile.getProfileID()).delete();
     }
 
+    public Task<Entrant> getEntrantFromID(String entrantID) {
+        return super.getProfileFromID(entrantID)
+                .continueWith(task -> (Entrant) task.getResult());
+    }
 //    public Task<Void> removeLocation(Location location) {
 //        return locations.document(location.getName()).delete();
 //    }

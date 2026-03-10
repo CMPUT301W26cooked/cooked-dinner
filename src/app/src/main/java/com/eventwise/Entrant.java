@@ -1,6 +1,7 @@
 package com.eventwise;
 
 import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.ServerTimestamp;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,6 +33,10 @@ public class Entrant extends Profile {
 
     /** List of all historical and current events */
     private ArrayList<EventHistoryEntry> eventHistory = new ArrayList<>();
+
+
+    private ArrayList<String> notificationIDs = new ArrayList<String>();
+
 
     /**
      * Required for Firestore (not sure yet).
@@ -159,6 +164,14 @@ public class Entrant extends Profile {
             }
         }
         return result;
+    }
+
+    public ArrayList<String> getNotificationIDs() {
+        return notificationIDs;
+    }
+
+    public void setNotificationIDs(ArrayList<String> notificationIDs) {
+        this.notificationIDs = notificationIDs;
     }
 
     /**
