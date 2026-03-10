@@ -6,12 +6,17 @@ import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.WriteBatch;
+
+import java.util.ArrayList;
 
 /**
  * Manages database operations specific to entrants, including event registration,
@@ -70,13 +75,21 @@ public class EntrantDatabaseManager extends DatabaseManager {
      */
 
     public Task<Void> registerEntrantInEvent(String entrantID, String eventID) {
+        WriteBatch batch = super.db.batch();
+
+
         DocumentReference docRef = events.document(eventID);
-        return docRef.update("waitingListEntrantIds", FieldValue.arrayUnion(entrantID))
-                .continueWithTask(task -> {
-                    if (!task.isSuccessful()) {
-                        return Tasks.forException(new DatabaseException("Could not add Entrant to Event"));
-                    }
-                    return task;
+        batch.update(docRef, "waitingListEntrantIds", FieldValue.arrayUnion(entrantID));
+        docRef = profiles.document(entrantID);
+        batch.update(docRef, "joinedWaitingListEventIds", FieldValue.arrayUnion(eventID));
+
+        return batch.commit()
+                .continueWith(task -> {
+                            if (!task.isSuccessful()) {
+                                throw new DatabaseException("Error registering Entrant in Event with batch: "
+                                        + task.getException().getMessage());
+                             }
+                            return null;
                 });
         }
     /**
@@ -98,6 +111,26 @@ public class EntrantDatabaseManager extends DatabaseManager {
                     }
                     return task;
                 });
+    }
+
+    public Task<ArrayList<Event>> getEventsWhereEntrantIsInWaitingList(String entrantID){
+        TaskCompletionSource<ArrayList<Event>> tcs = new TaskCompletionSource<>();
+        ArrayList<Event> events_array = new ArrayList<Event>();
+
+        events.get()
+                .addOnSuccessListener( result -> {
+                    for (DocumentSnapshot document : result) {
+                        Event event = document.toObject(Event.class);
+                        if (event.getWaitingListEntrantIds().contains(entrantID)){
+                            events_array.add(event);
+                        }
+                    }
+                    tcs.setResult(events_array);
+                })
+                .addOnFailureListener(exception -> {
+                    tcs.setException(new DatabaseException("Error getting events"));
+                });
+        return tcs.getTask();
     }
 
 
