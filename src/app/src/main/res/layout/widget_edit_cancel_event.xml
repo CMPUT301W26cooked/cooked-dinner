@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Description: Entrant Events Community Card Widget.
+    Description: Entrant edit/leave event card.
     Author: Luke Forster
     LastRevAuthor: Luke Forster
     Version: 1
@@ -137,6 +137,21 @@
             android:text="March 2 2026, 8:00 am"
             android:textColor="#636B2F"
             android:textSize="12sp" />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+        <TextView
+            android:id="@+id/registered"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="40dp"
+            android:text="Registered"
+            android:textColor="#636B2F"
+            android:textSize="12sp"
+            android:textStyle="bold"/>
+
     </LinearLayout>
 
     <LinearLayout
@@ -177,38 +192,57 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
-                <TextView
-                    android:id="@+id/event_spots_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="•  10 spots"
-                    android:textColor="@color/moss_green"
-                    android:textSize="12sp" />
-                <TextView
-                    android:id="@+id/event_waitlisted_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="•  5 waitlisted"
-                    android:textColor="@color/moss_green"
-                    android:textSize="12sp" />
-                <TextView
-                    android:id="@+id/event_event_registered_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="•  3 registered"
-                    android:textColor="@color/moss_green"
-                    android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/event_spots_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="•  10 spots"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/event_waitlisted_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="•  5 waitlisted"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/event_event_registered_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="•  3 registered"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-        <Button
-            android:id="@+id/join_button"
-            android:layout_width="120dp"
-            android:layout_height="match_parent"
-            android:minHeight="72dp"
-            android:text="Join"
-            android:textSize="20dp"
-            android:textColor="@color/lighter_green"
-            android:backgroundTint="@color/moss_green"/>
+        <LinearLayout
+            android:id="@+id/edit_leave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/edit_button"
+                android:layout_width="70dp"
+                android:layout_height="75dp"
+                android:minHeight="72dp"
+                android:layout_margin="5dp"
+                android:text="Edit"
+                android:textSize="18dp"
+                android:textColor="@color/lighter_green"
+                android:backgroundTint="@color/bacon_color"
+                android:padding="5dp"/>
+            <Button
+                android:id="@+id/Cancel_button"
+                android:layout_width="70dp"
+                android:layout_height="75dp"
+                android:minHeight="72dp"
+                android:layout_margin="5dp"
+                android:text="Cancel"
+                android:textSize="18dp"
+                android:textColor="@color/lighter_green"
+                android:backgroundTint="@color/red"
+                android:padding="5dp"/>
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

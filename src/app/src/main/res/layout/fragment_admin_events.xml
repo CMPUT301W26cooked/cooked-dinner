@@ -32,33 +32,11 @@
             android:textSize="32sp"
             android:textStyle="bold" />
     </LinearLayout>
-    <ScrollView
-        android:id="@+id/list_view"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/event_list_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@color/bacon_color"
-        android:importantForAccessibility="no">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-        </LinearLayout>
-    </ScrollView>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/admin_bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/moss_green"
-        app:menu="@menu/admin_bottom_nav_bar"
-        app:itemIconTint="@color/bottom_nav_colors"
-        app:itemTextColor="@color/bottom_nav_colors"
-        app:itemActiveIndicatorStyle="@null"
-        app:labelVisibilityMode="unlabeled"
-        app:itemIconSize="40dp"
-        />
+        android:background="@color/bacon_color" />
 
 </LinearLayout>
