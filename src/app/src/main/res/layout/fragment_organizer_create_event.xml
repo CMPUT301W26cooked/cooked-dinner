@@ -43,7 +43,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <include layout="@layout/create_event_widget" />
+            <include layout="@layout/widget_create_event" />
 
         </LinearLayout>
     </ScrollView>
