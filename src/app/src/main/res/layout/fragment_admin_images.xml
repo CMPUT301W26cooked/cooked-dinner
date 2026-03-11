@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Description: Create Event Fragment
+    Description: This XML file contains the admin images tab.
     Author: Luke Forster
     LastRevAuthor: Luke Forster
     Version: 1
-    Date: 2026-03-05
-    TODO:
+    Date: 2026-03-10
 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -22,29 +21,21 @@
         android:background="@color/moss_green"
         android:orientation="vertical"
         android:paddingVertical="26dp">
+
         <TextView
             android:id="@+id/header_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Your Events"
+            android:text="Images"
             android:textColor="@color/forest_green"
             android:textSize="32sp"
             android:textStyle="bold" />
     </LinearLayout>
-    <ScrollView
-        android:id="@+id/create_event_scroll_view"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/list_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@color/bacon_color">
+        android:background="@color/bacon_color" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <include layout="@layout/widget_create_event" />
-
-        </LinearLayout>
-    </ScrollView>
 </LinearLayout>
