@@ -222,7 +222,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
             <Button
-                android:id="@+id/edit_button"
+                android:id="@+id/primary_button"
                 android:layout_width="70dp"
                 android:layout_height="75dp"
                 android:minHeight="72dp"
@@ -233,7 +233,7 @@
                 android:backgroundTint="@color/bacon_color"
                 android:padding="5dp"/>
             <Button
-                android:id="@+id/Cancel_button"
+                android:id="@+id/secondary_button"
                 android:layout_width="70dp"
                 android:layout_height="75dp"
                 android:minHeight="72dp"

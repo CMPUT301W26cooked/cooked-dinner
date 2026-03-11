@@ -17,15 +17,34 @@ import java.util.Locale;
  * @version 1.0
  * @since 2026-03-03
  * Updated By Becca Irving on 2026-03-09
+ * TODO: The primary secondary  logic in onBindViewHolder is wonky please help.
  */
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
 
+    public static final int TYPE_JOIN = 0;
+    public static final int TYPE_CANCEL = 1;
+    public static final int TYPE_EDIT_LEAVE = 2;
+    public static final int TYPE_EDIT_CANCEL = 3;
     private final List<Event> eventList;
+    private int mode;
 
-    public EventAdapter(List<Event> eventList) {
-        this.eventList = eventList;
+    public interface OnPrimaryButtonClickListener {
+        void onPrimaryButtonClick(Event event);
     }
+
+    private final OnPrimaryButtonClickListener primaryButtonClickListener;
+    public EventAdapter(List<Event> eventList, int mode, OnPrimaryButtonClickListener primaryButtonClickListener) {
+        this.eventList = eventList;
+        this.mode = mode;
+        this.primaryButtonClickListener = primaryButtonClickListener;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return mode;
+    }
+
 
     public static class EventViewHolder extends RecyclerView.ViewHolder {
 
@@ -40,7 +59,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         TextView eventWaitlistedCount;
         TextView eventRegisteredCount;
 
-        Button joinButton;
+        Button primaryButton;
+        Button secondaryButton;
+
 
         public EventViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -59,15 +80,32 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             eventWaitlistedCount = itemView.findViewById(R.id.event_waitlisted_count);
             eventRegisteredCount = itemView.findViewById(R.id.event_event_registered_count);
 
-            joinButton = itemView.findViewById(R.id.join_button);
+            primaryButton = itemView.findViewById(R.id.primary_button);
+            secondaryButton = itemView.findViewById(R.id.secondary_button);
         }
     }
 
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.widget_join_event, parent, false);
+        /*
+         * Update: I changed the event adapter to support the different types of widgets we will
+         * need to inflate in different views.
+         */
+        View view;
+        if(viewType == TYPE_EDIT_LEAVE) {
+            view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.widget_edit_leave_event, parent, false);
+        } else if(viewType == TYPE_EDIT_CANCEL) {
+            view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.widget_edit_cancel_event, parent, false);
+        } else if(viewType == TYPE_CANCEL) {
+            view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.widget_cancel_event, parent, false);
+        } else {
+            view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.widget_join_event, parent, false);
+        }
         return new EventViewHolder(view);
     }
 
@@ -94,10 +132,19 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         holder.eventWaitlistedCount.setText("•  " + waitlisted + " waitlisted");
         holder.eventRegisteredCount.setText("•  " + registered + " registered");
 
-        if (event.isRegistrationOpenNow() && !event.isWaitingListFull()) {
-            holder.joinButton.setEnabled(true);
-        } else {
-            holder.joinButton.setEnabled(false);
+        if (holder.primaryButton != null) {
+            if (mode == TYPE_JOIN) {
+                if (event.isRegistrationOpenNow() && !event.isWaitingListFull()) {
+                    holder.primaryButton.setEnabled(true);
+                } else {
+                    holder.primaryButton.setEnabled(false);
+                }
+            }
+            holder.primaryButton.setOnClickListener(v -> {
+                if (primaryButtonClickListener != null) {
+                    primaryButtonClickListener.onPrimaryButtonClick(event);
+                }
+            });
         }
     }
 

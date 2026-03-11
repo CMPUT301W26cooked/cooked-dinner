@@ -33,6 +33,8 @@ public class AdminEventsFragment extends Fragment {
     private EventAdapter eventAdapter;
     private List<Event> eventList;
 
+    private EventSearcherDatabaseManager eventSearcherDBMan;
+
     public AdminEventsFragment() {
     }
 
@@ -45,14 +47,15 @@ public class AdminEventsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        eventListView = view.findViewById(R.id.event_list_view);
+        eventSearcherDBMan = new EventSearcherDatabaseManager();
+        eventListView = view.findViewById(R.id.list_view);
         eventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         eventList = new ArrayList<>();
+        eventAdapter = new EventAdapter(eventList, EventAdapter.TYPE_CANCEL, this::deleteEvent);
+        eventListView.setAdapter(eventAdapter);
         //Get events from Firebase
         EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();
-
         eventSearcherDBMan.getEvents()
                 .addOnSuccessListener(returnedList ->{
                     for (int i = 0; i < returnedList.size(); i++) {
@@ -64,8 +67,18 @@ public class AdminEventsFragment extends Fragment {
                 .addOnFailureListener(param-> {
                     Log.d("Event", "Event failed to get");
                 });
-
-        eventAdapter = new EventAdapter(eventList);
-        eventListView.setAdapter(eventAdapter);
     }
+
+    public void deleteEvent(Event event){
+        eventSearcherDBMan.deleteEvent(event)
+                .addOnSuccessListener(unused -> {
+                    eventList.remove(event);
+                    eventAdapter.notifyDataSetChanged();
+                    Log.d("Event", "Event deleted successfully...");
+                })
+                .addOnFailureListener(e -> {
+                    Log.d("Event", "Event delete failed...");
+                });
+    }
+
 }
