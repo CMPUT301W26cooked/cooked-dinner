@@ -31,24 +31,22 @@ public class AdminDatabaseManager extends DatabaseManager {
         return events.document(event.getEventId()).delete();
     }
 
-    public Task<Void> removeProfile(Profile profile) {
-        return profiles.document(profile.getProfileID()).delete();
+    public interface RemoveCallback {
+        void onComplete(boolean success);
     }
 
+    public void removeProfile(String profileId, RemoveCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("profiles")
+                .document(profileId)
+                .delete()
+                .addOnSuccessListener(aVoid -> callback.onComplete(true))
+                .addOnFailureListener(e -> callback.onComplete(false));
+    }
     public Task<Entrant> getEntrantFromID(String entrantID) {
         return super.getProfileFromID(entrantID)
                 .continueWith(task -> (Entrant) task.getResult());
     }
-//    public Task<Void> removeLocation(Location location) {
-//        return locations.document(location.getName()).delete();
-//    }
-
-//    public Task<Void> removeTopics(Topics topics) {
-//        return topics.document(topics.getName()).delete();
-//    }
-
-
-
-
 
 }

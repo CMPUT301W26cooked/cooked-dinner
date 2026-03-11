@@ -16,6 +16,7 @@ import java.util.Locale;
  * @author Luke Forster
  * @version 1.0
  * @since 2026-03-03
+ * Updated By Becca Irving on 2026-03-09
  */
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
@@ -87,7 +88,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         int spots = event.getMaxWinnersToSample();
         int waitlisted = event.getWaitingListCount();
-        int registered = event.getConfirmedEntrantIds() == null ? 0 : event.getConfirmedEntrantIds().size();
+        int registered = event.getEnrolledCount();
 
         holder.eventSpotsCount.setText("•  " + spots + " spots");
         holder.eventWaitlistedCount.setText("•  " + waitlisted + " waitlisted");
