@@ -1,0 +1,70 @@
+package com.eventwise.fragments;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.eventwise.Profile;
+import com.eventwise.R;
+
+import java.util.ArrayList;
+
+public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHolder> {
+
+    public interface OnRemoveClickListener {
+        void onRemoveClicked(String profileId);
+    }
+
+
+    private ArrayList<Profile> profiles;
+    private OnRemoveClickListener listener;
+
+    public ProfileAdapter(ArrayList<Profile> profiles, OnRemoveClickListener listener) {
+        this.profiles = profiles;
+        this.listener = listener;
+    }
+
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_profile, parent, false);
+        return new ViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        Profile profile = profiles.get(position);
+
+        holder.name.setText(profile.getName());
+        holder.email.setText(profile.getEmail());
+        holder.phone.setText(profile.getPhone());
+
+        holder.removeButton.setOnClickListener(v -> {
+            listener.onRemoveClicked(profile.getProfileID());
+        });
+    }
+
+    @Override
+    public int getItemCount() {
+        return profiles.size();
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView name, email, phone;
+        Button removeButton;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            name = itemView.findViewById(R.id.profile_name);
+            email = itemView.findViewById(R.id.profile_email);
+            phone = itemView.findViewById(R.id.profile_phone);
+            removeButton = itemView.findViewById(R.id.remove_button);
+        }
+    }
+}
