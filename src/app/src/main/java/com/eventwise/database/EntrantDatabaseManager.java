@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.eventwise.Entrant;
 import com.eventwise.Event;
+import com.eventwise.EventEntrantStatus;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
  * @author Pablo Osorio
  * @version 1.0
  * @since 2026-03-06
+ * Updated By Becca Irving on 2026-03-09
  */
 
 public class EntrantDatabaseManager extends DatabaseManager {
@@ -75,23 +77,46 @@ public class EntrantDatabaseManager extends DatabaseManager {
      */
 
     public Task<Void> registerEntrantInEvent(String entrantID, String eventID) {
-        WriteBatch batch = super.db.batch();
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
+        events.document(eventID).get()
+                .addOnSuccessListener(eventSnapshot -> {
+                    Event event = eventSnapshot.toObject(Event.class);
 
-        DocumentReference docRef = events.document(eventID);
-        batch.update(docRef, "waitingListEntrantIds", FieldValue.arrayUnion(entrantID));
-        docRef = profiles.document(entrantID);
-        batch.update(docRef, "joinedWaitingListEventIds", FieldValue.arrayUnion(eventID));
+                    if (event == null) {
+                        tcs.setException(new DatabaseException("Error getting Event"));
+                        return;
+                    }
 
-        return batch.commit()
-                .continueWith(task -> {
-                            if (!task.isSuccessful()) {
-                                throw new DatabaseException("Error registering Entrant in Event with batch: "
-                                        + task.getException().getMessage());
-                             }
-                            return null;
-                });
-        }
+                    profiles.document(entrantID).get()
+                            .addOnSuccessListener(profileSnapshot -> {
+                                Entrant entrant = profileSnapshot.toObject(Entrant.class);
+
+                                if (entrant == null) {
+                                    tcs.setException(new DatabaseException("Error getting Entrant"));
+                                    return;
+                                }
+
+                                event.addOrUpdateEntrantStatus(entrantID, EventEntrantStatus.WAITLISTED);
+                                entrant.addOrUpdateEventState(eventID, EventEntrantStatus.WAITLISTED);
+
+                                WriteBatch batch = super.db.batch();
+                                batch.set(events.document(eventID), event);
+                                batch.set(profiles.document(entrantID), entrant);
+
+                                batch.commit()
+                                        .addOnSuccessListener(unused -> tcs.setResult(null))
+                                        .addOnFailureListener(e ->
+                                                tcs.setException(new DatabaseException("Error registering Entrant in Event")));
+                            })
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Error getting Entrant")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Error getting Event")));
+
+        return tcs.getTask();
+    }
     /**
      * US 01.01.02
      * Unregisters an entrant in the waiting list for a specific event in the database.
@@ -103,14 +128,41 @@ public class EntrantDatabaseManager extends DatabaseManager {
      */
 
     public Task<Void> unregisterEntrantInEvent(String entrantID, String eventID) {
-        DocumentReference docRef = events.document(eventID);
-        return docRef.update("waitingListEntrantIds", FieldValue.arrayRemove(entrantID))
-                .continueWithTask(task -> {
-                    if (!task.isSuccessful()) {
-                        return Tasks.forException(new DatabaseException("Could not remove Entrant from Event"));
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        events.document(eventID).get()
+                .addOnSuccessListener(eventSnapshot -> {
+                    Event event = eventSnapshot.toObject(Event.class);
+                    if (event == null) {
+                        tcs.setException(new DatabaseException("Error getting Event"));
+                        return;
                     }
-                    return task;
-                });
+                    profiles.document(entrantID).get()
+                            .addOnSuccessListener(profileSnapshot -> {
+                                Entrant entrant = profileSnapshot.toObject(Entrant.class);
+                                if (entrant == null) {
+                                    tcs.setException(new DatabaseException("Error getting Entrant"));
+                                    return;
+                                }
+                                event.addOrUpdateEntrantStatus(entrantID, EventEntrantStatus.LEFT_WAITLIST);
+                                entrant.addOrUpdateEventState(eventID, EventEntrantStatus.LEFT_WAITLIST);
+
+                                WriteBatch batch = super.db.batch();
+                                batch.set(events.document(eventID), event);
+                                batch.set(profiles.document(entrantID), entrant);
+
+                                batch.commit()
+                                        .addOnSuccessListener(unused -> tcs.setResult(null))
+                                        .addOnFailureListener(e ->
+                                                tcs.setException(new DatabaseException("Could not remove Entrant from Event")));
+                            })
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Error getting Entrant")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Error getting Event")));
+
+        return tcs.getTask();
     }
 
     public Task<ArrayList<Event>> getEventsWhereEntrantIsInWaitingList(String entrantID){
@@ -118,10 +170,10 @@ public class EntrantDatabaseManager extends DatabaseManager {
         ArrayList<Event> events_array = new ArrayList<Event>();
 
         events.get()
-                .addOnSuccessListener( result -> {
+                .addOnSuccessListener(result -> {
                     for (DocumentSnapshot document : result) {
                         Event event = document.toObject(Event.class);
-                        if (event.getWaitingListEntrantIds().contains(entrantID)){
+                        if (event != null && event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(entrantID)) {
                             events_array.add(event);
                         }
                     }
@@ -130,6 +182,7 @@ public class EntrantDatabaseManager extends DatabaseManager {
                 .addOnFailureListener(exception -> {
                     tcs.setException(new DatabaseException("Error getting events"));
                 });
+
         return tcs.getTask();
     }
 
