@@ -1,0 +1,34 @@
+name: Task / Setup / Docs
+description: Non-user-story issue (setup, docs, feedback, refactor, bug).
+title: "Task: <short title>"
+labels: ["type:docs"]
+body:
+  - type: dropdown
+    id: task_type
+    attributes:
+      label: Task Type
+      options:
+        - Setup
+        - Docs
+        - Feedback
+        - Refactor
+        - Bug
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+    validations:
+      required: true
+
+  - type: textarea
+    id: done
+    attributes:
+      label: Definition of Done
+      placeholder: |
+        - ...
+        - ...
+    validations:
+      required: true

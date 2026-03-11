@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: Added basic color pallet for app.
+    Author: Luke Forster
+    LastRevAuthor: Luke Forster
+    Version: 1
+    Date: 2026-03-05
+-->
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="moss_green">#636B2F</color>
+    <color name="bacon_color">#BAC095</color>
+    <color name="weird_piss">#D4DE97</color>
+    <color name="forest_green">#3D4127</color>
+    <color name="lighter_green">#F3F6E5</color>
+    <color name="red">#7C0A02</color>
+</resources>

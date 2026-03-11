@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: This just allows us to toggle between active menu colour vs inactive menu colour for each icon.
+    Author: Luke Forster
+    LastRevAuthor: Luke Forster
+    Version: 1
+    Date: 2026-03-05
+    TODO: This shouldn't have to change much.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/weird_piss" android:state_checked="true"/>
+    <item android:color="@color/forest_green"/>
+</selector>
