@@ -178,9 +178,8 @@ public class CreateEventFragment extends Fragment {
             }
         }
 
-        // ========== KEY MODIFICATION: Use fixed test ID to match query ==========
-        String organizerProfileId = "TEMP_ORGANIZER_ID";  // Keep this ID consistent
-
+        // Placeholder values for fields not yet wired from UI/user profile
+        String organizerProfileId = "TEMP_ORGANIZER_ID";
         double price = 0.00;
         long registrationOpenEpochSec = System.currentTimeMillis() / 1000L;
         String posterPath = null;
@@ -214,6 +213,14 @@ public class CreateEventFragment extends Fragment {
         organizerDBMan.addEvent(event)
                 .addOnSuccessListener(param -> {
                     Log.d("CreateEvent", "Event added successfully to Firebase");
+
+                    // ====== New code start ======
+                    Log.d("ProfileLinking", "Event created with organizer ID: " +
+                            event.getOrganizerProfileId());
+                    Log.d("ProfileLinking", "Event ID: " + event.getEventId());
+                    Log.d("ProfileLinking", "Successfully linked profile to created event");
+                    // ====== New code end ======
+
                     getParentFragmentManager().popBackStack();
                 })
                 .addOnFailureListener(param -> {

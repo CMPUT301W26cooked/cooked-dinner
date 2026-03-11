@@ -17,7 +17,7 @@ import com.eventwise.Event;
 import com.eventwise.EventAdapter;
 import com.eventwise.R;
 import com.eventwise.database.EventSearcherDatabaseManager;
-import com.eventwise.database.OrganizerDatabaseManager;
+import com.eventwise.database.OrganizerDatabaseManager;  // ====== New import ======
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +34,6 @@ public class OrganizerYourEventsFragment extends Fragment {
     private EventAdapter eventAdapter;
     private List<Event> eventList;
     private EventSearcherDatabaseManager eventSearcherDBMan;
-    private OrganizerDatabaseManager organizerDBMan;
-
-    // ========== KEY: Use the same test ID as in CreateEventFragment ==========
-    private final String TEST_ORGANIZER_ID = "TEMP_ORGANIZER_ID";
 
     public OrganizerYourEventsFragment() {}
 
@@ -51,11 +47,7 @@ public class OrganizerYourEventsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        // Initialize database managers
         eventSearcherDBMan = new EventSearcherDatabaseManager();
-        organizerDBMan = new OrganizerDatabaseManager();
-
         View createEventButton = view.findViewById(R.id.create_new_event_button);
 
         // Create New Event button
@@ -76,32 +68,24 @@ public class OrganizerYourEventsFragment extends Fragment {
         eventAdapter = new EventAdapter(eventList, EventAdapter.TYPE_EDIT_CANCEL, this::deleteEvent);
         eventListView.setAdapter(eventAdapter);
 
-        // ========== KEY MODIFICATION: Load events created by this organizer ==========
-        loadOrganizerEvents();
-    }
-
-    /**
-     * Load events created by the current organizer
-     */
-    private void loadOrganizerEvents() {
-        organizerDBMan.getOrganizersCreatedEventsFromOrganizerID(TEST_ORGANIZER_ID)
-                .addOnSuccessListener(events -> {
-                    eventList.clear();
-                    if (events != null && !events.isEmpty()) {
-                        eventList.addAll(events);
-                        Log.d("Event", "Loaded " + events.size() + " events for organizer " + TEST_ORGANIZER_ID);
-                    } else {
-                        Log.d("Event", "No events found for organizer " + TEST_ORGANIZER_ID);
-                        Toast.makeText(getContext(), R.string.no_events_found, Toast.LENGTH_SHORT).show();
+        // Fetch events from Firebase
+        EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();
+        eventSearcherDBMan.getEvents()
+                .addOnSuccessListener(returnedList -> {
+                    for (int i = 0; i < returnedList.size(); i++) {
+                        Log.d("Event", returnedList.get(i).getName());
+                        eventList.add(returnedList.get(i));
                     }
                     eventAdapter.notifyDataSetChanged();
                 })
-                .addOnFailureListener(e -> {
-                    Log.d("Event", "Failed to load organizer events: " + e.getMessage());
-                    Toast.makeText(getContext(),
-                            String.format(getString(R.string.error_loading_events), e.getMessage()),
-                            Toast.LENGTH_SHORT).show();
+                .addOnFailureListener(param -> {
+                    Log.d("Event", "Event failed to get...");
                 });
+
+        // ====== New code start ======
+        // Call the method to demonstrate profile-event linking
+        loadOrganizerEvents();
+        // ====== New code end ======
     }
 
     /**
@@ -114,11 +98,45 @@ public class OrganizerYourEventsFragment extends Fragment {
                     eventList.remove(event);
                     eventAdapter.notifyDataSetChanged();
                     Log.d("Event", "Event deleted successfully...");
-                    Toast.makeText(getContext(), R.string.event_deleted, Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
                     Log.d("Event", "Event delete failed...");
-                    Toast.makeText(getContext(), R.string.delete_failed, Toast.LENGTH_SHORT).show();
                 });
     }
+
+    // ====== New method start ======
+
+    /**
+     * Load events created by this organizer
+     * This method demonstrates linking profiles to created events
+     */
+    private void loadOrganizerEvents() {
+        // Use the same test ID as in CreateEventFragment
+        String TEST_ORGANIZER_ID = "TEMP_ORGANIZER_ID";
+
+        OrganizerDatabaseManager organizerDBMan = new OrganizerDatabaseManager();
+        organizerDBMan.getOrganizersCreatedEventsFromOrganizerID(TEST_ORGANIZER_ID)
+                .addOnSuccessListener(events -> {
+                    if (events == null || events.isEmpty()) {
+                        Log.d("OrganizerEvents", "No events found for this organizer");
+                        return;
+                    }
+
+                    // Log the events to demonstrate linking
+                    for (Event event : events) {
+                        Log.d("OrganizerEvents", "Event: " + event.getName() +
+                                " (ID: " + event.getEventId() +
+                                ") created by: " + event.getOrganizerProfileId());
+                    }
+
+                    Toast.makeText(getContext(),
+                            "Found " + events.size() + " events linked to your profile",
+                            Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("OrganizerEvents", "Error loading events: " + e.getMessage());
+                });
+    }
+
+    // ====== New method end ======
 }
