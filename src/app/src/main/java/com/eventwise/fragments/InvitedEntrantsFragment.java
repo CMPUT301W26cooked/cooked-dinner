@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Entrant;
 import com.eventwise.Event;
+import com.eventwise.EventEntrantStatus;
 import com.eventwise.InvitedEntrantAdapter;
 import com.eventwise.R;
 import com.eventwise.database.OrganizerDatabaseManager;
@@ -158,13 +159,13 @@ public class InvitedEntrantsFragment extends Fragment {
     }
 
     private boolean hasAcceptedOrDeclined(Entrant entrant, String eventId) {
-        if (entrant.getEventHistory() == null) return false;
+        if (entrant.getEventStates() == null) return false;
 
-        for (Entrant.EventHistoryEntry entry : entrant.getEventHistory()) {
+        for (Entrant.EventStateEntry entry : entrant.getEventStates()) {
             if (eventId.equals(entry.getEventId())) {
-                Entrant.EventOutcome outcome = entry.getOutcome();
-                return outcome == Entrant.EventOutcome.ACCEPTED ||
-                        outcome == Entrant.EventOutcome.DECLINED;
+                EventEntrantStatus status = entry.getStatus();
+                return status == EventEntrantStatus.ENROLLED ||
+                        status == EventEntrantStatus.CANCELLED;
             }
         }
         return false;

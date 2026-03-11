@@ -79,10 +79,11 @@ public class InvitedEntrantAdapter extends RecyclerView.Adapter<InvitedEntrantAd
             nameText.setText(entrant.getName() != null ? entrant.getName() : "Unknown");
             emailText.setText(entrant.getEmail() != null ? entrant.getEmail() : "No email");
 
+            // Find the INVITED status timestamp from eventStates for this specific event
             long invitedTimestamp = 0;
-            if (entrant.getEventHistory() != null) {
-                for (Entrant.EventHistoryEntry entry : entrant.getEventHistory()) {
-                    if (entry.getOutcome() == Entrant.EventOutcome.INVITED &&
+            if (entrant.getEventStates() != null) {
+                for (Entrant.EventStateEntry entry : entrant.getEventStates()) {
+                    if (entry.getStatus() == EventEntrantStatus.INVITED &&
                             eventId.equals(entry.getEventId())) {
                         invitedTimestamp = entry.getTimestampEpochSec();
                         break;
