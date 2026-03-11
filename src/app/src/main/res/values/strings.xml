@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">EventWise</string>
+    <string name="no_events_found">No events found. Create your first event!</string>
+    <string name="error_loading_events">Error loading events: %s</string>
+    <string name="event_deleted">Event deleted</string>
+    <string name="delete_failed">Delete failed</string>
 </resources>
