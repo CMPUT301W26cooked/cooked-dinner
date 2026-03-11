@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,10 +12,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.eventwise.Event;
-import com.eventwise.OrganizerEventAdapter;
-import com.eventwise.R;
-import com.eventwise.database.OrganizerDatabaseManager;
 import com.eventwise.EventAdapter;
 import com.eventwise.R;
 import com.eventwise.database.EventSearcherDatabaseManager;
@@ -25,29 +20,34 @@ import java.util.ArrayList;
 import java.util.List;
 import com.eventwise.Event;
 
+// ========== New imports start ==========
+import android.widget.Toast;
+import com.eventwise.OrganizerEventAdapter;
+import com.eventwise.database.OrganizerDatabaseManager;
+import com.eventwise.fragments.InvitedEntrantsFragment;
+// ========== New imports end ==========
+
 /**
  * This class is responsible for the admin Organizer Your Events Fragment.
  * @author Luke Forster
  * @version 1.0
  * @since 2026-03-09
  */
+
 public class OrganizerYourEventsFragment extends Fragment {
     private RecyclerView eventListView;
     private EventAdapter eventAdapter;
     private List<Event> eventList;
     private EventSearcherDatabaseManager eventSearcherDBMan;
 
-    // RecyclerView and Adapter for displaying events
-    private RecyclerView recyclerView;
-    private OrganizerEventAdapter adapter;
-    private OrganizerDatabaseManager dbManager;
-
-    // Test organizer ID - matches the one in CreateEventFragment
+    // ========== New member variables start ==========
+    private RecyclerView organizerRecyclerView;
+    private OrganizerEventAdapter organizerAdapter;
+    private OrganizerDatabaseManager organizerDBMan;
     private final String TEST_ORGANIZER_ID = "TEMP_ORGANIZER_ID";
+    // ========== New member variables end ==========
 
-    public OrganizerYourEventsFragment() {
-        // Required empty public constructor
-    }
+    public OrganizerYourEventsFragment() {}
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -60,12 +60,10 @@ public class OrganizerYourEventsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        // ========== Original code: Create Event button ==========
         eventSearcherDBMan = new EventSearcherDatabaseManager();
         View createEventButton = view.findViewById(R.id.create_new_event_button);
 
-        //New event button
+        // Original code: Create New Event button
         createEventButton.setOnClickListener(v -> {
             getParentFragmentManager()
                     .beginTransaction()
@@ -73,76 +71,15 @@ public class OrganizerYourEventsFragment extends Fragment {
                     .addToBackStack(null)
                     .commit();
         });
-        // ========== End of original code ==========
-
-        // ========== New code: Display events with View Invited button ==========
-
-        // Initialize database manager
-        dbManager = new OrganizerDatabaseManager();
-
-        // Setup RecyclerView
-        recyclerView = view.findViewById(R.id.event_list_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        // Load events created by this organizer
-        loadEvents();
-
-        // ========== End of new code ==========
-    }
-
-    /**
-     * Loads events created by the organizer from Firebase and displays them in RecyclerView
-     */
-    private void loadEvents() {
-        dbManager.getOrganizersCreatedEventsFromOrganizerID(TEST_ORGANIZER_ID)
-                .addOnSuccessListener(events -> {
-                    if (events == null || events.isEmpty()) {
-                        Toast.makeText(getContext(), "No events found. Create your first event!", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    // Create adapter with the list of events
-                    adapter = new OrganizerEventAdapter(events);
-
-                    // Set click listeners for the buttons on each event card
-                    adapter.setOnItemClickListener(new OrganizerEventAdapter.OnItemClickListener() {
-                        @Override
-                        public void onViewInvitedClick(Event event) {
-                            // Navigate to Invited Entrants Fragment to see who was selected
-                            InvitedEntrantsFragment fragment =
-                                    InvitedEntrantsFragment.newInstance(event.getEventId(), event.getName());
-
-                            getParentFragmentManager()
-                                    .beginTransaction()
-                                    .replace(R.id.organizer_fragment_container, fragment)
-                                    .addToBackStack(null)
-                                    .commit();
-                        }
-
-                        @Override
-                        public void onManageClick(Event event) {
-                            // Placeholder for future manage event functionality
-                            Toast.makeText(getContext(), "Managing: " + event.getName(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
-                    // Set the adapter to the RecyclerView
-                    recyclerView.setAdapter(adapter);
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Error loading events: " + e.getMessage(),
-                            Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
-                });
         eventListView = view.findViewById(R.id.list_view);
         eventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
         eventList = new ArrayList<>();
 
-        //UPDATE: I changed the event adapter to fetch the right widget for its screen.
+        // Original code: Set up EventAdapter with edit/cancel type
         eventAdapter = new EventAdapter(eventList, EventAdapter.TYPE_EDIT_CANCEL, this::deleteEvent);
         eventListView.setAdapter(eventAdapter);
 
-        //Get events from Firebase
+        // Original code: Fetch events from Firebase
         EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();
         eventSearcherDBMan.getEvents()
                 .addOnSuccessListener(returnedList ->{
@@ -155,8 +92,25 @@ public class OrganizerYourEventsFragment extends Fragment {
                 .addOnFailureListener(param-> {
                     Log.d("Event", "Event failed to get...");
                 });
+
+        // ========== New code start: Add organizer event management functionality ==========
+        
+        // Initialize organizer database manager
+        organizerDBMan = new OrganizerDatabaseManager();
+
+        // Set up RecyclerView for organizer view (using the same list_view)
+        organizerRecyclerView = view.findViewById(R.id.list_view);
+        
+        // Load events created by this organizer (using test ID)
+        loadOrganizerEvents();
+        
+        // ========== New code end ==========
     }
 
+    /**
+     * Original method: Delete an event
+     * @param event The event to delete
+     */
     public void deleteEvent(Event event){
         eventSearcherDBMan.deleteEvent(event)
             .addOnSuccessListener(unused -> {
@@ -168,4 +122,54 @@ public class OrganizerYourEventsFragment extends Fragment {
                 Log.d("Event", "Event delete failed...");
             });
     }
+
+    // ========== New methods start ==========
+    
+    /**
+     * Load events created by the organizer and display them using the new adapter
+     */
+    private void loadOrganizerEvents() {
+        organizerDBMan.getOrganizersCreatedEventsFromOrganizerID(TEST_ORGANIZER_ID)
+                .addOnSuccessListener(events -> {
+                    if (events == null || events.isEmpty()) {
+                        // No events found, keep original EventAdapter
+                        return;
+                    }
+
+                    // Create new adapter with organizer event card layout
+                    organizerAdapter = new OrganizerEventAdapter(events);
+                    
+                    // Set click listeners for the buttons
+                    organizerAdapter.setOnItemClickListener(new OrganizerEventAdapter.OnItemClickListener() {
+                        @Override
+                        public void onViewInvitedClick(Event event) {
+                            // Navigate to Invited Entrants Fragment
+                            InvitedEntrantsFragment fragment = 
+                                InvitedEntrantsFragment.newInstance(event.getEventId(), event.getName());
+                            
+                            getParentFragmentManager()
+                                    .beginTransaction()
+                                    .replace(R.id.organizer_fragment_container, fragment)
+                                    .addToBackStack(null)
+                                    .commit();
+                        }
+
+                        @Override
+                        public void onManageClick(Event event) {
+                            // Reuse the original deleteEvent method
+                            deleteEvent(event);
+                        }
+                    });
+                    
+                    // Switch adapter to organizer view
+                    organizerRecyclerView.setAdapter(organizerAdapter);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Error loading events: " + e.getMessage(), 
+                            Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                });
+    }
+    
+    // ========== New methods end ==========
 }
