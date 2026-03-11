@@ -10,4 +10,13 @@
     <string name="msg_unable_decline">Unable to decline. Please try again.</string>
     <string name="action_retry">Retry</string>
 
+    <string name="delete_my_profile">Delete my information</string>
+    <string name="delete_confirm_title">Confirm deletion</string>
+    <string name="delete_confirm_message">Once deleted, it cannot be recovered; your history and personal data will be permanently removed. Are you sure you want to continue?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete_success">Deleted. Looking forward to seeing you again!</string>
+    <string name="delete_failed">Deletion failed, please try again later.</string>
+    <string name="session_expired">Your session has expired. Please log in again.</string>
+
 </resources>
