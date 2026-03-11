@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">EventWise</string>
+    <string name="decline_invitation">Decline invitation</string>
+    <string name="decline_confirm_title">Decline this invitation?</string>
+    <string name="decline_confirm_msg">This action cannot be undone.</string>
+    <string name="action_yes">Yes</string>
+    <string name="action_no">No</string>
+    <string name="msg_declined_done">You have declined this invitation.</string>
+    <string name="msg_unavailable">Invitation no longer available.</string>
+    <string name="msg_unable_decline">Unable to decline. Please try again.</string>
+    <string name="action_retry">Retry</string>
+
 </resources>

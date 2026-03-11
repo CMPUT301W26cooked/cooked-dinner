@@ -188,7 +188,95 @@ public class EntrantDatabaseManager extends DatabaseManager {
 
 
 
+    /**
+     * US 01.05.03
+     * Declines an invitation for an entrant in a specific event.
+     *
+     * Behavior:
+     * 1. Load the Event
+     * 2. Find the entrant in event.entrantStatuses
+     * 3. Validate that the entrant is in a state that can be declined
+     * 4. Update their status to DECLINED
+     * 5. Update Entrant profile state
+     * 6. Save both updates in a Firestore WriteBatch
+     *
+     * @param entrantID The ID of the entrant declining the invitation
+     * @param eventID   The ID of the event they are declining
+     * @return Task<Void> a Task that completes when the decline action is saved
+     */
+    public Task<Void> declineInvitation(String entrantID, String eventID) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
+        // 1. Load Event
+        events.document(eventID).get()
+                .addOnSuccessListener(eventSnapshot -> {
+                    Event event = eventSnapshot.toObject(Event.class);
+                    if (event == null) {
+                        tcs.setException(new DatabaseException("Error retrieving Event"));
+                        return;
+                    }
+
+                    // 2. Load Entrant profile
+                    profiles.document(entrantID).get()
+                            .addOnSuccessListener(profileSnapshot -> {
+                                Entrant entrant = profileSnapshot.toObject(Entrant.class);
+                                if (entrant == null) {
+                                    tcs.setException(new DatabaseException("Error retrieving Entrant"));
+                                    return;
+                                }
+
+                                // 3. Validate current status
+                                ArrayList<Event.EntrantStatusEntry> entries = event.getEntrantStatuses();
+                                EventEntrantStatus currentStatus = null;
+                                for (Event.EntrantStatusEntry e : entries) {
+                                    if (e.getEntrantProfileId().equals(entrantID)) {
+                                        currentStatus = e.getStatus();
+                                        break;
+                                    }
+                                }
+
+                                if (currentStatus == null) {
+                                    tcs.setException(new DatabaseException("Entrant is not part of this event"));
+                                    return;
+                                }
+
+                                // Allowed to decline from these states
+                                if (!(currentStatus == EventEntrantStatus.INVITED ||
+                                        currentStatus == EventEntrantStatus.WAITLISTED ||
+                                        currentStatus == EventEntrantStatus.ACCEPTED)) {
+
+                                    tcs.setException(new DatabaseException("Invitation cannot be declined"));
+                                    return;
+                                }
+
+                                // 4. Update state to DECLINED
+                                event.addOrUpdateEntrantStatus(entrantID, EventEntrantStatus.DECLINED);
+                                entrant.addOrUpdateEventState(eventID, EventEntrantStatus.DECLINED);
+
+                                // 5. Save both: Event + Entrant
+                                WriteBatch batch = super.db.batch();
+                                batch.set(events.document(eventID), event);
+                                batch.set(profiles.document(entrantID), entrant);
+
+                                // 6. Commit batch
+                                batch.commit()
+                                        .addOnSuccessListener(unused -> tcs.setResult(null))
+                                        .addOnFailureListener(e ->
+                                                tcs.setException(new DatabaseException("Error declining invitation"))
+                                        );
+
+                            })
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Error retrieving Entrant"))
+                            );
+
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Error retrieving Event"))
+                );
+
+        return tcs.getTask();
+    }
 
 
 
