@@ -8,6 +8,8 @@ import android.graphics.Bitmap;
 public class ImageListItem {
 
     private Bitmap image;
+    private String storagePath;
+    private String eventId;
 
     /**
      * Returns the Bitmap image associated with this ImageListItem.
@@ -25,5 +27,21 @@ public class ImageListItem {
      */
     public void setImage(Bitmap bitmapImage){
         this.image = bitmapImage;
+    }
+
+    public String getStoragePath() {
+        return storagePath;
+    }
+
+    public void setStoragePath(String storagePath) {
+        this.storagePath = storagePath;
+    }
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
     }
 }
