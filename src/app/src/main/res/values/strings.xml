@@ -1,8 +1,3 @@
 <resources>
     <string name="app_name">EventWise</string>
-    <string name="view_invited_entrants">View Invited Entrants</string>
-    <string name="no_invited_entrants_message">No entrants have been invited yet. Run the lottery to select winners.</string>
-    <string name="run_lottery">Run Lottery</string>
-    <string name="view_invited">View Invited</string>
-    <string name="manage">Manage</string>
 </resources>
