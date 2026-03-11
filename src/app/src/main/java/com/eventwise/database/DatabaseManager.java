@@ -11,12 +11,13 @@ import com.eventwise.Notification;
 import com.eventwise.Organizer;
 import com.eventwise.Profile;
 import com.eventwise.ProfileType;
-import com.eventwise.Topic;
+import com.eventwise.Tag;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -33,6 +34,7 @@ import java.util.ArrayList;
  * @author Pablo Osorio
  * @version 1.1
  * @since 2026-03-03
+ * Updated By Becca Irving on 2026-03-09
  */
 
 //TODO:
@@ -46,7 +48,7 @@ public abstract class DatabaseManager {
     protected CollectionReference profiles;
     protected CollectionReference events;
     protected CollectionReference locations;
-    protected CollectionReference topics;
+    protected CollectionReference tags;
     protected CollectionReference notifications;
 
 
@@ -62,7 +64,7 @@ public abstract class DatabaseManager {
         profiles = db.collection("profiles");
         events = db.collection("events");
         locations = db.collection("locations");;
-        topics = db.collection("topics");
+        tags = db.collection("tags");
         notifications = db.collection("notifications");
     }
 
@@ -76,7 +78,7 @@ public abstract class DatabaseManager {
         profiles = db.collection("profiles");
         events = db.collection("events");
         locations = db.collection("locations");;
-        topics = db.collection("topics");
+        tags = db.collection("tags");
         notifications = db.collection("notifications");
    }
 
@@ -275,7 +277,11 @@ public abstract class DatabaseManager {
      * @return A {@link Task} representing the asynchronous database write operation.
      */
     protected Task<Void> addEvent(Event event) {
-        return events.document(event.getEventId()).set(event);
+        DocumentReference newEventRef = events.document(); // asking Firestore to create one here
+
+        event.setEventId(newEventRef.getId()); // Event class expects ID is already existing
+
+        return newEventRef.set(event);
     }
 //**************************************************************************************************
 //*                                            Location
@@ -320,29 +326,31 @@ public abstract class DatabaseManager {
 // *************************************************************************************************/
 
     /**
-     * Asynchronously retrieves a list of all topics from the Firestore database.
-     * This method performs a fetch of the "topics" collection and converts each document
-     * into an {@link Topic} object.
+     * Asynchronously retrieves a list of all tags from the Firestore database.
+     * This method performs a fetch of the "tags" collection and converts each document
+     * into an {@link Tag} object.
      *
      * @return A {@link Task} that, when successful, contains an {@link ArrayList} of
-     *         {@link Topic} objects, or a {@link DatabaseException} if the fetch fails.
+     *         {@link Tag} objects, or a {@link DatabaseException} if the fetch fails.
      */
-    protected Task<ArrayList<Topic>> getTopics(){
-        TaskCompletionSource<ArrayList<Topic>> tcs = new TaskCompletionSource<>();
-        ArrayList<Topic> topics_array = new ArrayList<Topic>();
+    protected Task<ArrayList<Tag>> getTags() {
+        TaskCompletionSource<ArrayList<Tag>> tcs = new TaskCompletionSource<>();
+        ArrayList<Tag> tags_array = new ArrayList<>();
 
-        locations.get().addOnSuccessListener( result -> {
+        tags.get().addOnSuccessListener(result -> {
             for (DocumentSnapshot document : result) {
-                topics_array.add(document.toObject(Topic.class));
+                tags_array.add(document.toObject(Tag.class));
             }
-            tcs.setResult(topics_array);
+            tcs.setResult(tags_array);
         }).addOnFailureListener(exception -> {
-            tcs.setException(new DatabaseException("Error getting Topics"));
+            tcs.setException(new DatabaseException("Error getting Tags"));
         });
+
         return tcs.getTask();
     }
 
 //    /**
+//     * DO NOT USE, CHANGED TO TAGS.
 //     * Adds a new topic to the Firestore database.
 //     * This method creates a document in the "topic" collection using the topic's unique ID
 //     * and stores the provided topic object.
