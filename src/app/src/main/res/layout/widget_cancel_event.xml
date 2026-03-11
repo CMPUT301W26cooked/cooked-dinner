@@ -177,27 +177,27 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
-                <TextView
-                    android:id="@+id/event_spots_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="•  10 spots"
-                    android:textColor="@color/moss_green"
-                    android:textSize="12sp" />
-                <TextView
-                    android:id="@+id/event_waitlisted_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="•  5 waitlisted"
-                    android:textColor="@color/moss_green"
-                    android:textSize="12sp" />
-                <TextView
-                    android:id="@+id/event_event_registered_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="•  3 registered"
-                    android:textColor="@color/moss_green"
-                    android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/event_spots_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="•  10 spots"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/event_waitlisted_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="•  5 waitlisted"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/event_event_registered_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="•  3 registered"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
@@ -206,9 +206,9 @@
             android:layout_width="120dp"
             android:layout_height="match_parent"
             android:minHeight="72dp"
-            android:text="Join"
+            android:text="Cancel"
             android:textSize="18dp"
             android:textColor="@color/lighter_green"
-            android:backgroundTint="@color/moss_green"/>
+            android:backgroundTint="@color/red"/>
     </LinearLayout>
 </LinearLayout>
