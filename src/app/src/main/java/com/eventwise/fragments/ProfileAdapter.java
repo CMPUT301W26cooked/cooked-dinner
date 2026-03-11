@@ -29,7 +29,6 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
     public interface OnRemoveClickListener {
         void onRemoveClicked(String profileId);
     }
-
     private ArrayList<Profile> profiles;
     private OnRemoveClickListener listener;
 

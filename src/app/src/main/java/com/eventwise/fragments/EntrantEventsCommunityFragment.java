@@ -46,10 +46,12 @@ public class EntrantEventsCommunityFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        eventListView = view.findViewById(R.id.event_list_view);
+        eventListView = view.findViewById(R.id.list_view);
         eventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         eventList = new ArrayList<>();
+        eventAdapter = new EventAdapter(eventList, EventAdapter.TYPE_JOIN, this::joinEvent);
+        eventListView.setAdapter(eventAdapter);
         //Get events from Firebase
         EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();
 
@@ -64,9 +66,10 @@ public class EntrantEventsCommunityFragment extends Fragment {
                 .addOnFailureListener(param-> {
                     Log.d("Event", "Event failed to get");
                 });
+    }
 
-        eventAdapter = new EventAdapter(eventList);
-        eventListView.setAdapter(eventAdapter);
+    public void joinEvent(Event event) {
+        Log.d("Event", "Join pressed for: " + event.getName());
     }
 
 

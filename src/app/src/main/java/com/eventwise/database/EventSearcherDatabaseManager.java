@@ -19,4 +19,10 @@ public class EventSearcherDatabaseManager extends DatabaseManager{
     public Task<ArrayList<Event>> getEvents(){
         return super.getEvents();
     }
+
+    //This is all I touched Pablo I swear.
+    public Task<Void> deleteEvent(Event event) {
+        return events.document(event.getEventId()).delete();
+    }
+
 }
