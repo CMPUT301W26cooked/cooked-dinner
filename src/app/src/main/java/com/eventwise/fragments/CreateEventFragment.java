@@ -24,7 +24,6 @@ import java.util.ArrayList;
  * @author Luke Forster
  * @version 1.0
  * @since 2026-03-09
- * Updated by Hao on 2026-03-11-Ensure organizerProfileId is set when creating an event
  */
 
 /*TODO: Need to fix the date format so its more usable has to be EPOCH or whatever.
@@ -90,141 +89,139 @@ public class CreateEventFragment extends Fragment {
         buttonCreateEvent.setOnClickListener(v -> uploadEventToFirebase());
     }
 
-    private void uploadEventToFirebase() {
-        String name = inputEventName.getText().toString().trim();
-        String description = inputEventDescription.getText().toString().trim();
-        String criteria = inputCriteria.getText().toString().trim();
-        String location = inputEventLocation.getText().toString().trim();
-        String eventStartString = inputEventStart.getText().toString().trim();
-        String eventEndString = inputEventEnd.getText().toString().trim();
-        String registrationEndString = inputRegistrationEnd.getText().toString().trim();
-        String attendanceLimitString = inputAttendanceLimit.getText().toString().trim();
-        String waitListLimitString = limitWaitlist.getText().toString().trim();
+        private void uploadEventToFirebase() {
+            String name = inputEventName.getText().toString().trim();
+            String description = inputEventDescription.getText().toString().trim();
+            String criteria = inputCriteria.getText().toString().trim();
+            String location = inputEventLocation.getText().toString().trim();
+            String eventStartString = inputEventStart.getText().toString().trim();
+            String eventEndString = inputEventEnd.getText().toString().trim();
+            String registrationEndString = inputRegistrationEnd.getText().toString().trim();
+            String attendanceLimitString = inputAttendanceLimit.getText().toString().trim();
+            String waitListLimitString = limitWaitlist.getText().toString().trim();
 
-        boolean geolocationRequired = checkGeoRequired.isChecked();
-        boolean limitWaitListChecked = checkLimitWaitlist.isChecked();
+            boolean geolocationRequired = checkGeoRequired.isChecked();
+            boolean limitWaitListChecked = checkLimitWaitlist.isChecked();
 
-        if (TextUtils.isEmpty(name)) {
-            inputEventName.setError("Required");
-            return;
-        }
-
-        if (TextUtils.isEmpty(description)) {
-            inputEventDescription.setError("Required");
-            return;
-        }
-
-        if (TextUtils.isEmpty(location)) {
-            inputEventLocation.setError("Required");
-            return;
-        }
-
-        if (TextUtils.isEmpty(eventStartString)) {
-            inputEventStart.setError("Required");
-            return;
-        }
-
-        if (TextUtils.isEmpty(eventEndString)) {
-            inputEventEnd.setError("Required");
-            return;
-        }
-
-        if (TextUtils.isEmpty(registrationEndString)) {
-            inputRegistrationEnd.setError("Required");
-            return;
-        }
-
-        if (TextUtils.isEmpty(attendanceLimitString)) {
-            inputAttendanceLimit.setError("Required");
-            return;
-        }
-
-        long eventStartEpochSec;
-        long eventEndEpochSec;
-        long registrationCloseEpochSec;
-
-        try {
-            eventStartEpochSec = Long.parseLong(eventStartString);
-            eventEndEpochSec = Long.parseLong(eventEndString);
-            registrationCloseEpochSec = Long.parseLong(registrationEndString);
-        } catch (NumberFormatException e) {
-            Log.d("CreateEvent", "Date fields must be epoch seconds");
-            inputEventStart.setError("Use epoch seconds");
-            inputEventEnd.setError("Use epoch seconds");
-            inputRegistrationEnd.setError("Use epoch seconds");
-            return;
-        }
-
-        int maxWinnersToSample;
-        try {
-            maxWinnersToSample = Integer.parseInt(attendanceLimitString);
-        } catch (NumberFormatException e) {
-            inputAttendanceLimit.setError("Enter a number");
-            return;
-        }
-
-        Integer maxWaitingListSize = null;
-        if (limitWaitListChecked) {
-            if (TextUtils.isEmpty(waitListLimitString)) {
-                limitWaitlist.setError("Required if wait list is limited");
+            if (TextUtils.isEmpty(name)) {
+                inputEventName.setError("Required");
                 return;
             }
+
+            if (TextUtils.isEmpty(description)) {
+                inputEventDescription.setError("Required");
+                return;
+            }
+
+            if (TextUtils.isEmpty(location)) {
+                inputEventLocation.setError("Required");
+                return;
+            }
+
+            if (TextUtils.isEmpty(eventStartString)) {
+                inputEventStart.setError("Required");
+                return;
+            }
+
+            if (TextUtils.isEmpty(eventEndString)) {
+                inputEventEnd.setError("Required");
+                return;
+            }
+
+            if (TextUtils.isEmpty(registrationEndString)) {
+                inputRegistrationEnd.setError("Required");
+                return;
+            }
+
+            if (TextUtils.isEmpty(attendanceLimitString)) {
+                inputAttendanceLimit.setError("Required");
+                return;
+            }
+
+            long eventStartEpochSec;
+            long eventEndEpochSec;
+            long registrationCloseEpochSec;
 
             try {
-                maxWaitingListSize = Integer.parseInt(waitListLimitString);
+                eventStartEpochSec = Long.parseLong(eventStartString);
+                eventEndEpochSec = Long.parseLong(eventEndString);
+                registrationCloseEpochSec = Long.parseLong(registrationEndString);
             } catch (NumberFormatException e) {
-                limitWaitlist.setError("Enter a number");
+                Log.d("CreateEvent", "Date fields must be epoch seconds");
+                inputEventStart.setError("Use epoch seconds");
+                inputEventEnd.setError("Use epoch seconds");
+                inputRegistrationEnd.setError("Use epoch seconds");
                 return;
             }
-        }
 
-        // Placeholder values for fields not yet wired from UI/user profile
-        String organizerProfileId = "TEMP_ORGANIZER_ID";
-        double price = 0.00;
-        long registrationOpenEpochSec = System.currentTimeMillis() / 1000L;
-        String posterPath = null;
-        String qrCodeId = null;
+            int maxWinnersToSample;
+            try {
+                maxWinnersToSample = Integer.parseInt(attendanceLimitString);
+            } catch (NumberFormatException e) {
+                inputAttendanceLimit.setError("Enter a number");
+                return;
+            }
 
-        ArrayList<Tag> tags = new ArrayList<>();
-        if (criteria.isEmpty()) {
-            tags.add(new Tag("General", "General"));
-        } else {
-            tags.add(new Tag("General", criteria));
-        }
+            Integer maxWaitingListSize = null;
+            if (limitWaitListChecked) {
+                if (TextUtils.isEmpty(waitListLimitString)) {
+                    limitWaitlist.setError("Required if wait list is limited");
+                    return;
+                }
 
-        Event event = new Event(
-                organizerProfileId,
-                name,
-                description,
-                price,
-                location,
-                tags,
-                eventStartEpochSec,
-                eventEndEpochSec,
-                registrationOpenEpochSec,
-                registrationCloseEpochSec,
-                geolocationRequired,
-                maxWaitingListSize,
-                maxWinnersToSample,
-                posterPath,
-                qrCodeId
-        );
-        OrganizerDatabaseManager organizerDBMan = new OrganizerDatabaseManager();
-        organizerDBMan.addEvent(event)
-                .addOnSuccessListener(param -> {
-                    Log.d("CreateEvent", "Event added successfully to Firebase");
+                try {
+                    maxWaitingListSize = Integer.parseInt(waitListLimitString);
+                } catch (NumberFormatException e) {
+                    limitWaitlist.setError("Enter a number");
+                    return;
+                }
+            }
 
-                    // ====== New code start ======
-                    Log.d("ProfileLinking", "Event created with organizer ID: " +
-                            event.getOrganizerProfileId());
-                    Log.d("ProfileLinking", "Event ID: " + event.getEventId());
-                    Log.d("ProfileLinking", "Successfully linked profile to created event");
-                    // ====== New code end ======
+            // Placeholder values for fields not yet wired from UI/user profile
+            String organizerProfileId = "TEMP_ORGANIZER_ID";
+            double price = 0.00;
+            long registrationOpenEpochSec = System.currentTimeMillis() / 1000L;
+            String posterPath = null;
+            String qrCodeId = null;
 
-                    getParentFragmentManager().popBackStack();
-                })
-                .addOnFailureListener(param -> {
-                    Log.d("CreateEvent", "Event failed to add to Firebase");
-                });
+            ArrayList<Tag> tags = new ArrayList<>();
+            if (criteria.isEmpty()) {
+                tags.add(new Tag("General", "General"));
+            } else {
+                tags.add(new Tag("General", criteria));
+            }
+
+            Event event = new Event(
+                    organizerProfileId,
+                    name,
+                    description,
+                    price,
+                    location,
+                    tags,
+                    eventStartEpochSec,
+                    eventEndEpochSec,
+                    registrationOpenEpochSec,
+                    registrationCloseEpochSec,
+                    geolocationRequired,
+                    maxWaitingListSize,
+                    maxWinnersToSample,
+                    posterPath,
+                    qrCodeId
+            );
+            OrganizerDatabaseManager organizerDBMan = new OrganizerDatabaseManager();
+            organizerDBMan.addEvent(event)
+                    .addOnSuccessListener(param -> {
+                        Log.d("CreateEvent", "Event added successfully to Firebase");
+                        // ====== New code start ======
+                        Log.d("ProfileLinking", "Event created with organizer ID: " +
+                                event.getOrganizerProfileId());
+                        Log.d("ProfileLinking", "Event ID: " + event.getEventId());
+                        Log.d("ProfileLinking", "Successfully linked profile to created event");
+                        // ====== New code end ======
+                        getParentFragmentManager().popBackStack();
+                    })
+                    .addOnFailureListener(param -> {
+                        Log.d("CreateEvent", "Event failed to add to Firebase");
+                    });
     }
 }

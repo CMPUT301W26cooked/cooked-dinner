@@ -71,14 +71,14 @@ public class OrganizerYourEventsFragment extends Fragment {
         // Fetch events from Firebase
         EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();
         eventSearcherDBMan.getEvents()
-                .addOnSuccessListener(returnedList -> {
+                .addOnSuccessListener(returnedList ->{
                     for (int i = 0; i < returnedList.size(); i++) {
                         Log.d("Event", returnedList.get(i).getName());
                         eventList.add(returnedList.get(i));
                     }
                     eventAdapter.notifyDataSetChanged();
                 })
-                .addOnFailureListener(param -> {
+                .addOnFailureListener(param-> {
                     Log.d("Event", "Event failed to get...");
                 });
 
@@ -92,16 +92,16 @@ public class OrganizerYourEventsFragment extends Fragment {
      * Delete an event
      * @param event The event to delete
      */
-    public void deleteEvent(Event event) {
+    public void deleteEvent(Event event){
         eventSearcherDBMan.deleteEvent(event)
-                .addOnSuccessListener(unused -> {
-                    eventList.remove(event);
-                    eventAdapter.notifyDataSetChanged();
-                    Log.d("Event", "Event deleted successfully...");
-                })
-                .addOnFailureListener(e -> {
-                    Log.d("Event", "Event delete failed...");
-                });
+            .addOnSuccessListener(unused -> {
+                eventList.remove(event);
+                eventAdapter.notifyDataSetChanged();
+                Log.d("Event", "Event deleted successfully...");
+            })
+            .addOnFailureListener(e -> {
+                Log.d("Event", "Event delete failed...");
+            });
     }
 
     // ====== New method start ======
