@@ -205,7 +205,7 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * @param eventID   The ID of the event they are declining
      * @return Task<Void> a Task that completes when the decline action is saved
      */
-    public Task<Void> declineInvitation(String entrantID, String eventID) {
+    public Task<Void> declineInvitation(String entrantID, String eventID, long timestamp) {
         TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
         // 1. Load Event
@@ -251,8 +251,8 @@ public class EntrantDatabaseManager extends DatabaseManager {
                                 }
 
                                 // 4. Update state to DECLINED
-                                event.addOrUpdateEntrantStatus(entrantID, EventEntrantStatus.DECLINED);
-                                entrant.addOrUpdateEventState(eventID, EventEntrantStatus.DECLINED);
+                                event.addOrUpdateEntrantStatus(entrantID, EventEntrantStatus.DECLINED, timestamp);
+                                entrant.addOrUpdateEventState(eventID, EventEntrantStatus.DECLINED, timestamp);
 
                                 // 5. Save both: Event + Entrant
                                 WriteBatch batch = super.db.batch();
