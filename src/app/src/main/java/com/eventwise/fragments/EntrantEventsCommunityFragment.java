@@ -71,4 +71,24 @@ public class EntrantEventsCommunityFragment extends Fragment {
     public void joinEvent(Event event) {
         Log.d("Event", "Join pressed for: " + event.getName());
     }
+
+
+    private void openInvitationDetail(@NonNull String eventId, @NonNull String entrantId) {
+        com.eventwise.fragments.InvitationDetailFragment frag =
+                com.eventwise.fragments.InvitationDetailFragment.newInstance(eventId, entrantId);
+
+        // TODO: replace R.id.fragment_container with your actual container id in the Activity layout
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, frag)
+                .addToBackStack(null)
+                .commit();
+    }
+
+
+    private String getCurrentEntrantId() {
+        // TODO: replace with your real user/profile id
+        return "TEST_USER_001";
+    }
+
 }
