@@ -5,6 +5,7 @@ import com.google.firebase.firestore.ServerTimestamp;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -81,22 +82,22 @@ public class Entrant extends Profile {
      * @param eventId event ID
      * @param status entrant state for that event
      */
-    public void addOrUpdateEventState(String eventId, EventEntrantStatus status) {
+    public void addOrUpdateEventState(String eventId, EventEntrantStatus status, long timestamp) {
         if (eventStates == null) {
             eventStates = new ArrayList<>();
         }
 
-        long nowEpochSec = System.currentTimeMillis() / 1000L;
+//        long nowEpochSec = System.currentTimeMillis() / 1000L;
 
         for (EventStateEntry entry : eventStates) {
             if (entry != null && eventId != null && eventId.equals(entry.getEventId())) {
                 entry.setStatus(status);
-                entry.setTimestampEpochSec(nowEpochSec);
+                entry.setTimestampEpochSec(timestamp);
                 return;
             }
         }
 
-        eventStates.add(new EventStateEntry(eventId, status, nowEpochSec));
+        eventStates.add(new EventStateEntry(eventId, status, timestamp));
     }
 
     /**
@@ -163,6 +164,25 @@ public class Entrant extends Profile {
         return getEventIdsForStatus(EventEntrantStatus.CANCELLED);
     }
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Entrant)) return false;
+        Entrant that = (Entrant) o;
+        return Objects.equals(deviceId, that.deviceId)
+                && Objects.equals(eventStates, that.eventStates)
+                && Objects.equals(notificationIDs, that.notificationIDs)
+                && super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(deviceId, eventStates, notificationIDs, super.hashCode());
+    }
+
+
+
     /**
      * Represents one event state for an entrant.
      */
@@ -212,5 +232,21 @@ public class Entrant extends Profile {
 
         /** @param timestampEpochSec timestamp */
         public void setTimestampEpochSec(long timestampEpochSec) { this.timestampEpochSec = timestampEpochSec; }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Entrant.EventStateEntry)) return false;
+            EventStateEntry that = (EventStateEntry) o;
+            return Objects.equals(eventId, that.eventId)
+                    && Objects.equals(status, that.status);
+                    //Do not check for timestamp
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(eventId, status, timestampEpochSec);
+        }
+
     }
 }

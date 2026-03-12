@@ -83,9 +83,12 @@ public class InvitationDetailFragment extends Fragment {
             Snackbar.make(requireView(), "Missing args", Snackbar.LENGTH_LONG).show();
             return;
         }
+
+        long timestamp = System.currentTimeMillis();
+
         setBusy(true);
         EntrantDatabaseManager mgr = new EntrantDatabaseManager();
-        mgr.declineInvitation(entrantId, eventId)
+        mgr.declineInvitation(entrantId, eventId, timestamp)
                 .addOnSuccessListener(unused -> {
                     setBusy(false);
                     Snackbar.make(requireView(), R.string.msg_declined_done, Snackbar.LENGTH_LONG).show();
