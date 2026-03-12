@@ -42,13 +42,17 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
         //Make a dummy event to add the entrant to
         OrganizerDatabaseManager organizerDbManager = new OrganizerDatabaseManager(testDb);
 
+        ArrayList<Tag> test_tags = new ArrayList<Tag>();
+
+        test_tags.add(new Tag("Testing", "TestKeyword"));
+
         Event event = new Event(
                 "TestOrganizerProfileID",
                 "Test Event",
                 "Test Description",
                 10.0,
                 "Test Location",
-                "Test Topic",
+                test_tags,
                 0,
                 0,
                 0,
