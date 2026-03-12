@@ -63,9 +63,6 @@ public class EntrantDatabaseManager extends DatabaseManager {
         return super.updateProfile(entrant);
     }
 
-
-
-
     /**
      * US 01.01.01
      * Registers an entrant in the waiting list for a specific event in the database.
@@ -76,7 +73,7 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * @throws DatabaseException If there is an error updating the database or if the entrant cannot be added.
      */
 
-    public Task<Void> registerEntrantInEvent(String entrantID, String eventID) {
+    public Task<Void> registerEntrantInEvent(String entrantID, String eventID, long timestamp) {
         TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
         events.document(eventID).get()
@@ -97,8 +94,9 @@ public class EntrantDatabaseManager extends DatabaseManager {
                                     return;
                                 }
 
-                                event.addOrUpdateEntrantStatus(entrantID, EventEntrantStatus.WAITLISTED);
-                                entrant.addOrUpdateEventState(eventID, EventEntrantStatus.WAITLISTED);
+                                event.addOrUpdateEntrantStatus(entrantID, EventEntrantStatus.WAITLISTED, timestamp);
+                                entrant.addOrUpdateEventState(eventID, EventEntrantStatus.WAITLISTED, timestamp);
+
 
                                 WriteBatch batch = super.db.batch();
                                 batch.set(events.document(eventID), event);
@@ -112,8 +110,9 @@ public class EntrantDatabaseManager extends DatabaseManager {
                             .addOnFailureListener(e ->
                                     tcs.setException(new DatabaseException("Error getting Entrant")));
                 })
-                .addOnFailureListener(e ->
-                        tcs.setException(new DatabaseException("Error getting Event")));
+                .addOnFailureListener(e -> {
+                        tcs.setException(new DatabaseException("Error getting Event"));
+                });
 
         return tcs.getTask();
     }
@@ -127,7 +126,7 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * @throws DatabaseException If there is an error updating the database or if the entrant cannot be added.
      */
 
-    public Task<Void> unregisterEntrantInEvent(String entrantID, String eventID) {
+    public Task<Void> unregisterEntrantInEvent(String entrantID, String eventID, long timestamp) {
         TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
         events.document(eventID).get()
@@ -144,8 +143,8 @@ public class EntrantDatabaseManager extends DatabaseManager {
                                     tcs.setException(new DatabaseException("Error getting Entrant"));
                                     return;
                                 }
-                                event.addOrUpdateEntrantStatus(entrantID, EventEntrantStatus.LEFT_WAITLIST);
-                                entrant.addOrUpdateEventState(eventID, EventEntrantStatus.LEFT_WAITLIST);
+                                event.addOrUpdateEntrantStatus(entrantID, EventEntrantStatus.LEFT_WAITLIST, timestamp);
+                                entrant.addOrUpdateEventState(eventID, EventEntrantStatus.LEFT_WAITLIST, timestamp);
 
                                 WriteBatch batch = super.db.batch();
                                 batch.set(events.document(eventID), event);
