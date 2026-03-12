@@ -277,11 +277,13 @@ public abstract class DatabaseManager {
      * @return A {@link Task} representing the asynchronous database write operation.
      */
     protected Task<Void> addEvent(Event event) {
-        DocumentReference newEventRef = events.document(); // asking Firestore to create one here
+        return events.document(event.getEventId()).set(event);
 
-        event.setEventId(newEventRef.getId()); // Event class expects ID is already existing
-
-        return newEventRef.set(event);
+//        DocumentReference newEventRef = events.document(); // asking Firestore to create one here
+//
+//        event.setEventId(event.getEventId()); // Event class expects ID is already existing
+//
+//        return newEventRef.set(event);
     }
 //**************************************************************************************************
 //*                                            Location
