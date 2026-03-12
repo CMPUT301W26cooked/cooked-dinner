@@ -1,6 +1,7 @@
 package com.eventwise;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.UUID;
 /**
  * The profile class is a basic abstract 
@@ -72,6 +73,25 @@ public abstract class Profile {
         setName(name);
         setEmail(email);
         setPhone(phone);
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Profile)) return false;
+        Profile that = (Profile) o;
+        return Objects.equals(profileID, that.profileID)
+                && Objects.equals(name, that.name)
+                && Objects.equals(email, that.email)
+                && Objects.equals(phone, that.phone)
+                && Objects.equals(notificationsEnabled, that.notificationsEnabled)
+                && Objects.equals(profileType, that.profileType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(profileID, name, email, phone, notificationsEnabled, profileType);
     }
 }
 
