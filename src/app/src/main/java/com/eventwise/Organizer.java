@@ -31,14 +31,13 @@ public class Organizer extends Profile {
     /**
      * Creates an Organizer.
      *
-     * @param profileID organizer profile ID
      * @param name organizer name
      * @param email organizer email
      * @param phone organizer phone
      * @param notificationsEnabled notification preference
      */
-    public Organizer(String profileID, String name, String email, String phone, boolean notificationsEnabled) {
-        super(profileID, name, email, phone, notificationsEnabled, ProfileType.ORGANIZER);
+    public Organizer(String name, String email, String phone, boolean notificationsEnabled) {
+        super(name, email, phone, notificationsEnabled, ProfileType.ORGANIZER);
     }
 
     /** @return created event ids */

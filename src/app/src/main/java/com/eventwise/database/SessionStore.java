@@ -15,6 +15,16 @@ public class SessionStore {
     }
 
 
+    public void setDeviceID(String deviceId) {
+        sp.edit().putString("deviceId", deviceId).apply();
+    }
+
+    public String getDeviceID() {
+        return sp.getString("deviceId", null);
+    }
+
+
+
     public String getEntrantId() {
         return sp.getString("entrantId", null);
     }

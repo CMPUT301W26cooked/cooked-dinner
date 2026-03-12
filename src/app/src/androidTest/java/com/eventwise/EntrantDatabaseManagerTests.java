@@ -35,10 +35,7 @@ public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
     @Before
     public void TestCaseSetup() throws InterruptedException {
 
-        //Generate RandomIDs for everything to avoid collisions
         randomEventID = UUID.randomUUID().toString();
-        randomEntrantID = UUID.randomUUID().toString();
-
 
         //Make a dummy event to add the entrant to
         OrganizerDatabaseManager organizerDbManager = new OrganizerDatabaseManager(testDb);
@@ -81,7 +78,8 @@ public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
 
     @Test
     public void addEntrant() throws ExecutionException, InterruptedException {
-        Entrant entrant = new Entrant(randomEntrantID, "Spongebob", "sponge@krustykrab.ca", "1234567890", true);
+        Entrant entrant = new Entrant("Spongebob", "sponge@krustykrab.ca", "1234567890", true, ApplicationProvider.getApplicationContext());
+        randomEntrantID = entrant.getProfileID();
         EntrantDatabaseManager dbManager = new EntrantDatabaseManager(testDb);
 
         Tasks.await(dbManager.addEntrant(entrant));
@@ -93,7 +91,8 @@ public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
     public void updateEntrant() throws ExecutionException, InterruptedException {
 
         //Make an entrant
-        Entrant entrant = new Entrant(randomEntrantID, "Spongebob", "sponge@krustykrab.ca", "1234567890", true);
+        Entrant entrant = new Entrant("Spongebob", "sponge@krustykrab.ca", "1234567890", true, ApplicationProvider.getApplicationContext());
+        randomEntrantID = entrant.getProfileID();
         EntrantDatabaseManager dbManager = new EntrantDatabaseManager(testDb);
         Tasks.await(dbManager.addEntrant(entrant));
 
@@ -113,7 +112,8 @@ public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
     @Test
     public void registerEntrantInEvent() throws ExecutionException, InterruptedException {
         //Make new entrant
-        Entrant entrant = new Entrant(randomEntrantID, "Spongebob", "sponge@krustykrab.ca", "1234567890", true);
+        Entrant entrant = new Entrant("Spongebob", "sponge@krustykrab.ca", "1234567890", true, ApplicationProvider.getApplicationContext());
+        randomEntrantID = entrant.getProfileID();
         EntrantDatabaseManager dbManager = new EntrantDatabaseManager(testDb);
 
 
@@ -143,7 +143,8 @@ public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
     @Test
     public void unregisterEntrantInEvent() throws ExecutionException, InterruptedException {
         //Make new entrant
-        Entrant entrant = new Entrant(randomEntrantID, "Spongebob", "sponge@krustykrab.ca", "1234567890", true);
+        Entrant entrant = new Entrant("Spongebob", "sponge@krustykrab.ca", "1234567890", true, ApplicationProvider.getApplicationContext());
+        randomEntrantID = entrant.getProfileID();
         EntrantDatabaseManager dbManager = new EntrantDatabaseManager(testDb);
 
         Tasks.await(dbManager.addEntrant(entrant));
@@ -172,7 +173,8 @@ public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
     @Test
     public void verifyNoDataLoss() throws ExecutionException, InterruptedException {
         //Make new entrant
-        Entrant entrant = new Entrant(randomEntrantID, "Spongebob", "sponge@krustykrab.ca", "1234567890", true);
+        Entrant entrant = new Entrant("Spongebob", "sponge@krustykrab.ca", "1234567890", true, ApplicationProvider.getApplicationContext());
+        randomEntrantID = entrant.getProfileID();
         EntrantDatabaseManager dbManager = new EntrantDatabaseManager(testDb);
         Tasks.await(dbManager.addEntrant(entrant));
         DocumentSnapshot snapshot = Tasks.await(testDb.collection("profiles").document(entrant.getProfileID()).get());
