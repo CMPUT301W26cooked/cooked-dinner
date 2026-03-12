@@ -27,9 +27,6 @@ import java.util.concurrent.ExecutionException;
 
 public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
 
-//Todo
-//    Double check that no data is being losed from firebase
-
     private String randomEventID;
     private String randomEntrantID;
 
