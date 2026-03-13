@@ -2,7 +2,9 @@ package com.eventwise.fragments;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -70,9 +72,15 @@ public class CreateEventFragment extends Fragment {
                 new ActivityResultContracts.PickVisualMedia(), uri -> {
                     if (uri != null) {
                         try {
-                            ImageDecoder.Source source = ImageDecoder.createSource(
-                                    requireContext().getContentResolver(), uri);
-                            Bitmap bitmap = ImageDecoder.decodeBitmap(source);
+                            Bitmap bitmap;
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                                ImageDecoder.Source source = ImageDecoder.createSource(
+                                        requireContext().getContentResolver(), uri);
+                                bitmap = ImageDecoder.decodeBitmap(source);
+                            } else {
+                                bitmap = MediaStore.Images.Media.getBitmap(
+                                        requireContext().getContentResolver(), uri);
+                            }
                             inputEventPoster.setImageBitmap(bitmap);
                             inputEventPoster.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
