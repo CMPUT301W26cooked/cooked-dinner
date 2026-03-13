@@ -18,13 +18,13 @@ public class Notification {
 
 
 
-    String notificationId;
+    String notificationID;
     //List of entrants that were notified
-    ArrayList<String> entrantIds;
+    ArrayList<String> entrantIDs;
     //Sent from
-    String OrganizerId;
+    String OrganizerID;
     //Relating to which event
-    String EventId;
+    String EventID;
 
     String Type;
 
@@ -41,13 +41,11 @@ public class Notification {
 
     Long Timestamp;
 
-
-
-    Notification(ArrayList<String> entrantIds, String organizerId, String eventId, NotificationType type, String message){
-        this.notificationId = UUID.randomUUID().toString();
-        this.entrantIds = entrantIds;
-        this.OrganizerId = organizerId;
-        this.EventId = eventId;
+    Notification(ArrayList<String> entrantIDs, String organizerID, String eventID, NotificationType type, String message){
+        this.notificationID = UUID.randomUUID().toString();
+        this.entrantIDs = entrantIDs;
+        this.OrganizerID = organizerID;
+        this.EventID = eventID;
         this.Type = type.name();
         this.message = message;
         this.Timestamp = System.currentTimeMillis()/1000;
@@ -56,34 +54,33 @@ public class Notification {
     Notification(){};
 
 
-    public String getNotificationId() {
-        return notificationId;
+    public String getNotificationID() {
+        return notificationID;
     }
 
-    public ArrayList<String> getEntrantIds() {
-        return entrantIds;
+    public ArrayList<String> getEntrantIDs() {
+        return entrantIDs;
     }
 
 
-
-    public String getOrganizerId() {
-        return OrganizerId;
+    public String getOrganizerID() {
+        return OrganizerID;
     }
 
-    public void setOrganizerId(String organizerId) {
-        OrganizerId = organizerId;
+    public void setOrganizerID(String organizerID) {
+        OrganizerID = organizerID;
     }
 
-    public void setEventId(String eventId){
-        EventId = eventId;
+    public void setEventID(String eventID){
+        EventID = eventID;
     }
 
-    public String getEventId() {
-        return EventId;
+    public String getEventID() {
+        return EventID;
     }
 
-    public ArrayList<String> getEntrantsIds() {
-        return entrantIds;
+    public ArrayList<String> getEntrantsIDs() {
+        return entrantIDs;
     }
 
     public String getMessage() {
@@ -110,10 +107,10 @@ public class Notification {
         if (this == o) return true;
         if (!(o instanceof Notification)) return false;
         Notification that = (Notification) o;
-        return Objects.equals(notificationId, that.notificationId)
-                && Objects.equals(OrganizerId, that.OrganizerId)
-                && Objects.equals(entrantIds, that.entrantIds)
-                && Objects.equals(EventId, that.EventId)
+        return Objects.equals(notificationID, that.notificationID)
+                && Objects.equals(OrganizerID, that.OrganizerID)
+                && Objects.equals(entrantIDs, that.entrantIDs)
+                && Objects.equals(EventID, that.EventID)
                 && Objects.equals(Type, that.Type)
                 && Objects.equals(Timestamp, that.Timestamp)
                 && Objects.equals(message, that.message);

@@ -89,9 +89,9 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
         NotificationDatabaseManager dbManager = new NotificationDatabaseManager(testDb);
 
         Tasks.await(dbManager.createNotification(notification));
-        DocumentSnapshot snapshot = Tasks.await(testDb.collection("notifications").document(notification.getNotificationId()).get());
+        DocumentSnapshot snapshot = Tasks.await(testDb.collection("notifications").document(notification.getNotificationID()).get());
         Assert.assertTrue(snapshot.exists());
-        Log.d("createNotification", "NotificationID:" + notification.getNotificationId());
+        Log.d("createNotification", "NotificationID:" + notification.getNotificationID());
     }
 
     @Test
@@ -107,8 +107,8 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
 
         //For each entrant
         for (String entrantID : randomEntrantIDs) {
-            Entrant entrant = Tasks.await(adminDbManager.getEntrantFromID(entrantID));
-            Assert.assertTrue(entrant.getNotificationIDs().contains(notification.getNotificationId()));
+            Entrant entrant = Tasks.await(adminDbManager.getEntrantFromId(entrantID));
+            Assert.assertTrue(entrant.getNotificationIDs().contains(notification.getNotificationID()));
         }
     }
 
@@ -120,9 +120,9 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
 
         Tasks.await(notificationDbManager.createNotification(notification));
 
-        Notification returnedNotification = Tasks.await(notificationDbManager.getNotificationByID(notification.getNotificationId()));
+        Notification returnedNotification = Tasks.await(notificationDbManager.getNotificationById(notification.getNotificationID()));
 
-        for (String entrantID : returnedNotification.getEntrantsIds()){
+        for (String entrantID : returnedNotification.getEntrantsIDs()){
             Assert.assertTrue(randomEntrantIDs.contains(entrantID));
         }
 
@@ -134,7 +134,7 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
 
         NotificationDatabaseManager notificationDbManager = new NotificationDatabaseManager(testDb);
         Tasks.await(notificationDbManager.createNotification(notification));
-        Notification returnedNotification = Tasks.await(notificationDbManager.getNotificationByID(notification.getNotificationId()));
+        Notification returnedNotification = Tasks.await(notificationDbManager.getNotificationById(notification.getNotificationID()));
         Assert.assertEquals(notification, returnedNotification);
 
     }

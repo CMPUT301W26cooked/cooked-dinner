@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.Entrant;
 import com.eventwise.EventAdapter;
@@ -31,6 +32,7 @@ import java.util.List;
  * @since 2026-03-09
  * Updated by Hao on 2026-03-11 - Added organizer event loading by ID
  */
+
 public class OrganizerYourEventsFragment extends Fragment {
     private RecyclerView eventListView;
     private EventAdapter eventAdapter;
@@ -46,6 +48,7 @@ public class OrganizerYourEventsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+
         return inflater.inflate(R.layout.fragment_organizer_your_events, container, false);
     }
 
@@ -69,7 +72,7 @@ public class OrganizerYourEventsFragment extends Fragment {
 
         View createEventButton = view.findViewById(R.id.create_new_event_button);
 
-        // Create New Event button
+        //New event button
         createEventButton.setOnClickListener(v -> {
             getParentFragmentManager()
                     .beginTransaction()
@@ -77,8 +80,6 @@ public class OrganizerYourEventsFragment extends Fragment {
                     .addToBackStack(null)
                     .commit();
         });
-
-        // Setup RecyclerView
         eventListView = view.findViewById(R.id.list_view);
         eventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
         eventList = new ArrayList<>();
@@ -115,40 +116,4 @@ public class OrganizerYourEventsFragment extends Fragment {
                 Log.d("Event", "Event delete failed...");
             });
     }
-
-    // ====== New method start ======
-
-    /**
-     * Load events created by this organizer
-     * This method demonstrates linking profiles to created events
-     */
-    private void loadOrganizerEvents() {
-        // Use the same test ID as in CreateEventFragment
-        String TEST_ORGANIZER_ID = "TEMP_ORGANIZER_ID";
-
-        OrganizerDatabaseManager organizerDBMan = new OrganizerDatabaseManager();
-        organizerDBMan.getOrganizersCreatedEventsFromOrganizerID(TEST_ORGANIZER_ID)
-                .addOnSuccessListener(events -> {
-                    if (events == null || events.isEmpty()) {
-                        Log.d("OrganizerEvents", "No events found for this organizer");
-                        return;
-                    }
-
-                    // Log the events to demonstrate linking
-                    for (Event event : events) {
-                        Log.d("OrganizerEvents", "Event: " + event.getName() +
-                                " (ID: " + event.getEventId() +
-                                ") created by: " + event.getOrganizerProfileId());
-                    }
-
-                    Toast.makeText(getContext(),
-                            "Found " + events.size() + " events linked to your profile",
-                            Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("OrganizerEvents", "Error loading events: " + e.getMessage());
-                });
-    }
-
-    // ====== New method end ======
 }
