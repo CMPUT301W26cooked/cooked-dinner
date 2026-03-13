@@ -1,5 +1,7 @@
 package com.eventwise;
 
+import com.google.firebase.firestore.Exclude;
+
 import java.util.ArrayList;
 
 /**
@@ -253,24 +255,24 @@ public class Event {
      * @param entrantProfileId entrant profile id
      * @param status entrant status
      */
-    public void addOrUpdateEntrantStatus(String entrantProfileId, EventEntrantStatus status) {
+    public void addOrUpdateEntrantStatus(String entrantProfileId, EventEntrantStatus status, long timestamp) {
         if (entrantStatuses == null) {
             entrantStatuses = new ArrayList<>();
         }
 
-        long nowEpochSec = System.currentTimeMillis() / 1000L;
+//        long nowEpochSec = System.currentTimeMillis() / 1000L;
 
         for (EntrantStatusEntry entry : entrantStatuses) {
             if (entry != null
                     && entrantProfileId != null
                     && entrantProfileId.equals(entry.getEntrantProfileId())) {
                 entry.setStatus(status);
-                entry.setTimestampEpochSec(nowEpochSec);
+                entry.setTimestampEpochSec(timestamp);
                 return;
             }
         }
 
-        entrantStatuses.add(new EntrantStatusEntry(entrantProfileId, status, nowEpochSec));
+        entrantStatuses.add(new EntrantStatusEntry(entrantProfileId, status, timestamp));
     }
 
     /**
@@ -302,6 +304,7 @@ public class Event {
      *
      * @return true if now is between open and close times inclusive
      */
+    @Exclude
     public boolean isRegistrationOpenNow() {
         long nowEpochSec = System.currentTimeMillis() / 1000L;
         return nowEpochSec >= registrationOpenEpochSec && nowEpochSec <= registrationCloseEpochSec;
@@ -312,6 +315,7 @@ public class Event {
      *
      * @return waiting list count
      */
+    @Exclude
     public int getWaitingListCount() {
         return getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).size();
     }
@@ -321,6 +325,7 @@ public class Event {
      *
      * @return enrolled count
      */
+    @Exclude
     public int getEnrolledCount() {
         return getEntrantIdsByStatus(EventEntrantStatus.ENROLLED).size();
     }
@@ -330,6 +335,7 @@ public class Event {
      *
      * @return true if full, false otherwise
      */
+    @Exclude
     public boolean isWaitingListFull() {
         if (maxWaitingListSize == null) {
             return false;

@@ -1,5 +1,8 @@
 package com.eventwise;
 
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.UUID;
 /**
  * The profile class is a basic abstract 
  * 
@@ -19,8 +22,8 @@ public abstract class Profile {
     private ProfileType profileType;
     public Profile(){}
 
-    public Profile(String profileID, String name, String email, String phone, boolean notificationsEnabled, ProfileType profileType) {
-        this.profileID = profileID;
+    public Profile(String name, String email, String phone, boolean notificationsEnabled, ProfileType profileType) {
+        this.profileID = UUID.randomUUID().toString();
         this.name = name;
         this.email = email;
         this.phone = phone;
@@ -30,7 +33,7 @@ public abstract class Profile {
 
 
     //Getters and setters for the fields
-    public String getProfileId() {
+    public String getProfileID() {
         return profileID;
     }
     public String getName() {
@@ -70,6 +73,25 @@ public abstract class Profile {
         setName(name);
         setEmail(email);
         setPhone(phone);
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Profile)) return false;
+        Profile that = (Profile) o;
+        return Objects.equals(profileID, that.profileID)
+                && Objects.equals(name, that.name)
+                && Objects.equals(email, that.email)
+                && Objects.equals(phone, that.phone)
+                && Objects.equals(notificationsEnabled, that.notificationsEnabled)
+                && Objects.equals(profileType, that.profileType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(profileID, name, email, phone, notificationsEnabled, profileType);
     }
 }
 

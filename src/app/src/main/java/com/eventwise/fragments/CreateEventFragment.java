@@ -213,6 +213,12 @@ public class CreateEventFragment extends Fragment {
             organizerDBMan.addEvent(event)
                     .addOnSuccessListener(param -> {
                         Log.d("CreateEvent", "Event added successfully to Firebase");
+                        // ====== New code start ======
+                        Log.d("ProfileLinking", "Event created with organizer ID: " +
+                                event.getOrganizerProfileId());
+                        Log.d("ProfileLinking", "Event ID: " + event.getEventId());
+                        Log.d("ProfileLinking", "Successfully linked profile to created event");
+                        // ====== New code end ======
                         getParentFragmentManager().popBackStack();
                     })
                     .addOnFailureListener(param -> {

@@ -16,6 +16,9 @@ public enum EventEntrantStatus {
     /** Entrant was selected/invited from the waiting list. */
     INVITED,
 
+    /** Entrant has accepted the invitation. */
+    ACCEPTED,
+
     /** Entrant accepted and is fully enrolled in the event. */
     ENROLLED,
 
