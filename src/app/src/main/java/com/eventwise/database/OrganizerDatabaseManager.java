@@ -159,6 +159,12 @@ public class OrganizerDatabaseManager extends DatabaseManager{
         return tcs.getTask();
     }
 
+    /**
+     * Retrieves all events created by a specific organizer from the database.
+     *
+     * @param organizerID The unique identifier of the organizer whose events are to be retrieved.
+     * @return A {@link Task} that resolves to an {@link ArrayList} of {@link Event} containing the events created by the organizer.
+     */
     public Task<ArrayList<Event>> getOrganizersCreatedEventsFromOrganizerID(String organizerID){
         TaskCompletionSource<ArrayList<Event>> tcs = new TaskCompletionSource<>();
         ArrayList<Event> events_array = new ArrayList<Event>();
@@ -181,7 +187,19 @@ public class OrganizerDatabaseManager extends DatabaseManager{
 // *************************************************************************************************/
 
     
-    // TODO - change local storage to Firebase
+    /**
+     * Saves the event poster image to local storage and updates the event's posterPath field in Firestore.
+     * <p>
+     * Note: Current implementation uses internal local storage. This is intended to be migrated
+     * to Firebase Storage in future iterations.
+     * </p>
+     *
+     * @param eventId   The unique identifier of the event for which the poster is being uploaded.
+     * @param imageData The raw byte array of the image data to be saved.
+     * @param context   The application context used to access internal file storage.
+     * @return A {@link Task} that resolves to the local file path string where the image was saved.
+     * @see <a href="https://stackoverflow.com/questions/3625837/android-what-is-wrong-with-openfileoutput">Reference for openFileOutput</a>
+     */ // TODO - change local storage to Firebase
     // saves the event poster image to local storage and updates the event's posterPath field in Firestore 
     // reference: https://stackoverflow.com/questions/3625837/android-what-is-wrong-with-openfileoutput
     public Task<String> uploadEventPoster(String eventId, byte[] imageData, Context context) {
@@ -205,7 +223,14 @@ public class OrganizerDatabaseManager extends DatabaseManager{
     }
 
    
-    // Updates and replace an event poster image in local storage
+    /**
+     * Updates and replaces an existing event poster image in local storage and updates the database reference.
+     *
+     * @param eventId   The unique ID of the event for which the poster is being updated.
+     * @param imageData The raw byte array of the new poster image.
+     * @param context   The application context used to access internal storage.
+     * @return A {@link Task} that resolves to a {@link String} containing the local file path of the updated image.
+     */ // Updates and replace an event poster image in local storage
     public Task<String> updateEventPoster(String eventId, byte[] imageData, Context context) {
         return uploadEventPoster(eventId, imageData, context);
     }

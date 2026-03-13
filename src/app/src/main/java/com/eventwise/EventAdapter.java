@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import com.eventwise.EventEntrantStatus;
 /**
  * This Event Adapter class takes each event item into a visual widget on screen.
  * @author Luke Forster
@@ -28,6 +29,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     public static final int TYPE_EDIT_CANCEL = 3;
     private final List<Event> eventList;
     private int mode;
+    private final String currentEntrantId;
 
     public interface OnPrimaryButtonClickListener {
         void onPrimaryButtonClick(Event event);
@@ -38,11 +40,30 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         this.eventList = eventList;
         this.mode = mode;
         this.primaryButtonClickListener = primaryButtonClickListener;
+        this.currentEntrantId = null;
+    }
+
+    public EventAdapter(List<Event> eventList, int mode, String currentEntrantId, OnPrimaryButtonClickListener primaryButtonClickListener) {
+        this.eventList = eventList;
+        this.mode = mode;
+        this.currentEntrantId = currentEntrantId;
+        this.primaryButtonClickListener = primaryButtonClickListener;
     }
 
     @Override
     public int getItemViewType(int position) {
-        return mode;
+        Event event = eventList.get(position);
+
+        if (mode == TYPE_EDIT_LEAVE || mode == TYPE_EDIT_CANCEL) {
+            return mode;
+        }
+
+        if (currentEntrantId != null &&
+                event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(currentEntrantId)) {
+            return TYPE_CANCEL;
+        }
+
+        return TYPE_JOIN;
     }
 
 

@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import android.content.Context;
 
 /**
  * Entrant type for user who enrolls and participates in events.
@@ -56,19 +57,16 @@ public class Entrant extends Profile {
     public Entrant(String name, String email, String phone, boolean notificationsEnabled, android.content.Context context) {
         super(name, email, phone, notificationsEnabled, ProfileType.ENTRANT);
 
-
         SessionStore session = new SessionStore(context);
-        //Get stored value
         this.deviceID =  session.getDeviceID();
 
-        //Brand new install, no deviceID created yet
         if (this.deviceID == null){
             this.deviceID = UUID.randomUUID().toString();
-            //Store deviceID locally
             session.setDeviceID(this.deviceID);
         }
-        Log.d("Entrant", "DeviceID: " + this.deviceID);
 
+        setProfileID(this.deviceID);
+        Log.d("Entrant", "DeviceID: " + this.deviceID);
     }
 
     /** @return device id */

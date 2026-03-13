@@ -87,10 +87,15 @@ public class EntrantDatabaseManager extends DatabaseManager {
 
                     profiles.document(entrantID).get()
                             .addOnSuccessListener(profileSnapshot -> {
+                                if (!profileSnapshot.exists()) {
+                                    tcs.setException(new DatabaseException("Entrant profile does not exist for ID: " + entrantID));
+                                    return;
+                                }
+
                                 Entrant entrant = profileSnapshot.toObject(Entrant.class);
 
                                 if (entrant == null) {
-                                    tcs.setException(new DatabaseException("Error getting Entrant"));
+                                    tcs.setException(new DatabaseException("Entrant document could not be parsed for ID: " + entrantID));
                                     return;
                                 }
 
@@ -166,6 +171,14 @@ public class EntrantDatabaseManager extends DatabaseManager {
         return tcs.getTask();
     }
 
+    /**
+     * Retrieves a list of all events where the specified entrant is currently on the waiting list.
+     * Iterates through all event documents and filters for those where the entrant's status
+     * matches {@link EventEntrantStatus#WAITLISTED}.
+     *
+     * @param entrantID The unique ID of the entrant to check.
+     * @return A Task containing an ArrayList of Event objects the entrant is waitlisted for.
+     */
     public Task<ArrayList<Event>> getEventsWhereEntrantIsInWaitingList(String entrantID){
         TaskCompletionSource<ArrayList<Event>> tcs = new TaskCompletionSource<>();
         ArrayList<Event> events_array = new ArrayList<Event>();
@@ -372,5 +385,9 @@ public class EntrantDatabaseManager extends DatabaseManager {
                 .addOnFailureListener(e ->
                         tcs.setException(new DatabaseException("Error loading events"))
                 );
+    }
+    public Task<Entrant> getEntrantFromID(String entrantID) {
+        return super.getProfileFromID(entrantID)
+                .continueWith(task -> (Entrant) task.getResult());
     }
 }

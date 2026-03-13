@@ -26,6 +26,11 @@ public class EventSearcherDatabaseManager extends DatabaseManager{
     }
 
 
+    /**
+     * Retrieves a list of events from the database.
+     *
+     * @return A {@link Task} that, when complete, contains an {@link ArrayList} of {@link Event} objects.
+     */
     public Task<ArrayList<Event>> getEvents(){
         return super.getEvents();
     }
