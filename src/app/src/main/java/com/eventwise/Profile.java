@@ -22,8 +22,8 @@ public abstract class Profile {
     private ProfileType profileType;
     public Profile(){}
 
-    public Profile(String profileID, String name, String email, String phone, boolean notificationsEnabled, ProfileType profileType) {
-        this.profileID = profileID;
+    public Profile(String name, String email, String phone, boolean notificationsEnabled, ProfileType profileType) {
+        this.profileID = UUID.randomUUID().toString();
         this.name = name;
         this.email = email;
         this.phone = phone;

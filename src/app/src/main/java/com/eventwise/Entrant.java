@@ -1,12 +1,15 @@
 package com.eventwise;
 
+import android.util.Log;
+
+import com.eventwise.database.SessionStore;
 import com.google.firebase.firestore.Exclude;
-import com.google.firebase.firestore.ServerTimestamp;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Entrant type for user who enrolls and participates in events.
@@ -27,7 +30,7 @@ public class Entrant extends Profile {
      */
 
     /** Unique identifier used for all entrant identification (US 01.07.01). */
-    private String deviceId;
+    private String deviceID;
 
     /** List of all historical and current event states. */
     private ArrayList<EventStateEntry> eventStates = new ArrayList<>();
@@ -45,22 +48,34 @@ public class Entrant extends Profile {
     /**
      * Makes an Entrant. The entrant identity is the deviceId, and profileID is set to deviceId.
      *
-     * @param deviceId device identifier
      * @param name entrant name
      * @param email entrant email
      * @param phone optional phone
      * @param notificationsEnabled notifications preference
      */
-    public Entrant(String deviceId, String name, String email, String phone, boolean notificationsEnabled) {
-        super(deviceId, name, email, phone, notificationsEnabled, ProfileType.ENTRANT);
-        this.deviceId = deviceId;
+    public Entrant(String name, String email, String phone, boolean notificationsEnabled, android.content.Context context) {
+        super(name, email, phone, notificationsEnabled, ProfileType.ENTRANT);
+
+
+        SessionStore session = new SessionStore(context);
+        //Get stored value
+        this.deviceID =  session.getDeviceID();
+
+        //Brand new install, no deviceID created yet
+        if (this.deviceID == null){
+            this.deviceID = UUID.randomUUID().toString();
+            //Store deviceID locally
+            session.setDeviceID(this.deviceID);
+        }
+        Log.d("Entrant", "DeviceID: " + this.deviceID);
+
     }
 
     /** @return device id */
-    public String getDeviceId() { return deviceId; }
+    public String getDeviceID() { return deviceID; }
 
-    /** @param deviceId device id */
-    public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
+    /** @param deviceID device id */
+    public void setDeviceID(String deviceID) { this.deviceID = deviceID; }
 
     /** @return event states */
     public ArrayList<EventStateEntry> getEventStates() { return eventStates; }
@@ -170,7 +185,7 @@ public class Entrant extends Profile {
         if (this == o) return true;
         if (!(o instanceof Entrant)) return false;
         Entrant that = (Entrant) o;
-        return Objects.equals(deviceId, that.deviceId)
+        return Objects.equals(deviceID, that.deviceID)
                 && Objects.equals(eventStates, that.eventStates)
                 && Objects.equals(notificationIDs, that.notificationIDs)
                 && super.equals(o);
@@ -178,7 +193,7 @@ public class Entrant extends Profile {
 
     @Override
     public int hashCode() {
-        return Objects.hash(deviceId, eventStates, notificationIDs, super.hashCode());
+        return Objects.hash(deviceID, eventStates, notificationIDs, super.hashCode());
     }
 
 
