@@ -5,6 +5,7 @@ import android.util.Log;
 import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.EventEntrantStatus;
+import com.eventwise.Profile;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -376,5 +377,9 @@ public class EntrantDatabaseManager extends DatabaseManager {
                 .addOnFailureListener(e ->
                         tcs.setException(new DatabaseException("Error loading events"))
                 );
+    }
+
+    public Task<Profile> getEntrantProfileById(String profileId) {
+        return super.getProfileFromId(profileId);
     }
 }

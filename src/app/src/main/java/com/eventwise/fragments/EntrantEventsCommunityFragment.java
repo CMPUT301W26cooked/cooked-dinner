@@ -1,5 +1,7 @@
 package com.eventwise.fragments;
 
+import static com.eventwise.ProfileType.ENTRANT;
+
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -17,13 +19,16 @@ import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.EventAdapter;
 import com.eventwise.EventEntrantStatus;
+import com.eventwise.Profile;
+import com.eventwise.ProfileType;
 import com.eventwise.R;
+import com.eventwise.database.EntrantDatabaseManager;
 import com.eventwise.database.EventSearcherDatabaseManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.eventwise.database.EntrantDatabaseManager;
+
 
 /**
  * This class is responsible for the Entrant Events Community Fragment.
@@ -40,7 +45,6 @@ public class EntrantEventsCommunityFragment extends Fragment {
     private Entrant currentEntrant;
     private EntrantDatabaseManager entrantDBMan;
     private EventSearcherDatabaseManager eventSearcherDBMan;
-
 
     public EntrantEventsCommunityFragment() {
     }
@@ -68,11 +72,10 @@ public class EntrantEventsCommunityFragment extends Fragment {
                 Settings.Secure.ANDROID_ID
         );
 
-        entrantDBMan.getEntrantProfileById(deviceId)
-                .addOnSuccessListener(profile -> {
+        entrantDBMan.getEntrantProfileById(deviceId).addOnSuccessListener(profile -> {
                     if (profile instanceof Entrant) {
                         currentEntrant = (Entrant) profile;
-                        Log.d("Event", "Loaded entrant profile: " + currentEntrant.getProfileId());
+                        Log.d("Event", "Loaded entrant profile: " + currentEntrant.getProfileID());
                     } else {
                         createEntrant(deviceId);
                     }
@@ -92,13 +95,13 @@ public class EntrantEventsCommunityFragment extends Fragment {
                 deviceId,
                 "Test User",
                 "test@email.com",
-                "",
-                true
+                true,
+                requireContext()
         );
 
         entrantDBMan.addEntrant(currentEntrant)
                 .addOnSuccessListener(unused ->
-                        Log.d("Event", "Created entrant profile: " + currentEntrant.getProfileId()))
+                        Log.d("Event", "Created entrant profile: " + currentEntrant.getProfileID()))
                 .addOnFailureListener(e ->
                         Log.e("Event", "Failed to create entrant profile", e));
     }
@@ -156,25 +159,27 @@ public class EntrantEventsCommunityFragment extends Fragment {
             return;
         }
 
-        if (event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(currentEntrant.getProfileId())
-                || event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).contains(currentEntrant.getProfileId())
-                || event.getEntrantIdsByStatus(EventEntrantStatus.ENROLLED).contains(currentEntrant.getProfileId())) {
+        if (event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(currentEntrant.getProfileID())
+                || event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).contains(currentEntrant.getProfileID())
+                || event.getEntrantIdsByStatus(EventEntrantStatus.ENROLLED).contains(currentEntrant.getProfileID())) {
             Log.d("Event", "Join ignored: already joined " + event.getName());
             return;
         }
-
-        entrantDBMan.registerEntrantInEvent(currentEntrant.getProfileId(), event.getEventId())
+        long nowEpochSec = System.currentTimeMillis() / 1000L;
+        entrantDBMan.registerEntrantInEvent(currentEntrant.getProfileID(), event.getEventId(), nowEpochSec)
                 .addOnSuccessListener(unused -> {
                     Log.d("Event", "Join success for: " + event.getName());
 
                     event.addOrUpdateEntrantStatus(
-                            currentEntrant.getProfileId(),
-                            EventEntrantStatus.WAITLISTED
+                            currentEntrant.getProfileID(),
+                            EventEntrantStatus.WAITLISTED,
+                            nowEpochSec
                     );
 
                     currentEntrant.addOrUpdateEventState(
                             event.getEventId(),
-                            EventEntrantStatus.WAITLISTED
+                            EventEntrantStatus.WAITLISTED,
+                            nowEpochSec
                     );
 
                     eventAdapter.notifyDataSetChanged();
@@ -183,8 +188,6 @@ public class EntrantEventsCommunityFragment extends Fragment {
                     Log.e("Event", "Join failed for: " + event.getName(), e);
                 });
     }
-
-
     private void openInvitationDetail(@NonNull String eventId, @NonNull String entrantId) {
         com.eventwise.fragments.InvitationDetailFragment frag =
                 com.eventwise.fragments.InvitationDetailFragment.newInstance(eventId, entrantId);
@@ -197,10 +200,5 @@ public class EntrantEventsCommunityFragment extends Fragment {
                 .commit();
     }
 
-
-    private String getCurrentEntrantId() {
-        // TODO: replace with your real user/profile id
-        return "TEST_USER_001";
-    }
 
 }

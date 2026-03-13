@@ -62,8 +62,9 @@ public class OrganizerYourEventsFragment extends Fragment {
                 deviceID,
                 "Test User",
                 "test@email.com",
-                "780-000-0000",
-                true
+                true,
+                requireContext()
+
         );
 
         View createEventButton = view.findViewById(R.id.create_new_event_button);
@@ -88,7 +89,7 @@ public class OrganizerYourEventsFragment extends Fragment {
 
         //Get events from Firebase
         organizerDatabaseManager
-                .getOrganizersCreatedEventsFromOrganizerID(currentEntrant.getProfileId())
+                .getOrganizersCreatedEventsFromOrganizerID(currentEntrant.getProfileID())
                 .addOnSuccessListener(returnedList -> {
                     eventList.clear();
                     eventList.addAll(returnedList);
