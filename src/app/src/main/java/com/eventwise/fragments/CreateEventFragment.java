@@ -63,7 +63,7 @@ public class CreateEventFragment extends Fragment {
 
     // reference: https://developer.android.com/training/data-storage/shared/photo-picker
     // used to pick an image from the gallery
-   
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         pickMedia = registerForActivityResult(
