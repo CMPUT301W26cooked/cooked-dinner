@@ -368,10 +368,27 @@ public abstract class DatabaseManager {
 // *                                           Notifications
 // *************************************************************************************************/
 
+    /**
+     * Adds a new notification to the Firestore database.
+     * This method creates or updates a document in the "notifications" collection
+     * using the notification's unique ID and stores the provided notification object.
+     *
+     * @param notification The {@link Notification} object containing the data to be stored.
+     * @return A {@link Task} representing the asynchronous database write operation.
+     */
     protected Task<Void> addNotification(Notification notification){
         return notifications.document(notification.getNotificationId()).set(notification);
     }
 
+    /**
+     * Retrieves a notification from the Firestore database using the specified notification ID.
+     * This method performs an asynchronous fetch and returns a Task that will resolve
+     * to the Notification object if found.
+     *
+     * @param notificationID The unique identifier of the notification to retrieve.
+     * @return A {@link Task} that will contain the {@link Notification} object upon success,
+     *         or a {@link DatabaseException} if the notification does not exist or the fetch fails.
+     */
     protected Task<Notification> getNotificationByID(String notificationID){
         TaskCompletionSource<Notification> tcs = new TaskCompletionSource<>();
 
@@ -395,7 +412,14 @@ public abstract class DatabaseManager {
 // *************************************************************************************************/
 
    
-    // TODO: JAVADOCS
+    /**
+     * Asynchronously retrieves a list of all event poster image paths from the Firestore database.
+     * This method iterates through all documents in the "events" collection and extracts
+     * non-null and non-empty poster path strings.
+     *
+     * @return A {@link Task} that, when successful, contains an {@link ArrayList} of
+     *         {@link String} paths, or a {@link DatabaseException} if the fetch fails.
+     */
     //return a list of all event poster paths, excluding null and empty strings
     // 
     protected Task<ArrayList<String>> getEventPosterPaths() {
@@ -416,7 +440,14 @@ public abstract class DatabaseManager {
         return tcs.getTask();
     }
 
-    //update the poster path of an existing event in Firestore
+    /**
+     * Updates the poster image path for an existing event in the Firestore database.
+     * This method updates only the "posterPath" field of the specified event document.
+     *
+     * @param eventId    The unique identifier of the event to update.
+     * @param posterPath The new string path or URI for the event poster.
+     * @return A {@link Task} representing the asynchronous database update operation.
+     */ //update the poster path of an existing event in Firestore
     protected Task<Void> updateEventPosterPath(String eventId, String posterPath) {
         return events.document(eventId).update("posterPath", posterPath);
     }

@@ -171,6 +171,14 @@ public class EntrantDatabaseManager extends DatabaseManager {
         return tcs.getTask();
     }
 
+    /**
+     * Retrieves a list of all events where the specified entrant is currently on the waiting list.
+     * Iterates through all event documents and filters for those where the entrant's status
+     * matches {@link EventEntrantStatus#WAITLISTED}.
+     *
+     * @param entrantID The unique ID of the entrant to check.
+     * @return A Task containing an ArrayList of Event objects the entrant is waitlisted for.
+     */
     public Task<ArrayList<Event>> getEventsWhereEntrantIsInWaitingList(String entrantID){
         TaskCompletionSource<ArrayList<Event>> tcs = new TaskCompletionSource<>();
         ArrayList<Event> events_array = new ArrayList<Event>();
