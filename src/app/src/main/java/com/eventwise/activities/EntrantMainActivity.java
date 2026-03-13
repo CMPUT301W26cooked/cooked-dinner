@@ -8,6 +8,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.eventwise.R;
 import com.eventwise.fragments.EntrantEventsCommunityFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import android.util.Log;
+
+import com.eventwise.Entrant;
+import com.eventwise.database.EntrantDatabaseManager;
+import com.eventwise.database.SessionStore;
 
 /**
  * This is the landing page for the entrant profile.
@@ -23,6 +28,8 @@ public class EntrantMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main_entrant);
+
+        ensureEntrantExists();
 
         if (savedInstanceState == null) {
             getSupportFragmentManager()
@@ -60,5 +67,39 @@ public class EntrantMainActivity extends AppCompatActivity {
 
             return false;
         });
+    }
+
+    private void ensureEntrantExists() {
+        SessionStore sessionStore = new SessionStore(this);
+        String deviceId = sessionStore.getDeviceID();
+
+        if (deviceId == null || deviceId.trim().isEmpty()) {
+            Log.e("EntrantMainActivity", "No device ID found");
+            return;
+        }
+
+        EntrantDatabaseManager db = new EntrantDatabaseManager();
+
+        db.getEntrantFromID(deviceId)
+                .addOnSuccessListener(entrant -> {
+                    Log.d("EntrantMainActivity", "Entrant already exists: " + deviceId);
+                })
+                .addOnFailureListener(e -> {
+                    Log.d("EntrantMainActivity", "Entrant not found, creating new entrant: " + deviceId);
+
+                    Entrant newEntrant = new Entrant(
+                            "New Entrant",
+                            "",
+                            "",
+                            true,
+                            this
+                    );
+
+                    db.addEntrant(newEntrant)
+                            .addOnSuccessListener(unused ->
+                                    Log.d("EntrantMainActivity", "Entrant created successfully"))
+                            .addOnFailureListener(createError ->
+                                    Log.e("EntrantMainActivity", "Failed to create entrant", createError));
+                });
     }
 }

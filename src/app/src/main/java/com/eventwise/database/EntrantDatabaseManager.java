@@ -87,10 +87,15 @@ public class EntrantDatabaseManager extends DatabaseManager {
 
                     profiles.document(entrantID).get()
                             .addOnSuccessListener(profileSnapshot -> {
+                                if (!profileSnapshot.exists()) {
+                                    tcs.setException(new DatabaseException("Entrant profile does not exist for ID: " + entrantID));
+                                    return;
+                                }
+
                                 Entrant entrant = profileSnapshot.toObject(Entrant.class);
 
                                 if (entrant == null) {
-                                    tcs.setException(new DatabaseException("Error getting Entrant"));
+                                    tcs.setException(new DatabaseException("Entrant document could not be parsed for ID: " + entrantID));
                                     return;
                                 }
 
@@ -372,5 +377,9 @@ public class EntrantDatabaseManager extends DatabaseManager {
                 .addOnFailureListener(e ->
                         tcs.setException(new DatabaseException("Error loading events"))
                 );
+    }
+    public Task<Entrant> getEntrantFromID(String entrantID) {
+        return super.getProfileFromID(entrantID)
+                .continueWith(task -> (Entrant) task.getResult());
     }
 }
