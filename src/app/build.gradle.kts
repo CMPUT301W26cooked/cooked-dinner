@@ -46,7 +46,6 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
     implementation("com.google.firebase:firebase-analytics")
-
     androidTestImplementation ("androidx.test:core:1.5.0")
     androidTestImplementation ("androidx.test.ext:junit:1.1.5")
 }

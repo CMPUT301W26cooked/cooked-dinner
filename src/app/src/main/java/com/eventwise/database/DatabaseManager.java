@@ -389,4 +389,35 @@ public abstract class DatabaseManager {
                     });
                 return tcs.getTask();
                 }
+
+//**************************************************************************************************
+// *                                            Images
+// *************************************************************************************************/
+
+   
+    // TODO: JAVADOCS
+    //return a list of all event poster paths, excluding null and empty strings
+    // 
+    protected Task<ArrayList<String>> getEventPosterPaths() {
+        TaskCompletionSource<ArrayList<String>> tcs = new TaskCompletionSource<>();
+        ArrayList<String> paths = new ArrayList<>();
+
+        events.get().addOnSuccessListener(result -> {
+            for (DocumentSnapshot document : result) {
+                Event event = document.toObject(Event.class);
+                if (event != null && event.getPosterPath() != null && !event.getPosterPath().isEmpty()) {
+                    paths.add(event.getPosterPath());
+                }
+            }
+            tcs.setResult(paths);
+        }).addOnFailureListener(exception -> {
+            tcs.setException(new DatabaseException("Error getting event poster paths"));
+        });
+        return tcs.getTask();
+    }
+
+    //update the poster path of an existing event in Firestore
+    protected Task<Void> updateEventPosterPath(String eventId, String posterPath) {
+        return events.document(eventId).update("posterPath", posterPath);
+    }
     }

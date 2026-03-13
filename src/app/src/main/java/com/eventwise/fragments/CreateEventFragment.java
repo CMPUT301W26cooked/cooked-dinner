@@ -1,5 +1,10 @@
 package com.eventwise.fragments;
+import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,6 +14,9 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -18,6 +26,8 @@ import com.eventwise.database.OrganizerDatabaseManager;
 import com.eventwise.Event;
 
 import java.util.ArrayList;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  * This is the Fragment for organizers to create events.
@@ -47,7 +57,41 @@ public class CreateEventFragment extends Fragment {
     private ImageView inputEventPoster;
     private Button buttonCreateEvent;
 
+    private byte[] selectedImageBytes = null;
+    private ActivityResultLauncher<PickVisualMediaRequest> pickMedia;
+
     public CreateEventFragment() {
+    }
+
+    // reference: https://developer.android.com/training/data-storage/shared/photo-picker
+    // used to pick an image from the gallery
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        pickMedia = registerForActivityResult(
+                new ActivityResultContracts.PickVisualMedia(), uri -> {
+                    if (uri != null) {
+                        try {
+                            Bitmap bitmap;
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                                ImageDecoder.Source source = ImageDecoder.createSource(
+                                        requireContext().getContentResolver(), uri);
+                                bitmap = ImageDecoder.decodeBitmap(source);
+                            } else {
+                                bitmap = MediaStore.Images.Media.getBitmap(
+                                        requireContext().getContentResolver(), uri);
+                            }
+                            inputEventPoster.setImageBitmap(bitmap);
+                            inputEventPoster.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 67, baos);
+                            selectedImageBytes = baos.toByteArray();
+                        } catch (IOException e) {
+                            Log.d("CreateEvent", "Failed to read selected image", e);
+                        }
+                    }
+                });
     }
 
     @Override
@@ -85,6 +129,11 @@ public class CreateEventFragment extends Fragment {
         });
 
         returnArrow.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+
+        inputEventPoster.setOnClickListener(v ->
+                pickMedia.launch(new PickVisualMediaRequest.Builder()
+                        .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                        .build()));
 
         buttonCreateEvent.setOnClickListener(v -> uploadEventToFirebase());
     }
@@ -218,7 +267,20 @@ public class CreateEventFragment extends Fragment {
                         Log.d("ProfileLinking", "Event ID: " + event.getEventId());
                         Log.d("ProfileLinking", "Successfully linked profile to created event");
                         // ====== New code end ======
-                        getParentFragmentManager().popBackStack();
+
+                        if (selectedImageBytes != null) {
+                            organizerDBMan.uploadEventPoster(event.getEventId(), selectedImageBytes, requireContext())
+                                    .addOnSuccessListener(path -> {
+                                        Log.d("CreateEvent", "Poster uploaded: " + path);
+                                        getParentFragmentManager().popBackStack();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.d("CreateEvent", "Poster upload failed", e);
+                                        getParentFragmentManager().popBackStack();
+                                    });
+                        } else {
+                            getParentFragmentManager().popBackStack();
+                        }
                     })
                     .addOnFailureListener(param -> {
                         Log.d("CreateEvent", "Event failed to add to Firebase");
