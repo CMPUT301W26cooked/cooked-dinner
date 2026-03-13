@@ -19,8 +19,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.eventwise.R;
+import com.eventwise.Tag;
 import com.eventwise.database.OrganizerDatabaseManager;
 import com.eventwise.Event;
+
+import java.util.ArrayList;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -218,10 +221,16 @@ public class CreateEventFragment extends Fragment {
             // Placeholder values for fields not yet wired from UI/user profile
             String organizerProfileId = "TEMP_ORGANIZER_ID";
             double price = 0.00;
-            String topicName = criteria.isEmpty() ? "General" : criteria;
             long registrationOpenEpochSec = System.currentTimeMillis() / 1000L;
             String posterPath = null;
             String qrCodeId = null;
+
+            ArrayList<Tag> tags = new ArrayList<>();
+            if (criteria.isEmpty()) {
+                tags.add(new Tag("General", "General"));
+            } else {
+                tags.add(new Tag("General", criteria));
+            }
 
             Event event = new Event(
                     organizerProfileId,
@@ -229,7 +238,7 @@ public class CreateEventFragment extends Fragment {
                     description,
                     price,
                     location,
-                    topicName,
+                    tags,
                     eventStartEpochSec,
                     eventEndEpochSec,
                     registrationOpenEpochSec,
@@ -240,12 +249,16 @@ public class CreateEventFragment extends Fragment {
                     posterPath,
                     qrCodeId
             );
-            event.setEventId("EVENT_" + System.currentTimeMillis());
-
             OrganizerDatabaseManager organizerDBMan = new OrganizerDatabaseManager();
             organizerDBMan.addEvent(event)
                     .addOnSuccessListener(param -> {
                         Log.d("CreateEvent", "Event added successfully to Firebase");
+                        // ====== New code start ======
+                        Log.d("ProfileLinking", "Event created with organizer ID: " +
+                                event.getOrganizerProfileId());
+                        Log.d("ProfileLinking", "Event ID: " + event.getEventId());
+                        Log.d("ProfileLinking", "Successfully linked profile to created event");
+                        // ====== New code end ======
 
                         if (selectedImageBytes != null) {
                             organizerDBMan.uploadEventPoster(event.getEventId(), selectedImageBytes, requireContext())

@@ -2,6 +2,8 @@ package com.eventwise;
 
 import android.util.Log;
 
+import androidx.test.core.app.ApplicationProvider;
+
 import com.eventwise.database.AdminDatabaseManager;
 import com.eventwise.database.EntrantDatabaseManager;
 import com.eventwise.database.NotificationDatabaseManager;
@@ -28,9 +30,8 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
 
         //Create Fake Entrants
         for (int i = 0; i < 10; ++i){
-            String randomID = UUID.randomUUID().toString();
-            randomEntrantIDs.add(randomID);
-            Entrant entrant = new Entrant(randomID, "Spongebob" + i, "sponge@krustykrab.ca", "1234567890", true);
+            Entrant entrant = new Entrant("Spongebob", "sponge@krustykrab.ca", "1234567890", true, ApplicationProvider.getApplicationContext());
+            randomEntrantIDs.add(entrant.getProfileID());
             Tasks.await(new EntrantDatabaseManager(testDb).addEntrant(entrant));
         }
 
@@ -42,13 +43,17 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
         //Make a dummy event to add the entrant to
         OrganizerDatabaseManager organizerDbManager = new OrganizerDatabaseManager(testDb);
 
+        ArrayList<Tag> test_tags = new ArrayList<Tag>();
+
+        test_tags.add(new Tag("Testing", "TestKeyword"));
+
         Event event = new Event(
                 "TestOrganizerProfileID",
                 "Test Event",
                 "Test Description",
                 10.0,
                 "Test Location",
-                "Test Topic",
+                test_tags,
                 0,
                 0,
                 0,

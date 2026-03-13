@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.eventwise.Entrant;
 import com.eventwise.Event;
+import com.eventwise.EventEntrantStatus;
 import com.eventwise.Profile;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -31,6 +32,7 @@ import java.util.List;
  * @author Pablo Osorio
  * @version 1.0
  * @since 2026-03-06
+ * Updated By Becca Irving on 2026-03-09
  */
 public class OrganizerDatabaseManager extends DatabaseManager{
 
@@ -67,18 +69,19 @@ public class OrganizerDatabaseManager extends DatabaseManager{
 
         events.document(eventID).get()
                 .addOnSuccessListener(documentSnapshot -> {
-                            Event returned_event = documentSnapshot.toObject(Event.class);
-                            if (returned_event == null || returned_event.getWaitingListEntrantIds() == null) {
-                                tcs.setResult(new ArrayList<>());
-                            } else {
-                                tcs.setResult(returned_event.getWaitingListEntrantIds());
-                            }
+                    Event returned_event = documentSnapshot.toObject(Event.class);
+                    if (returned_event == null) {
+                        tcs.setResult(new ArrayList<>());
+                    } else {
+                        tcs.setResult(returned_event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED));
+                    }
                 })
                 .addOnFailureListener(e -> {
-                            tcs.setException(new DatabaseException("Error getting event data"));
+                    tcs.setException(new DatabaseException("Error getting event data"));
                 });
-            return tcs.getTask();
-        }
+
+        return tcs.getTask();
+    }
 
 
     /**
@@ -93,15 +96,16 @@ public class OrganizerDatabaseManager extends DatabaseManager{
         events.document(eventID).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     Event returned_event = documentSnapshot.toObject(Event.class);
-                    if (returned_event == null || returned_event.getCancelledEntrantIds() == null) {
+                    if (returned_event == null) {
                         tcs.setResult(new ArrayList<>());
                     } else {
-                        tcs.setResult(returned_event.getCancelledEntrantIds());
+                        tcs.setResult(returned_event.getEntrantIdsByStatus(EventEntrantStatus.CANCELLED));
                     }
                 })
                 .addOnFailureListener(e -> {
                     tcs.setException(new DatabaseException("Error getting event data"));
                 });
+
         return tcs.getTask();
     }
 
@@ -117,15 +121,16 @@ public class OrganizerDatabaseManager extends DatabaseManager{
         events.document(eventID).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     Event returned_event = documentSnapshot.toObject(Event.class);
-                    if (returned_event == null || returned_event.getConfirmedEntrantIds() == null) {
+                    if (returned_event == null) {
                         tcs.setResult(new ArrayList<>());
                     } else {
-                        tcs.setResult(returned_event.getConfirmedEntrantIds());
+                        tcs.setResult(returned_event.getEntrantIdsByStatus(EventEntrantStatus.ENROLLED));
                     }
                 })
                 .addOnFailureListener(e -> {
                     tcs.setException(new DatabaseException("Error getting event data"));
                 });
+
         return tcs.getTask();
     }
 
@@ -141,15 +146,16 @@ public class OrganizerDatabaseManager extends DatabaseManager{
         events.document(eventID).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     Event returned_event = documentSnapshot.toObject(Event.class);
-                    if (returned_event == null || returned_event.getChosenEntrantIds() == null) {
+                    if (returned_event == null) {
                         tcs.setResult(new ArrayList<>());
                     } else {
-                        tcs.setResult(returned_event.getChosenEntrantIds());
+                        tcs.setResult(returned_event.getEntrantIdsByStatus(EventEntrantStatus.INVITED));
                     }
                 })
                 .addOnFailureListener(e -> {
                     tcs.setException(new DatabaseException("Error getting event data"));
                 });
+
         return tcs.getTask();
     }
 

@@ -1,45 +1,45 @@
 package com.eventwise;
 
+import android.util.Log;
+
+import com.eventwise.database.SessionStore;
 import com.google.firebase.firestore.Exclude;
-import com.google.firebase.firestore.ServerTimestamp;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 /**
- * User type Entrant
+ * Entrant type for user who enrolls and participates in events.
  *
- * Entrants inherit from Profile.
- * Entrants store a unique deviceId for all identification and track event history/ outcomes for that user.
+ * @author Becca Irving
+ * @since 2026-03-04
+ * Updated By Becca Irving on 2026-03-09
  */
 public class Entrant extends Profile {
 
     /**
      * TODO (Entrant.java)
      * - Confirm how we're getting deviceId (Android ID?, Firebase ID?, etc...)
-     * - Add DatabaseManager methods to update entrant history async and atomicly
+     * - Add DatabaseManager methods to update entrant event states async and atomically.
      * - Add unit tests!!!!
-     * - Figure out the deal with empty constructor for Firestore
-     * - Remove specific event getters if redundant with getEventIdsForOutcome
-     * - Probably move waitlisted ids to just history for tracking and delete this. (CRC card change)
+     * - Figure out the deal with empty constructor for Firestore.
+     * - Remove specific event getters later if redundant with getEventIdsForStatus.
      */
 
     /** Unique identifier used for all entrant identification (US 01.07.01). */
-    private String deviceId;
+    private String deviceID;
 
-    /** List of event IDs for waiting lists entrant is currently in */
-    private ArrayList<String> joinedWaitingListEventIds = new ArrayList<>();
+    /** List of all historical and current event states. */
+    private ArrayList<EventStateEntry> eventStates = new ArrayList<>();
 
-    /** List of all historical and current events */
-    private ArrayList<EventHistoryEntry> eventHistory = new ArrayList<>();
-
-
-    private ArrayList<String> notificationIDs = new ArrayList<String>();
-
+    /** Notification IDs associated with this entrant. */
+    private ArrayList<String> notificationIDs = new ArrayList<>();
 
     /**
-     * Required for Firestore (not sure yet).
+     * Required for Firestore.
      */
     public Entrant() {
         super();
@@ -48,161 +48,185 @@ public class Entrant extends Profile {
     /**
      * Makes an Entrant. The entrant identity is the deviceId, and profileID is set to deviceId.
      *
-     * @param deviceId device identifier
      * @param name entrant name
      * @param email entrant email
-     * @param phone optional phone (optional)
+     * @param phone optional phone
      * @param notificationsEnabled notifications preference
      */
-    public Entrant(String deviceId, String name, String email, String phone, boolean notificationsEnabled) {
-        super(deviceId, name, email, phone, notificationsEnabled, ProfileType.ENTRANT);
-        this.deviceId = deviceId;
+    public Entrant(String name, String email, String phone, boolean notificationsEnabled, android.content.Context context) {
+        super(name, email, phone, notificationsEnabled, ProfileType.ENTRANT);
+
+
+        SessionStore session = new SessionStore(context);
+        //Get stored value
+        this.deviceID =  session.getDeviceID();
+
+        //Brand new install, no deviceID created yet
+        if (this.deviceID == null){
+            this.deviceID = UUID.randomUUID().toString();
+            //Store deviceID locally
+            session.setDeviceID(this.deviceID);
+        }
+        Log.d("Entrant", "DeviceID: " + this.deviceID);
+
     }
 
     /** @return device id */
-    public String getDeviceId() { return deviceId; }
+    public String getDeviceID() { return deviceID; }
 
-    /** @param deviceId device id */
-    public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
+    /** @param deviceID device id */
+    public void setDeviceID(String deviceID) { this.deviceID = deviceID; }
 
-    /** @return list of waiting list event ids */
-    public ArrayList<String> getJoinedWaitingListEventIds() { return joinedWaitingListEventIds; }
+    /** @return event states */
+    public ArrayList<EventStateEntry> getEventStates() { return eventStates; }
 
-    /** @param joinedWaitingListEventIds list of waiting list event ids */
-    public void setJoinedWaitingListEventIds(ArrayList<String> joinedWaitingListEventIds) {
-        this.joinedWaitingListEventIds = joinedWaitingListEventIds;
-    }
+    /** @param eventStates event states */
+    public void setEventStates(ArrayList<EventStateEntry> eventStates) { this.eventStates = eventStates; }
 
-    /** @return event history entries */
-    public ArrayList<EventHistoryEntry> getEventHistory() { return eventHistory; }
+    /** @return notification ids */
+    public ArrayList<String> getNotificationIDs() { return notificationIDs; }
 
-    /** @param eventHistory event history entries */
-    public void setEventHistory(ArrayList<EventHistoryEntry> eventHistory) { this.eventHistory = eventHistory; }
+    /** @param notificationIDs notification ids */
+    public void setNotificationIDs(ArrayList<String> notificationIDs) { this.notificationIDs = notificationIDs; }
 
     /**
-     * Adds an event to history with its info or updates a current history with current status
+     * Adds a new event state or updates an existing one.
+     *
+     * One event should only appear once in this list.
      *
      * @param eventId event ID
-     * @param outcome outcome that occurred
+     * @param status entrant state for that event
      */
-    public void addHistory(String eventId, EventOutcome outcome) {
-        if (eventHistory == null) {
-            eventHistory = new ArrayList<>();
+    public void addOrUpdateEventState(String eventId, EventEntrantStatus status, long timestamp) {
+        if (eventStates == null) {
+            eventStates = new ArrayList<>();
         }
 
-        long nowEpochSec = System.currentTimeMillis() / 1000L;
+//        long nowEpochSec = System.currentTimeMillis() / 1000L;
 
-        // Update existing entry if present since were doing 1 event id in history
-        for (EventHistoryEntry entry : eventHistory) {
+        for (EventStateEntry entry : eventStates) {
             if (entry != null && eventId != null && eventId.equals(entry.getEventId())) {
-                entry.setOutcome(outcome);
-                entry.setTimestampEpochSec(nowEpochSec);
+                entry.setStatus(status);
+                entry.setTimestampEpochSec(timestamp);
                 return;
             }
         }
 
-        // Otherwise add new entry
-        eventHistory.add(new EventHistoryEntry(eventId, outcome, nowEpochSec));
+        eventStates.add(new EventStateEntry(eventId, status, timestamp));
     }
 
     /**
-     * Returns all event IDs where the entrant is currently waitlisted (from history).
+     * Gets event IDs matching a specific status.
      *
+     * @param status status to filter by
      * @return set of event IDs
      */
     @Exclude
-    public Set<String> getWaitlistedEventIds() {
-        return getEventIdsForOutcome(EventOutcome.JOINED_WAITLIST);
-    }
-
-    /**
-     * Returns all event IDs where the entrant has been invited (from history).
-     *
-     * @return set of event IDs
-     */
-    @Exclude
-    public Set<String> getInvitedEventIds() {
-        return getEventIdsForOutcome(EventOutcome.INVITED);
-    }
-
-    /**
-     * Returns all event IDs where the entrant has accepted (from history).
-     *
-     * @return set of event IDs
-     */
-    @Exclude
-    public Set<String> getAcceptedEventIds() {
-        return getEventIdsForOutcome(EventOutcome.ACCEPTED);
-    }
-
-    /**
-     * Returns all event IDs where the entrant has been or has cancelled (from history).
-     *
-     * @return set of event IDs
-     */
-    @Exclude
-    public Set<String> getCancelledEventIds() {
-        return getEventIdsForOutcome(EventOutcome.CANCELLED);
-    }
-
-    /**
-     * Gets event IDs matching a specific outcome.
-     *
-     * @param outcome outcome to filter by
-     * @return set of event IDs
-     */
-    @Exclude
-    private Set<String> getEventIdsForOutcome(EventOutcome outcome) {
+    public Set<String> getEventIdsForStatus(EventEntrantStatus status) {
         Set<String> result = new HashSet<>();
-        if (eventHistory == null || outcome == null) return result;
+        if (eventStates == null || status == null) {
+            return result;
+        }
 
-        for (EventHistoryEntry entry : eventHistory) {
-            if (entry == null) continue;
-            if (entry.getEventId() == null) continue;
-            if (entry.getOutcome() == outcome) {
+        for (EventStateEntry entry : eventStates) {
+            if (entry == null || entry.getEventId() == null) {
+                continue;
+            }
+            if (entry.getStatus() == status) {
                 result.add(entry.getEventId());
             }
         }
         return result;
     }
 
-    public ArrayList<String> getNotificationIDs() {
-        return notificationIDs;
-    }
-
-    public void setNotificationIDs(ArrayList<String> notificationIDs) {
-        this.notificationIDs = notificationIDs;
+    /**
+     * Returns all waitlisted event IDs.
+     *
+     * @return set of event IDs
+     */
+    @Exclude
+    public Set<String> getWaitlistedEventIds() {
+        return getEventIdsForStatus(EventEntrantStatus.WAITLISTED);
     }
 
     /**
-     * Represents one event for an entrant
+     * Returns all invited event IDs.
+     *
+     * @return set of event IDs
      */
-    public static class EventHistoryEntry {
+    @Exclude
+    public Set<String> getInvitedEventIds() {
+        return getEventIdsForStatus(EventEntrantStatus.INVITED);
+    }
 
-        /** Event ID associated with this event */
+    /**
+     * Returns all enrolled event IDs.
+     *
+     * @return set of event IDs
+     */
+    @Exclude
+    public Set<String> getEnrolledEventIds() {
+        return getEventIdsForStatus(EventEntrantStatus.ENROLLED);
+    }
+
+    /**
+     * Returns all cancelled event IDs.
+     *
+     * @return set of event IDs
+     */
+    @Exclude
+    public Set<String> getCancelledEventIds() {
+        return getEventIdsForStatus(EventEntrantStatus.CANCELLED);
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Entrant)) return false;
+        Entrant that = (Entrant) o;
+        return Objects.equals(deviceID, that.deviceID)
+                && Objects.equals(eventStates, that.eventStates)
+                && Objects.equals(notificationIDs, that.notificationIDs)
+                && super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(deviceID, eventStates, notificationIDs, super.hashCode());
+    }
+
+
+
+    /**
+     * Represents one event state for an entrant.
+     */
+    public static class EventStateEntry {
+
+        /** Event ID associated with this state. */
         private String eventId;
 
-        /** Outcome for the event. */
-        private EventOutcome outcome;
+        /** Status for the entrant in this event. */
+        private EventEntrantStatus status;
 
-        /** Timestamp in epoch seconds when the outcome was recorded. */
+        /** Timestamp in epoch seconds when the state was recorded. */
         private long timestampEpochSec;
 
         /**
-         * Required for Firestore (check in).
+         * Required for Firestore.
          */
-        public EventHistoryEntry() {}
+        public EventStateEntry() {}
 
         /**
-         * Constructs an event history entry.
+         * Constructs an event state entry.
          *
          * @param eventId event ID
-         * @param outcome outcome
-         * @param timestampEpochSec epoch seconds timestamp
+         * @param status status
+         * @param timestampEpochSec timestamp
          */
-        public EventHistoryEntry(String eventId, EventOutcome outcome, long timestampEpochSec) {
+        public EventStateEntry(String eventId, EventEntrantStatus status, long timestampEpochSec) {
             this.eventId = eventId;
-            this.outcome = outcome;
+            this.status = status;
             this.timestampEpochSec = timestampEpochSec;
         }
 
@@ -212,36 +236,32 @@ public class Entrant extends Profile {
         /** @param eventId event id */
         public void setEventId(String eventId) { this.eventId = eventId; }
 
-        /** @return outcome */
-        public EventOutcome getOutcome() { return outcome; }
+        /** @return status */
+        public EventEntrantStatus getStatus() { return status; }
 
-        /** @param outcome outcome */
-        public void setOutcome(EventOutcome outcome) { this.outcome = outcome; }
+        /** @param status status */
+        public void setStatus(EventEntrantStatus status) { this.status = status; }
 
-        /** @return timestamp in epoch seconds */
+        /** @return timestamp */
         public long getTimestampEpochSec() { return timestampEpochSec; }
 
-        /** @param timestampEpochSec timestamp in epoch seconds */
+        /** @param timestampEpochSec timestamp */
         public void setTimestampEpochSec(long timestampEpochSec) { this.timestampEpochSec = timestampEpochSec; }
-    }
 
-    /**
-     * Possible outcomes an entrant can experience with an event.
-     */
-    public enum EventOutcome {
-        /** Entrant joined the waiting list. */
-        JOINED_WAITLIST,
-        /** Entrant left the waiting list. */
-        LEFT_WAITLIST,
-        /** Entrant was invited/selected. */
-        INVITED,
-        /** Entrant accepted invitation and confirmed enrollment. */
-        ACCEPTED,
-        /** Entrant declined invitation. */
-        DECLINED,
-        /** Entrant was cancelled or otherwise removed. */
-        CANCELLED,
-        /** Entrant lost the lottery selection. */
-        LOST_LOTTERY
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Entrant.EventStateEntry)) return false;
+            EventStateEntry that = (EventStateEntry) o;
+            return Objects.equals(eventId, that.eventId)
+                    && Objects.equals(status, that.status);
+                    //Do not check for timestamp
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(eventId, status, timestampEpochSec);
+        }
+
     }
 }

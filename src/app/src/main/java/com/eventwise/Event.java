@@ -1,46 +1,48 @@
 package com.eventwise;
 
+import com.google.firebase.firestore.Exclude;
+
 import java.util.ArrayList;
 
 /**
- * Represents an Event
+ * Event for Entrants to join, Organizers to create and Admin's to mod.
  *
- * Stores all event configuration and participant lists :
- * name/description/price, location, topic, poster, registration period,
- * geolocation requirement, waiting list limit, max winners, and participant lists.
+ * @author Becca Irving
+ * @since 2026-03-04
+ * Updated By Becca Irving on 2026-03-09
  */
 public class Event {
 
     /**
      * TODO (Event.java)
      * - Event IDs will be Firestore auto generated so add eventId creation inside DatabaseManager when creating events.
-     * - Decide if Location /Topic should stay strings or become obj IDs
-     * - Add validation rules! (e.g., end after start, registration open before close)!!
-     * - Add DatabaseManager methods to join/leave waiting list
-     * - Add logic to handle a cancelled /declined entrant triggering a redraw (replacement them)
+     * - Decide if Location should stay a string or become an object/ID.
+     * - Add validation rules! (e.g., end after start, registration open before close).
+     * - Add DatabaseManager methods to join/leave waiting list.
+     * - Add logic to handle cancelled/declined entrants triggering redraws.
      * - Add unit tests!!!
      */
 
-    /** Firestore ID for this event (auto gen by Firestore) */
+    /** Firestore ID for this event (auto gen by Firestore). */
     private String eventId;
 
-    /** Profile ID of the organizer who created the event */
+    /** Profile ID of the organizer who created the event. */
     private String organizerProfileId;
 
-    /** Event name */
+    /** Event name. */
     private String name;
 
-    /** Event description */
+    /** Event description. */
     private String description;
 
-    /** Event price */
+    /** Event price. */
     private double price;
 
-    /** Location*/
+    /** Event location/venue. */
     private String locationName;
 
-    /** Topic/category */
-    private String topicName;
+    /** Event tags. */
+    private ArrayList<Tag> tags = new ArrayList<>();
 
     /**
      * Event start time in epoch seconds.
@@ -48,14 +50,12 @@ public class Event {
      */
     private long eventStartEpochSec;
 
-    /**
-     * Event end time in epoch seconds.
-     */
+    /** Event end time in epoch seconds. */
     private long eventEndEpochSec;
 
     /**
-     * Poster reference aka Storage path
-     * Can be null or empty if no poster
+     * Poster reference aka Storage path.
+     * Can be null or empty if no poster.
      */
     private String posterPath;
 
@@ -70,7 +70,7 @@ public class Event {
 
     /**
      * Optional max entrants on waiting list.
-     * Null means unlimited
+     * Null means unlimited.
      */
     private Integer maxWaitingListSize;
 
@@ -80,46 +80,32 @@ public class Event {
     /** Unique QR code identifier linking to this event. */
     private String qrCodeId;
 
-    /** List of entrant profile IDs on the waiting list. */
-    private ArrayList<String> waitingListEntrantIds = new ArrayList<>();
-
-    /** List of entrant profile IDs chosen/invited in lottery. */
-    private ArrayList<String> chosenEntrantIds = new ArrayList<>();
-
-    /** List of entrant profile IDs confirmed/enrolled. */
-    private ArrayList<String> confirmedEntrantIds = new ArrayList<>();
-
-    /** List of entrant profile IDs cancelled/declined/not signed up. */
-    private ArrayList<String> cancelledEntrantIds = new ArrayList<>();
+    /** One list of entrants and their current state for this event. */
+    private ArrayList<EntrantStatusEntry> entrantStatuses = new ArrayList<>();
 
     /**
-     * Required for Firestore (check)
+     * Required for Firestore.
      */
     public Event() {}
 
     /**
      * Constructor for an Event with required fields.
      *
-     * Optional fields can be passed as null/empty:
-     * - posterPath can be null/empty
-     * - maxWaitingListSize can be null (inf)
-     * - qrCodeId can be null until generated
-     *
-     * @param organizerProfileId organizer profile ID (required)
-     * @param name event name (required)
-     * @param description event description (required)
-     * @param price event price (required)
-     * @param locationName location/venue (required)
-     * @param topicName topic/category (required)
-     * @param eventStartEpochSec event start time (epoch seconds) (required)
-     * @param eventEndEpochSec event end time (epoch seconds) (required)
-     * @param registrationOpenEpochSec registration open time (epoch seconds) (required)
-     * @param registrationCloseEpochSec registration close time (epoch seconds) (required)
-     * @param geolocationRequired whether geolocation is required (required)
-     * @param maxWaitingListSize optional max waiting list size (null means inf)
-     * @param maxWinnersToSample max winners to sample (required)
-     * @param posterPath optional poster path (nullable)
-     * @param qrCodeId optional QR code id (nullable)
+     * @param organizerProfileId organizer profile ID
+     * @param name event name
+     * @param description event description
+     * @param price event price
+     * @param locationName location/venue
+     * @param tags event tags
+     * @param eventStartEpochSec event start time
+     * @param eventEndEpochSec event end time
+     * @param registrationOpenEpochSec registration open time
+     * @param registrationCloseEpochSec registration close time
+     * @param geolocationRequired whether geolocation is required
+     * @param maxWaitingListSize optional max waiting list size
+     * @param maxWinnersToSample max winners to sample
+     * @param posterPath optional poster path
+     * @param qrCodeId optional QR code id
      */
     public Event(
             String organizerProfileId,
@@ -127,7 +113,7 @@ public class Event {
             String description,
             double price,
             String locationName,
-            String topicName,
+            ArrayList<Tag> tags,
             long eventStartEpochSec,
             long eventEndEpochSec,
             long registrationOpenEpochSec,
@@ -143,7 +129,9 @@ public class Event {
         this.description = description;
         this.price = price;
         this.locationName = locationName;
-        this.topicName = topicName;
+        if (tags != null) {
+            this.tags = tags;
+        }
         this.eventStartEpochSec = eventStartEpochSec;
         this.eventEndEpochSec = eventEndEpochSec;
         this.registrationOpenEpochSec = registrationOpenEpochSec;
@@ -191,11 +179,11 @@ public class Event {
     /** @param locationName location name */
     public void setLocationName(String locationName) { this.locationName = locationName; }
 
-    /** @return topic name */
-    public String getTopicName() { return topicName; }
+    /** @return tags */
+    public ArrayList<Tag> getTags() { return tags; }
 
-    /** @param topicName topic name */
-    public void setTopicName(String topicName) { this.topicName = topicName; }
+    /** @param tags tags */
+    public void setTags(ArrayList<Tag> tags) { this.tags = tags; }
 
     /** @return start time in epoch seconds */
     public long getEventStartEpochSec() { return eventStartEpochSec; }
@@ -209,10 +197,10 @@ public class Event {
     /** @param eventEndEpochSec end time in epoch seconds */
     public void setEventEndEpochSec(long eventEndEpochSec) { this.eventEndEpochSec = eventEndEpochSec; }
 
-    /** @return poster path (nullable) */
+    /** @return poster path */
     public String getPosterPath() { return posterPath; }
 
-    /** @param posterPath poster path (nullable) */
+    /** @param posterPath poster path */
     public void setPosterPath(String posterPath) { this.posterPath = posterPath; }
 
     /** @return registration open time in epoch seconds */
@@ -233,10 +221,10 @@ public class Event {
     /** @param geolocationRequired geolocation required */
     public void setGeolocationRequired(boolean geolocationRequired) { this.geolocationRequired = geolocationRequired; }
 
-    /** @return max waiting list size (nullable => unlimited) */
+    /** @return max waiting list size */
     public Integer getMaxWaitingListSize() { return maxWaitingListSize; }
 
-    /** @param maxWaitingListSize max waiting list size (nullable => unlimited) */
+    /** @param maxWaitingListSize max waiting list size */
     public void setMaxWaitingListSize(Integer maxWaitingListSize) { this.maxWaitingListSize = maxWaitingListSize; }
 
     /** @return max winners to sample */
@@ -245,64 +233,164 @@ public class Event {
     /** @param maxWinnersToSample max winners */
     public void setMaxWinnersToSample(int maxWinnersToSample) { this.maxWinnersToSample = maxWinnersToSample; }
 
-    /** @return qr code id (nullable until generated) */
+    /** @return qr code id */
     public String getQrCodeId() { return qrCodeId; }
 
-    /** @param qrCodeId qr code id (nullable) */
+    /** @param qrCodeId qr code id */
     public void setQrCodeId(String qrCodeId) { this.qrCodeId = qrCodeId; }
 
-    /** @return waiting list entrant ids */
-    public ArrayList<String> getWaitingListEntrantIds() { return waitingListEntrantIds; }
+    /** @return entrant statuses */
+    public ArrayList<EntrantStatusEntry> getEntrantStatuses() { return entrantStatuses; }
 
-    /** @param waitingListEntrantIds waiting list entrant ids */
-    public void setWaitingListEntrantIds(ArrayList<String> waitingListEntrantIds) { this.waitingListEntrantIds = waitingListEntrantIds; }
-
-    /** @return chosen entrant ids */
-    public ArrayList<String> getChosenEntrantIds() { return chosenEntrantIds; }
-
-    /** @param chosenEntrantIds chosen entrant ids */
-    public void setChosenEntrantIds(ArrayList<String> chosenEntrantIds) { this.chosenEntrantIds = chosenEntrantIds; }
-
-    /** @return confirmed entrant ids */
-    public ArrayList<String> getConfirmedEntrantIds() { return confirmedEntrantIds; }
-
-    /** @param confirmedEntrantIds confirmed entrant ids */
-    public void setConfirmedEntrantIds(ArrayList<String> confirmedEntrantIds) { this.confirmedEntrantIds = confirmedEntrantIds; }
-
-    /** @return cancelled entrant ids */
-    public ArrayList<String> getCancelledEntrantIds() { return cancelledEntrantIds; }
-
-    /** @param cancelledEntrantIds cancelled entrant ids */
-    public void setCancelledEntrantIds(ArrayList<String> cancelledEntrantIds) { this.cancelledEntrantIds = cancelledEntrantIds; }
+    /** @param entrantStatuses entrant statuses */
+    public void setEntrantStatuses(ArrayList<EntrantStatusEntry> entrantStatuses) {
+        this.entrantStatuses = entrantStatuses;
+    }
 
     /**
-     * Checks whether registration is currently open
+     * Adds a new entrant state or updates the entrant's current state.
      *
-     * @return true if now is between open and close times (inclusive!!!)
+     * One entrant should only appear once in this list.
+     *
+     * @param entrantProfileId entrant profile id
+     * @param status entrant status
      */
+    public void addOrUpdateEntrantStatus(String entrantProfileId, EventEntrantStatus status, long timestamp) {
+        if (entrantStatuses == null) {
+            entrantStatuses = new ArrayList<>();
+        }
+
+//        long nowEpochSec = System.currentTimeMillis() / 1000L;
+
+        for (EntrantStatusEntry entry : entrantStatuses) {
+            if (entry != null
+                    && entrantProfileId != null
+                    && entrantProfileId.equals(entry.getEntrantProfileId())) {
+                entry.setStatus(status);
+                entry.setTimestampEpochSec(timestamp);
+                return;
+            }
+        }
+
+        entrantStatuses.add(new EntrantStatusEntry(entrantProfileId, status, timestamp));
+    }
+
+    /**
+     * Returns all entrant IDs matching a given status.
+     *
+     * @param status status to filter by
+     * @return entrant ids
+     */
+    public ArrayList<String> getEntrantIdsByStatus(EventEntrantStatus status) {
+        ArrayList<String> result = new ArrayList<>();
+        if (entrantStatuses == null || status == null) {
+            return result;
+        }
+
+        for (EntrantStatusEntry entry : entrantStatuses) {
+            if (entry == null || entry.getEntrantProfileId() == null) {
+                continue;
+            }
+            if (entry.getStatus() == status) {
+                result.add(entry.getEntrantProfileId());
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Checks whether registration is currently open.
+     *
+     * @return true if now is between open and close times inclusive
+     */
+    @Exclude
     public boolean isRegistrationOpenNow() {
         long nowEpochSec = System.currentTimeMillis() / 1000L;
         return nowEpochSec >= registrationOpenEpochSec && nowEpochSec <= registrationCloseEpochSec;
     }
 
     /**
-     * Returns the current waiting list count
+     * Returns the current waiting list count.
      *
      * @return waiting list count
      */
+    @Exclude
     public int getWaitingListCount() {
-        return waitingListEntrantIds == null ? 0 : waitingListEntrantIds.size();
+        return getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).size();
     }
 
     /**
-     * Checks whether the waiting list is full (if maxWaitingListSize is set).
+     * Returns the current enrolled count.
      *
-     * @return true if full, false o/w
+     * @return enrolled count
      */
+    @Exclude
+    public int getEnrolledCount() {
+        return getEntrantIdsByStatus(EventEntrantStatus.ENROLLED).size();
+    }
+
+    /**
+     * Checks whether the waiting list is full.
+     *
+     * @return true if full, false otherwise
+     */
+    @Exclude
     public boolean isWaitingListFull() {
         if (maxWaitingListSize == null) {
             return false;
         }
         return getWaitingListCount() >= maxWaitingListSize;
+    }
+
+    /**
+     * Represents one entrant's state for this event.
+     */
+    public static class EntrantStatusEntry {
+
+        /** Entrant profile ID. */
+        private String entrantProfileId;
+
+        /** Current status for the entrant. */
+        private EventEntrantStatus status;
+
+        /** Timestamp in epoch seconds when the status was last updated. */
+        private long timestampEpochSec;
+
+        /**
+         * Required for Firestore.
+         */
+        public EntrantStatusEntry() {}
+
+        /**
+         * Constructs an entrant status entry.
+         *
+         * @param entrantProfileId entrant profile id
+         * @param status entrant status
+         * @param timestampEpochSec timestamp
+         */
+        public EntrantStatusEntry(String entrantProfileId, EventEntrantStatus status, long timestampEpochSec) {
+            this.entrantProfileId = entrantProfileId;
+            this.status = status;
+            this.timestampEpochSec = timestampEpochSec;
+        }
+
+        /** @return entrant profile id */
+        public String getEntrantProfileId() { return entrantProfileId; }
+
+        /** @param entrantProfileId entrant profile id */
+        public void setEntrantProfileId(String entrantProfileId) { this.entrantProfileId = entrantProfileId; }
+
+        /** @return status */
+        public EventEntrantStatus getStatus() { return status; }
+
+        /** @param status status */
+        public void setStatus(EventEntrantStatus status) { this.status = status; }
+
+        /** @return timestamp */
+        public long getTimestampEpochSec() { return timestampEpochSec; }
+
+        /** @param timestampEpochSec timestamp */
+        public void setTimestampEpochSec(long timestampEpochSec) { this.timestampEpochSec = timestampEpochSec; }
     }
 }
