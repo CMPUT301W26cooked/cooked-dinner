@@ -35,6 +35,13 @@ public class AdminDatabaseManager extends DatabaseManager {
         return profiles.document(profile.getProfileID()).delete();
     }
 
+    /**
+     * Retrieves an entrant's profile from the database using their unique ID.
+     * This method fetches the profile data and casts it to an {@link Entrant} object.
+     *
+     * @param entrantID The unique identifier of the entrant to retrieve.
+     * @return A {@link Task} that resolves to the {@link Entrant} object associated with the ID.
+     */
     public Task<Entrant> getEntrantFromID(String entrantID) {
         return super.getProfileFromID(entrantID)
                 .continueWith(task -> (Entrant) task.getResult());
