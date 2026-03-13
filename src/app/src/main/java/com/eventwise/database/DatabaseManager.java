@@ -369,7 +369,7 @@ public abstract class DatabaseManager {
 // *************************************************************************************************/
 
     protected Task<Void> addNotification(Notification notification){
-        return notifications.document(notification.getNotificationID()).set(notification);
+        return notifications.document(notification.getNotificationId()).set(notification);
     }
 
     protected Task<Notification> getNotificationByID(String notificationID){
