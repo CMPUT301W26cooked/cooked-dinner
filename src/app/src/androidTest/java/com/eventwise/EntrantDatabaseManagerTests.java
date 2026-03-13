@@ -194,7 +194,7 @@ public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
 
         AdminDatabaseManager adminDbManager = new AdminDatabaseManager(testDb);
         //Get the entrant
-        Entrant returnedEntrant = Tasks.await(adminDbManager.getEntrantFromID(randomEntrantID));
+        Entrant returnedEntrant = Tasks.await(adminDbManager.getEntrantFromId(randomEntrantID));
 
         Assert.assertEquals(entrant, returnedEntrant);
 
