@@ -1,5 +1,6 @@
 package com.eventwise.database;
 
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -17,6 +18,9 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 /**
@@ -166,6 +170,38 @@ public class OrganizerDatabaseManager extends DatabaseManager{
         return tcs.getTask();
     }
 
+//**************************************************************************************************
+// *                                       Event Poster Images
+// *************************************************************************************************/
 
+    
+    // TODO - change local storage to Firebase
+    // saves the event poster image to local storage and updates the event's posterPath field in Firestore 
+    // reference: https://stackoverflow.com/questions/3625837/android-what-is-wrong-with-openfileoutput
+    public Task<String> uploadEventPoster(String eventId, byte[] imageData, Context context) {
+        String localPath = "event_posters_" + eventId + ".jpg";
+
+        TaskCompletionSource<String> tcs = new TaskCompletionSource<>();
+
+        try {
+            FileOutputStream fos = context.openFileOutput(localPath, Context.MODE_PRIVATE);
+            fos.write(imageData);
+            fos.close();
+
+            super.updateEventPosterPath(eventId, localPath)
+                    .addOnSuccessListener(unused -> tcs.setResult(localPath))
+                    .addOnFailureListener(tcs::setException);
+        } catch (IOException e) {
+            tcs.setException(e);
+        }
+
+        return tcs.getTask();
+    }
+
+   
+    // Updates and replace an event poster image in local storage
+    public Task<String> updateEventPoster(String eventId, byte[] imageData, Context context) {
+        return uploadEventPoster(eventId, imageData, context);
+    }
 
 }
