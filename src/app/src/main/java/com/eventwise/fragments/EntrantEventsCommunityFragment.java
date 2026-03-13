@@ -14,8 +14,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Event;
 import com.eventwise.EventAdapter;
+import com.eventwise.EventEntrantStatus;
 import com.eventwise.R;
+import com.eventwise.database.EntrantDatabaseManager;
 import com.eventwise.database.EventSearcherDatabaseManager;
+import com.eventwise.database.SessionStore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,26 +53,40 @@ public class EntrantEventsCommunityFragment extends Fragment {
         eventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         eventList = new ArrayList<>();
-        eventAdapter = new EventAdapter(eventList, EventAdapter.TYPE_JOIN, this::joinEvent);
+        eventAdapter = new EventAdapter(eventList, EventAdapter.TYPE_JOIN, getCurrentEntrantId(), this::joinEvent);
         eventListView.setAdapter(eventAdapter);
         //Get events from Firebase
-        EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();
-
-        eventSearcherDBMan.getEvents()
-                .addOnSuccessListener(returnedList ->{
-                for (int i = 0; i < returnedList.size(); i++) {
-                    Log.d("Event", returnedList.get(i).getName());
-                    eventList.add(returnedList.get(i));
-                }
-                eventAdapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(param-> {
-                    Log.d("Event", "Event failed to get");
-                });
+        refreshEvents();
     }
 
     public void joinEvent(Event event) {
-        Log.d("Event", "Join pressed for: " + event.getName());
+        String entrantId = getCurrentEntrantId();
+        long timestamp = System.currentTimeMillis() / 1000L;
+
+        EntrantDatabaseManager db = new EntrantDatabaseManager();
+
+        boolean alreadyInEvent =
+                event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(entrantId);
+
+        if (alreadyInEvent) {
+            db.unregisterEntrantInEvent(entrantId, event.getEventId(), timestamp)
+                    .addOnSuccessListener(unused -> {
+                        Log.d("Event", "Successfully left: " + event.getName());
+                        refreshEvents();
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Event", "Leave failed", e);
+                    });
+        } else {
+            db.registerEntrantInEvent(entrantId, event.getEventId(), timestamp)
+                    .addOnSuccessListener(unused -> {
+                        Log.d("Event", "Successfully joined: " + event.getName());
+                        refreshEvents();
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Event", "Join failed", e);
+                    });
+        }
     }
 
 
@@ -87,8 +104,24 @@ public class EntrantEventsCommunityFragment extends Fragment {
 
 
     private String getCurrentEntrantId() {
-        // TODO: replace with your real user/profile id
-        return "TEST_USER_001";
+        SessionStore sessionStore = new SessionStore(requireContext());
+        String deviceId = sessionStore.getDeviceID();
+        Log.d("Event", "Current entrant/device ID: " + deviceId);
+        return deviceId;
+    }
+
+    private void refreshEvents() {
+        EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();
+
+        eventSearcherDBMan.getEvents()
+                .addOnSuccessListener(returnedList -> {
+                    eventList.clear();
+                    eventList.addAll(returnedList);
+                    eventAdapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Event", "Failed to refresh events", e);
+                });
     }
 
 }

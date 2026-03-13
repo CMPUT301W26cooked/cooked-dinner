@@ -51,6 +51,7 @@ public abstract class Profile {
     public ProfileType getProfileType() {
         return profileType;
     }
+    public void setProfileID(String profileID) {this.profileID = profileID; }
     public void setName(String name) {
         this.name = name;
     }
