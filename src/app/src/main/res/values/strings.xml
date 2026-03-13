@@ -19,4 +19,30 @@
     <string name="delete_failed">Deletion failed, please try again later.</string>
     <string name="session_expired">Your session has expired. Please log in again.</string>
 
+    <string name="your_events">Your Events</string>
+    <string name="organization_name">Organization Name</string>
+    <string name="view_entrants">View Entrants</string>
+    <string name="edit">Edit</string>
+
+    <string name="cd_back_button">Back button</string>
+    <string name="cd_event_poster">Event poster</string>
+    <string name="cd_qr_code">QR code</string>
+
+    <string name="event_open">EVENT OPEN</string>
+    <string name="event_closed">EVENT CLOSED</string>
+
+    <string name="event_hosted_by">Event Hosted By:</string>
+    <string name="event">Event:</string>
+    <string name="lottery_close">Lottery Close:</string>
+    <string name="registration_close">Registration Close:</string>
+    <string name="location_label">Location:</string>
+    <string name="criteria_guidelines">Criteria / Guidelines:</string>
+
+    <string name="click_images_expanded">click images to view expanded</string>
+
+    <string name="event_spots_format">•  %d event spots</string>
+    <string name="waitlist_format">•  %d on the wait list</string>
+    <string name="registered_format">•  %d registered</string>
+    <string name="time_range_format">%s – %s</string>
+
 </resources>

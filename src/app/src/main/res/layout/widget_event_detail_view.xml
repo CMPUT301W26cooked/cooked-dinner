@@ -56,9 +56,10 @@
             android:layout_marginBottom="16dp">
 
             <TextView
+                android:id="@+id/click_hint_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="click images to view expanded"
+                android:text="@string/click_images_expanded"
                 android:textColor="@color/moss_green"
                 android:textSize="12sp"
                 android:layout_marginEnd="16dp" />
@@ -105,9 +106,10 @@
                 android:layout_marginTop="4dp">
 
                 <TextView
+                    android:id="@+id/event_hosted_by_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Event Hosted By: "
+                    android:text="@string/event_hosted_by"
                     android:textColor="@color/moss_green"
                     android:textSize="14sp" />
 
@@ -118,14 +120,15 @@
                     android:text="@string/organization_name"
                     android:textColor="@color/forest_green"
                     android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:layout_marginStart="4dp" />
             </LinearLayout>
 
             <TextView
                 android:id="@+id/event_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="EVENT OPEN"
+                android:text="@string/event_open"
                 android:textColor="@color/moss_green"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -157,9 +160,10 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/event_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Event:"
+                    android:text="@string/event"
                     android:textColor="@color/forest_green"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -219,9 +223,10 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/lottery_close_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Lottery Close:"
+                    android:text="@string/lottery_close"
                     android:textColor="@color/forest_green"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -246,9 +251,10 @@
                     android:layout_marginBottom="12dp" />
 
                 <TextView
+                    android:id="@+id/registration_close_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Registration Close:"
+                    android:text="@string/registration_close"
                     android:textColor="@color/forest_green"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -281,9 +287,10 @@
             android:layout_marginBottom="16dp">
 
             <TextView
+                android:id="@+id/location_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Location:"
+                android:text="@string/location_label"
                 android:textColor="@color/forest_green"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -320,9 +327,10 @@
             android:layout_marginBottom="20dp">
 
             <TextView
+                android:id="@+id/criteria_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Criteria / Guidelines:"
+                android:text="@string/criteria_guidelines"
                 android:textColor="@color/forest_green"
                 android:textSize="14sp"
                 android:textStyle="bold"
