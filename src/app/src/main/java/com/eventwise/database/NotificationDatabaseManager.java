@@ -61,7 +61,7 @@ public class NotificationDatabaseManager extends DatabaseManager {
         //Make a batch of writes that complete atomically
         WriteBatch batch = super.db.batch();
 
-        for (String entrantID : notification.getEntrantIDs()) {
+        for (String entrantID : notification.getEntrantIds()) {
             DocumentReference docRef = profiles.document(entrantID);
             batch.update(docRef, "notificationIDs", FieldValue.arrayUnion(notification.getNotificationId()));
         }
@@ -123,7 +123,7 @@ public class NotificationDatabaseManager extends DatabaseManager {
                 .addOnSuccessListener(notification -> {
                     if (notification != null) {
                         //Set return to Entrants of Notification
-                        tcs.setResult(notification.getEntrantIDs());
+                        tcs.setResult(notification.getEntrantIds());
                     } else {
                         tcs.setException(new DatabaseException("Error getting EntrantsIDs"));
                     }
