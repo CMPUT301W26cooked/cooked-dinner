@@ -17,31 +17,50 @@ import java.util.Locale;
  * @version 1.0
  * @since 2026-03-03
  * Updated By Becca Irving on 2026-03-09
+ * Updated By Luke Forster on 2026-03-12
  * TODO: The primary secondary  logic in onBindViewHolder is wonky please help.
  */
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
 
+    //Widget event types. Add as needed.
     public static final int TYPE_JOIN = 0;
     public static final int TYPE_CANCEL = 1;
     public static final int TYPE_EDIT_LEAVE = 2;
     public static final int TYPE_EDIT_CANCEL = 3;
+    public static final int TYPE_LEAVE = 4;
     private final List<Event> eventList;
     private int mode;
+    private final Entrant currentEntrant;
 
     public interface OnPrimaryButtonClickListener {
         void onPrimaryButtonClick(Event event);
     }
 
     private final OnPrimaryButtonClickListener primaryButtonClickListener;
-    public EventAdapter(List<Event> eventList, int mode, OnPrimaryButtonClickListener primaryButtonClickListener) {
+    public EventAdapter(List<Event> eventList, int mode, Entrant currentEntrant, OnPrimaryButtonClickListener primaryButtonClickListener) {
         this.eventList = eventList;
         this.mode = mode;
+        this.currentEntrant = currentEntrant;
         this.primaryButtonClickListener = primaryButtonClickListener;
     }
 
     @Override
     public int getItemViewType(int position) {
+        Event event = eventList.get(position);
+
+        if (mode == TYPE_EDIT_LEAVE || mode == TYPE_EDIT_CANCEL || mode == TYPE_CANCEL) {
+            return mode;
+        }
+
+        if (mode == TYPE_JOIN) {
+            if (hasJoinedEvent(event)) {
+                return TYPE_LEAVE;
+            } else {
+                return TYPE_JOIN;
+            }
+        }
+
         return mode;
     }
 
@@ -102,6 +121,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         } else if(viewType == TYPE_CANCEL) {
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.widget_cancel_event, parent, false);
+        } else if (viewType == TYPE_LEAVE) {
+            view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.widget_cancel_event, parent, false);
         } else {
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.widget_join_event, parent, false);
@@ -113,15 +135,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
 
         Event event = eventList.get(position);
+        int viewType = getItemViewType(position);
 
         holder.eventName.setText(event.getName());
         holder.eventDescription.setText(event.getDescription());
-
         holder.eventLocationText.setText(event.getLocationName());
-
         holder.eventStartDateText.setText(formatEpoch(event.getEventStartEpochSec()));
         holder.eventEndDateText.setText(formatEpoch(event.getEventEndEpochSec()));
-
         holder.eventOrganization.setText("Organization Name");
 
         int spots = event.getMaxWinnersToSample();
@@ -133,11 +153,15 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         holder.eventRegisteredCount.setText("•  " + registered + " registered");
 
         if (holder.primaryButton != null) {
-            if (mode == TYPE_JOIN) {
+            if (viewType == TYPE_JOIN) {
                 if (event.isRegistrationOpenNow() && !event.isWaitingListFull()) {
+                    holder.primaryButton.setText("Join");
+                    holder.primaryButton.setEnabled(event.isRegistrationOpenNow() && !event.isWaitingListFull());
+                } else if (mode == TYPE_LEAVE) {
+                    holder.primaryButton.setText("Leave");
                     holder.primaryButton.setEnabled(true);
                 } else {
-                    holder.primaryButton.setEnabled(false);
+                    holder.primaryButton.setEnabled(true);
                 }
             }
             holder.primaryButton.setOnClickListener(v -> {
@@ -157,5 +181,16 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         Date date = new Date(epochSeconds * 1000L);
         SimpleDateFormat sdf = new SimpleDateFormat("MMM d yyyy, h:mm a", Locale.getDefault());
         return sdf.format(date);
+    }
+
+    //needed for checking what widget mode it should be in
+    private boolean hasJoinedEvent(Event event) {
+        if (currentEntrant == null || event == null || event.getEventId() == null) {
+            return false;
+        }
+
+        String eventId = event.getEventId();
+
+        return currentEntrant.getWaitlistedEventIds().contains(eventId) || currentEntrant.getInvitedEventIds().contains(eventId) || currentEntrant.getEnrolledEventIds().contains(eventId);
     }
 }

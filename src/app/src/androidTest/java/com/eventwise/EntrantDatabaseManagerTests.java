@@ -1,21 +1,13 @@
 package com.eventwise;
 
-import android.content.Context;
-import androidx.test.core.app.ApplicationProvider;
-
-import com.eventwise.database.DatabaseManager;
 import com.eventwise.database.EntrantDatabaseManager;
 import com.eventwise.database.OrganizerDatabaseManager;
 import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.UUID;
@@ -80,7 +72,7 @@ public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
         EntrantDatabaseManager dbManager = new EntrantDatabaseManager(testDb);
 
         Tasks.await(dbManager.addEntrant(entrant));
-        DocumentSnapshot snapshot = Tasks.await(testDb.collection("profiles").document(entrant.getProfileID()).get());
+        DocumentSnapshot snapshot = Tasks.await(testDb.collection("profiles").document(entrant.getProfileId()).get());
         Assert.assertTrue(snapshot.exists());
     }
 

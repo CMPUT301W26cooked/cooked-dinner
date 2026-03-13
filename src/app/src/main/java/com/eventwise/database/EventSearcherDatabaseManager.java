@@ -25,4 +25,9 @@ public class EventSearcherDatabaseManager extends DatabaseManager{
         return events.document(event.getEventId()).delete();
     }
 
+    //Pablo I had to touch your stuff again...
+    public Task<Void> updateEvent(Event event) {
+        return events.document(event.getEventId()).set(event);
+    }
+
 }

@@ -3,7 +3,6 @@ package com.eventwise.database;
 
 import com.eventwise.Entrant;
 import com.eventwise.Event;
-import com.eventwise.Location;
 import com.eventwise.Profile;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -32,11 +31,11 @@ public class AdminDatabaseManager extends DatabaseManager {
     }
 
     public Task<Void> removeProfile(Profile profile) {
-        return profiles.document(profile.getProfileID()).delete();
+        return profiles.document(profile.getProfileId()).delete();
     }
 
-    public Task<Entrant> getEntrantFromID(String entrantID) {
-        return super.getProfileFromID(entrantID)
+    public Task<Entrant> getEntrantFromId(String entrantId) {
+        return super.getProfileFromId(entrantId)
                 .continueWith(task -> (Entrant) task.getResult());
     }
 //    public Task<Void> removeLocation(Location location) {

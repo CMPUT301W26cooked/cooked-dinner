@@ -44,7 +44,7 @@ public class Notification {
     Notification(){};
 
 
-    public String getNotificationID() {
+    public String getNotificationId() {
         return notificationID;
     }
 

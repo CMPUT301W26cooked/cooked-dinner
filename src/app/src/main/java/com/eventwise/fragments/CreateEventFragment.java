@@ -1,5 +1,6 @@
 package com.eventwise.fragments;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -177,8 +178,8 @@ public class CreateEventFragment extends Fragment {
                 }
             }
 
-            // Placeholder values for fields not yet wired from UI/user profile
-            String organizerProfileId = "TEMP_ORGANIZER_ID";
+            // UPDATE! linked the profiles to IDs. Yippee Yay.
+            String organizerProfileId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
             double price = 0.00;
             long registrationOpenEpochSec = System.currentTimeMillis() / 1000L;
             String posterPath = null;

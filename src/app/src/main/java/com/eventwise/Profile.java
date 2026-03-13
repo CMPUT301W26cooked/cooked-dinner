@@ -1,7 +1,5 @@
 package com.eventwise;
 
-import java.util.ArrayList;
-import java.util.UUID;
 /**
  * The profile class is a basic abstract 
  * 
@@ -32,7 +30,7 @@ public abstract class Profile {
 
 
     //Getters and setters for the fields
-    public String getProfileID() {
+    public String getProfileId() {
         return profileID;
     }
     public String getName() {
