@@ -44,8 +44,8 @@ public class NotificationDatabaseManager extends DatabaseManager {
         super(db);
     }
 
-    public Task<Notification> getNotificationByID(String notificationID) {
-        return super.getNotificationByID(notificationID);
+    public Task<Notification> getNotificationById(String notificationId) {
+        return super.getNotificationById(notificationId);
     }
 
     /**
@@ -90,7 +90,7 @@ public class NotificationDatabaseManager extends DatabaseManager {
         TaskCompletionSource<ArrayList<String>> tcs = new TaskCompletionSource<>();
 
         //Get the entrant
-        super.getProfileFromID(entrantID)
+        super.getProfileFromId(entrantID)
                 .addOnSuccessListener(profile -> {
                     if (profile instanceof Entrant) {
                         Entrant entrant = (Entrant) profile;
@@ -119,7 +119,7 @@ public class NotificationDatabaseManager extends DatabaseManager {
     public Task<ArrayList<String>> getEntrantIDsByNotificationID(String notificationID) {
         TaskCompletionSource<ArrayList<String>> tcs = new TaskCompletionSource<>();
 
-        super.getNotificationByID(notificationID)
+        super.getNotificationById(notificationID)
                 .addOnSuccessListener(notification -> {
                     if (notification != null) {
                         //Set return to Entrants of Notification

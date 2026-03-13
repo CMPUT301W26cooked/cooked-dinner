@@ -18,6 +18,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
+import com.eventwise.Profile;
 
 /**
  * Manages database operations specific to entrants, including event registration,
@@ -187,6 +188,9 @@ public class EntrantDatabaseManager extends DatabaseManager {
         return tcs.getTask();
     }
 
+    public Task<Profile> getEntrantProfileById(String profileID) {
+        return super.getProfileFromId(profileID);
+    }
 
 
     /**

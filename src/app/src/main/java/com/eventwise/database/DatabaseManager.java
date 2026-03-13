@@ -1,8 +1,5 @@
 package com.eventwise.database;
 
-import android.provider.ContactsContract;
-import android.util.Log;
-
 import com.eventwise.Admin;
 import com.eventwise.Entrant;
 import com.eventwise.Event;
@@ -21,9 +18,6 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import org.checkerframework.checker.units.qual.A;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -96,7 +90,7 @@ public abstract class DatabaseManager {
      * @return A {@link Task} representing the asynchronous database write operation.
      */
     protected Task<Void> addProfile(Profile profile) {
-        return profiles.document(profile.getProfileID()).set(profile);
+        return profiles.document(profile.getProfileId()).set(profile);
     }
 
 
@@ -110,16 +104,16 @@ public abstract class DatabaseManager {
      * @return A {@link Task} that will be completed when the update is successful.
      */
     protected Task<Void> updateProfile(Profile profile) {
-        return profiles.document(profile.getProfileID()).get().continueWithTask(task -> {
+        return profiles.document(profile.getProfileId()).get().continueWithTask(task -> {
             if (!task.isSuccessful() || !task.getResult().exists()) {
                 return Tasks.forException(new DatabaseException("Profile does not exist"));
             }
-            return profiles.document(profile.getProfileID()).set(profile);
+            return profiles.document(profile.getProfileId()).set(profile);
         });
     }
 
-    protected Task<Void> deleteProfileFromID(String profileID) {
-        return profiles.document(profileID).delete();
+    protected Task<Void> deleteProfileFromId(String profileId) {
+        return profiles.document(profileId).delete();
     }
 
 
@@ -129,14 +123,14 @@ public abstract class DatabaseManager {
      * This method performs an asynchronous fetch and returns a Task that will resolve
      * to the Profile object if found.
      *
-     * @param profileID The unique identifier of the profile to retrieve.
+     * @param profileId The unique identifier of the profile to retrieve.
      * @return A {@link Task} that will contain the {@link Profile} object upon success,
      *         or a {@link DatabaseException} if the profile does not exist or the fetch fails.
      */
-    protected Task<Profile> getProfileFromID(String profileID) {
+    protected Task<Profile> getProfileFromId(String profileId) {
         TaskCompletionSource<Profile> tcs = new TaskCompletionSource<>();
 
-        profiles.document(profileID).get().addOnSuccessListener(documentSnapshot -> {
+        profiles.document(profileId).get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
                 if (documentSnapshot.getData().get("profileType").equals(ProfileType.ENTRANT.toString())){
                     tcs.setResult(documentSnapshot.toObject(Entrant.class));
@@ -372,10 +366,10 @@ public abstract class DatabaseManager {
         return notifications.document(notification.getNotificationId()).set(notification);
     }
 
-    protected Task<Notification> getNotificationByID(String notificationID){
+    protected Task<Notification> getNotificationById(String notificationId){
         TaskCompletionSource<Notification> tcs = new TaskCompletionSource<>();
 
-        notifications.document(notificationID).get()
+        notifications.document(notificationId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         Notification notification = documentSnapshot.toObject(Notification.class);

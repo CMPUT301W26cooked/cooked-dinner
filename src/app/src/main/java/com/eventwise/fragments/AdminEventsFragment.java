@@ -1,6 +1,7 @@
 package com.eventwise.fragments;
 
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.EventAdapter;
 import com.eventwise.R;
@@ -32,8 +34,9 @@ public class AdminEventsFragment extends Fragment {
     private RecyclerView eventListView;
     private EventAdapter eventAdapter;
     private List<Event> eventList;
-
     private EventSearcherDatabaseManager eventSearcherDBMan;
+    private Entrant currentEntrant;
+
 
     public AdminEventsFragment() {
     }
@@ -51,8 +54,20 @@ public class AdminEventsFragment extends Fragment {
         eventListView = view.findViewById(R.id.list_view);
         eventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
+        //This line links device ID to the database stuff... IDRKWID though...
+        String deviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        //Theres gotta be a better way to be doing this shit...
+        currentEntrant = new Entrant(
+                deviceId,
+                "Test User",
+                "test@email.com",
+                "",
+                true
+        );
+
         eventList = new ArrayList<>();
-        eventAdapter = new EventAdapter(eventList, EventAdapter.TYPE_CANCEL, this::deleteEvent);
+        eventAdapter = new EventAdapter(eventList, EventAdapter.TYPE_CANCEL, this.currentEntrant, this::deleteEvent);
         eventListView.setAdapter(eventAdapter);
         //Get events from Firebase
         EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();

@@ -23,8 +23,8 @@ public class Event {
      * - Add unit tests!!!
      */
 
-    /** Firestore ID for this event (auto gen by Firestore). */
-    private String eventId;
+    /** Firestore ID f1772300000or this event (auto gen by Firestore). */
+    private String eventID;
 
     /** Profile ID of the organizer who created the event. */
     private String organizerProfileId;
@@ -144,10 +144,10 @@ public class Event {
     }
 
     /** @return event id */
-    public String getEventId() { return eventId; }
+    public String getEventId() { return eventID; }
 
-    /** @param eventId event id */
-    public void setEventId(String eventId) { this.eventId = eventId; }
+    /** @param eventID event id */
+    public void setEventId(String eventID) { this.eventID = eventID; }
 
     /** @return organizer profile id */
     public String getOrganizerProfileId() { return organizerProfileId; }
