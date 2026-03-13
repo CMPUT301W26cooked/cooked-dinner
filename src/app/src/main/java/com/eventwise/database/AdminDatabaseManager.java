@@ -31,7 +31,7 @@ public class AdminDatabaseManager extends DatabaseManager {
     }
 
     public Task<Void> removeProfile(Profile profile) {
-        return profiles.document(profile.getProfileId()).delete();
+        return profiles.document(profile.getProfileID()).delete();
     }
 
     public Task<Entrant> getEntrantFromId(String entrantId) {

@@ -90,7 +90,7 @@ public abstract class DatabaseManager {
      * @return A {@link Task} representing the asynchronous database write operation.
      */
     protected Task<Void> addProfile(Profile profile) {
-        return profiles.document(profile.getProfileId()).set(profile);
+        return profiles.document(profile.getProfileID()).set(profile);
     }
 
 
@@ -104,11 +104,11 @@ public abstract class DatabaseManager {
      * @return A {@link Task} that will be completed when the update is successful.
      */
     protected Task<Void> updateProfile(Profile profile) {
-        return profiles.document(profile.getProfileId()).get().continueWithTask(task -> {
+        return profiles.document(profile.getProfileID()).get().continueWithTask(task -> {
             if (!task.isSuccessful() || !task.getResult().exists()) {
                 return Tasks.forException(new DatabaseException("Profile does not exist"));
             }
-            return profiles.document(profile.getProfileId()).set(profile);
+            return profiles.document(profile.getProfileID()).set(profile);
         });
     }
 

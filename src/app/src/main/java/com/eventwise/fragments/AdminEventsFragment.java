@@ -62,8 +62,8 @@ public class AdminEventsFragment extends Fragment {
                 deviceId,
                 "Test User",
                 "test@email.com",
-                "",
-                true
+                true,
+                requireContext()
         );
 
         eventList = new ArrayList<>();
