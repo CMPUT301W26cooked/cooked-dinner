@@ -85,19 +85,19 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
 
     @Test
     public void createNotification() throws ExecutionException, InterruptedException {
-        Notification notification = new Notification(randomEntrantIDs, "TestOrganizerProfileID", randomEventID, Notification.NotificationType.CHOSEN, "Test Message");
+        Notification notification = new Notification(randomEntrantIDs, "TestOrganizerProfileID", randomEventID, Notification.NotificationType.INVITED, "Test Message");
         NotificationDatabaseManager dbManager = new NotificationDatabaseManager(testDb);
 
         Tasks.await(dbManager.createNotification(notification));
-        DocumentSnapshot snapshot = Tasks.await(testDb.collection("notifications").document(notification.getNotificationID()).get());
+        DocumentSnapshot snapshot = Tasks.await(testDb.collection("notifications").document(notification.getNotificationId()).get());
         Assert.assertTrue(snapshot.exists());
-        Log.d("createNotification", "NotificationID:" + notification.getNotificationID());
+        Log.d("createNotification", "NotificationID:" + notification.getNotificationId());
     }
 
     @Test
     public void verifyNotificationInEntrantsNotificationList() throws ExecutionException, InterruptedException {
         //Create Notification with target entrants
-        Notification notification = new Notification(randomEntrantIDs, "TestOrganizerProfileID", randomEventID, Notification.NotificationType.CHOSEN, "Test Message");
+        Notification notification = new Notification(randomEntrantIDs, "TestOrganizerProfileID", randomEventID, Notification.NotificationType.INVITED, "Test Message");
         NotificationDatabaseManager notificationDbManager = new NotificationDatabaseManager(testDb);
 
         Tasks.await(notificationDbManager.createNotification(notification));
@@ -108,21 +108,21 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
         //For each entrant
         for (String entrantID : randomEntrantIDs) {
             Entrant entrant = Tasks.await(adminDbManager.getEntrantFromID(entrantID));
-            Assert.assertTrue(entrant.getNotificationIDs().contains(notification.getNotificationID()));
+            Assert.assertTrue(entrant.getNotificationIDs().contains(notification.getNotificationId()));
         }
     }
 
     @Test
     public void verifyEntrantsInNotificationEntrantList() throws ExecutionException, InterruptedException {
         //Create Notification with target entrants
-        Notification notification = new Notification(randomEntrantIDs, "TestOrganizerProfileID", randomEventID, Notification.NotificationType.CHOSEN, "Test Message");
+        Notification notification = new Notification(randomEntrantIDs, "TestOrganizerProfileID", randomEventID, Notification.NotificationType.INVITED, "Test Message");
         NotificationDatabaseManager notificationDbManager = new NotificationDatabaseManager(testDb);
 
         Tasks.await(notificationDbManager.createNotification(notification));
 
-        Notification returnedNotification = Tasks.await(notificationDbManager.getNotificationByID(notification.getNotificationID()));
+        Notification returnedNotification = Tasks.await(notificationDbManager.getNotificationByID(notification.getNotificationId()));
 
-        for (String entrantID : returnedNotification.getEntrantsIDs()){
+        for (String entrantID : returnedNotification.getEntrantsIds()){
             Assert.assertTrue(randomEntrantIDs.contains(entrantID));
         }
 
@@ -130,11 +130,11 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
 
     @Test
     public void verifyNoDataLoss() throws ExecutionException, InterruptedException {
-        Notification notification = new Notification(randomEntrantIDs, "TestOrganizerProfileID", randomEventID, Notification.NotificationType.CHOSEN, "Test Message");
+        Notification notification = new Notification(randomEntrantIDs, "TestOrganizerProfileID", randomEventID, Notification.NotificationType.INVITED, "Test Message");
 
         NotificationDatabaseManager notificationDbManager = new NotificationDatabaseManager(testDb);
         Tasks.await(notificationDbManager.createNotification(notification));
-        Notification returnedNotification = Tasks.await(notificationDbManager.getNotificationByID(notification.getNotificationID()));
+        Notification returnedNotification = Tasks.await(notificationDbManager.getNotificationByID(notification.getNotificationId()));
         Assert.assertEquals(notification, returnedNotification);
 
     }
