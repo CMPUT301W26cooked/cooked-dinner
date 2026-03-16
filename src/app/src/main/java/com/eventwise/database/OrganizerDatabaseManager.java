@@ -171,9 +171,16 @@ public class OrganizerDatabaseManager extends DatabaseManager{
 
         events.get().addOnSuccessListener(result -> {
             for (DocumentSnapshot document : result) {
+                // some events were mising their Id we need to restore the event Id for these.
                 Object organizerProfileId = document.getData() == null ? null : document.getData().get("organizerProfileId");
                 if (organizerProfileId != null && organizerProfileId.equals(organizerId)) {
-                    eventsArray.add(document.toObject(Event.class));
+                    Event event = document.toObject(Event.class);
+                    if (event != null) {
+                        if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+                            event.setEventId(document.getId());
+                        }
+                        eventsArray.add(event);
+                    }
                 }
             }
             tcs.setResult(eventsArray);

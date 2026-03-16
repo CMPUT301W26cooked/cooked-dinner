@@ -59,6 +59,7 @@ public class OrganizerYourEventsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         eventSearcherDBMan = new EventSearcherDatabaseManager();
+        organizerDatabaseManager = new OrganizerDatabaseManager();
         View createEventButton = view.findViewById(R.id.create_new_event_button);
 
         // Create New Event button
@@ -78,6 +79,7 @@ public class OrganizerYourEventsFragment extends Fragment {
         eventAdapter = new EventAdapter(
                 eventList,
                 EventAdapter.TYPE_EDIT_CANCEL,
+                this::openEditEvent,
                 this::deleteEvent,
                 this::openEventDetail
         );
@@ -113,6 +115,11 @@ public class OrganizerYourEventsFragment extends Fragment {
      * Loads only the current organizer's events.
      */
     private void loadOrganizerEvents() {
+        if (organizerDatabaseManager == null) {
+            Log.e("OrganizerEvents", "OrganizerDatabaseManager is null in loadOrganizerEvents");
+            return;
+        }
+
         organizerDatabaseManager.getOrganizersCreatedEventsFromOrganizerId(TEST_ORGANIZER_ID)
                 .addOnSuccessListener(returnedList -> {
                     eventList.clear();
@@ -143,6 +150,15 @@ public class OrganizerYourEventsFragment extends Fragment {
                     Log.d("Event", "Event deleted successfully...");
                 })
                 .addOnFailureListener(e -> Log.e("Event", "Event delete failed...", e));
+    }
+
+    /**
+     * Opens the edit event detail page for one event.
+     *
+     * @param event event to open
+     */
+    private void openEditEvent(Event event) {
+        openEventDetail(event);
     }
 
     // ====== New method start ======

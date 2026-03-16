@@ -36,11 +36,17 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         void onPrimaryButtonClick(Event event);
     }
 
+    public interface OnSecondaryButtonClickListener {
+        void onSecondaryButtonClick(Event event);
+    }
+
     public interface OnEventCardClickListener {
         void onEventCardClick(Event event);
     }
 
     private final OnPrimaryButtonClickListener primaryButtonClickListener;
+
+    private final OnSecondaryButtonClickListener secondaryButtonClickListener;
     private final OnEventCardClickListener eventCardClickListener;
 
     /**
@@ -50,12 +56,21 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
      * @param mode widget mode to use
      * @param primaryButtonClickListener primary button callback
      */
-    public EventAdapter(List<Event> eventList, int mode, OnPrimaryButtonClickListener primaryButtonClickListener) {
-        this(eventList, mode, null, primaryButtonClickListener, null);
+    public EventAdapter(
+            List<Event> eventList,
+            int mode,
+            OnPrimaryButtonClickListener primaryButtonClickListener
+    ) {
+        this(eventList, mode, null, primaryButtonClickListener, null, null);
     }
 
-    public EventAdapter(List<Event> eventList, int mode, String currentEntrantId, OnPrimaryButtonClickListener primaryButtonClickListener) {
-        this(eventList, mode, currentEntrantId, primaryButtonClickListener, null);
+    public EventAdapter(
+            List<Event> eventList,
+            int mode,
+            String currentEntrantId,
+            OnPrimaryButtonClickListener primaryButtonClickListener
+    ) {
+        this(eventList, mode, currentEntrantId, primaryButtonClickListener, null, null);
     }
 
     public EventAdapter(
@@ -64,7 +79,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             OnPrimaryButtonClickListener primaryButtonClickListener,
             OnEventCardClickListener eventCardClickListener
     ) {
-        this(eventList, mode, null, primaryButtonClickListener, eventCardClickListener);
+        this(eventList, mode, null, primaryButtonClickListener, null, eventCardClickListener);
     }
 
     public EventAdapter(
@@ -74,10 +89,32 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             OnPrimaryButtonClickListener primaryButtonClickListener,
             OnEventCardClickListener eventCardClickListener
     ) {
+        this(eventList, mode, currentEntrantId, primaryButtonClickListener, null, eventCardClickListener);
+    }
+
+    public EventAdapter(
+            List<Event> eventList,
+            int mode,
+            OnPrimaryButtonClickListener primaryButtonClickListener,
+            OnSecondaryButtonClickListener secondaryButtonClickListener,
+            OnEventCardClickListener eventCardClickListener
+    ) {
+        this(eventList, mode, null, primaryButtonClickListener, secondaryButtonClickListener, eventCardClickListener);
+    }
+
+    public EventAdapter(
+            List<Event> eventList,
+            int mode,
+            String currentEntrantId,
+            OnPrimaryButtonClickListener primaryButtonClickListener,
+            OnSecondaryButtonClickListener secondaryButtonClickListener,
+            OnEventCardClickListener eventCardClickListener
+    ) {
         this.eventList = eventList;
         this.mode = mode;
         this.currentEntrantId = currentEntrantId;
         this.primaryButtonClickListener = primaryButtonClickListener;
+        this.secondaryButtonClickListener = secondaryButtonClickListener;
         this.eventCardClickListener = eventCardClickListener;
     }
 
@@ -202,6 +239,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             holder.primaryButton.setOnClickListener(v -> {
                 if (primaryButtonClickListener != null) {
                     primaryButtonClickListener.onPrimaryButtonClick(event);
+                }
+            });
+        }
+
+        if (holder.secondaryButton != null) {
+            holder.secondaryButton.setOnClickListener(v -> {
+                if (secondaryButtonClickListener != null) {
+                    secondaryButtonClickListener.onSecondaryButtonClick(event);
                 }
             });
         }

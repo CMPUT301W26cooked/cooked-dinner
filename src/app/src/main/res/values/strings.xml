@@ -43,6 +43,13 @@
     <string name="event_spots_format">•  %d event spots</string>
     <string name="waitlist_format">•  %d on the wait list</string>
     <string name="registered_format">•  %d registered</string>
-    <string name="time_range_format">%s – %s</string>
+    <string name="time_range_format" formatted="false">%s – %s</string>
+
+    <string name="my_events">My Events</string>
+    <string name="events_community">Events Community</string>
+    <string name="join">Join</string>
+    <string name="criteria_here">Criteria here</string>
+    <string name="event_poster_hint">Event Poster\nHere If Exists</string>
+    <string name="cd_counts_icon">Counts icon</string>
 
 </resources>

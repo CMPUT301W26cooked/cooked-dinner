@@ -6,8 +6,7 @@ import java.util.UUID;
 
 public class Notification {
 
-
-    //TODO:
+    // TODO:
     // - Add other enum types
     public enum NotificationType {
         WAITING_LIST,
@@ -23,7 +22,12 @@ public class Notification {
     private String organizerId;
     private String eventId;
     private String type;
+
+    // Keep both for compatibility with old and incoming code/Firebase docs
     private String message;
+    private String messageBody;
+    private String messageTitle;
+
     private Long timestamp;
 
     public Notification(ArrayList<String> entrantIds, String organizerId, String eventId,
@@ -34,6 +38,7 @@ public class Notification {
         this.eventId = eventId;
         this.type = type.name();
         this.message = message;
+        this.messageBody = message;
         this.timestamp = System.currentTimeMillis() / 1000L;
     }
 
@@ -56,6 +61,11 @@ public class Notification {
         this.entrantIds = entrantIds;
     }
 
+    // Keep typo-version too because other code may already call it
+    public ArrayList<String> getEntrantsIds() {
+        return entrantIds;
+    }
+
     public String getOrganizerId() {
         return organizerId;
     }
@@ -64,32 +74,12 @@ public class Notification {
         this.organizerId = organizerId;
     }
 
-    public void setEventId(String eventId) {
-        this.eventId = eventId;
-    }
-
     public String getEventId() {
         return eventId;
     }
 
-    public ArrayList<String> getEntrantsIds() {
-        return entrantIds;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public String setMessage(String message) {
-        return this.message = message;
-    }
-
-    public Long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
     }
 
     public NotificationType getType() {
@@ -108,6 +98,41 @@ public class Notification {
         this.type = type;
     }
 
+    public String getMessage() {
+        return message != null ? message : messageBody;
+    }
+
+    public String setMessage(String message) {
+        this.message = message;
+        this.messageBody = message;
+        return this.message;
+    }
+
+    public String getMessageBody() {
+        return messageBody != null ? messageBody : message;
+    }
+
+    public void setMessageBody(String messageBody) {
+        this.messageBody = messageBody;
+        this.message = messageBody;
+    }
+
+    public String getMessageTitle() {
+        return messageTitle;
+    }
+
+    public void setMessageTitle(String messageTitle) {
+        this.messageTitle = messageTitle;
+    }
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -119,11 +144,21 @@ public class Notification {
                 && Objects.equals(eventId, that.eventId)
                 && Objects.equals(type, that.type)
                 && Objects.equals(timestamp, that.timestamp)
-                && Objects.equals(message, that.message);
+                && Objects.equals(getMessage(), that.getMessage())
+                && Objects.equals(messageTitle, that.messageTitle);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(notificationId, entrantIds, organizerId, eventId, type, timestamp, message);
+        return Objects.hash(
+                notificationId,
+                entrantIds,
+                organizerId,
+                eventId,
+                type,
+                timestamp,
+                getMessage(),
+                messageTitle
+        );
     }
 }
