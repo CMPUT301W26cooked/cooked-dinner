@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: Entrant Event Details Widget - Shows event details with Join button for entrants
+    Author: Hao
+    LastRevAuthor: Hao
+    Version: 1
+    Date: 2026-03-13
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    android:layout_margin="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:background="@drawable/event_card_shape">
+
+        <!-- Header with title and community tab -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/header_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/my_events"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/forest_green"
+                android:layout_marginStart="12dp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/community_tab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/events_community"
+                android:textSize="18sp"
+                android:textColor="@color/moss_green"
+                android:layout_marginEnd="8dp" />
+        </LinearLayout>
+
+        <!-- Return Arrow below title bar, aligned left -->
+        <ImageView
+            android:id="@+id/back_button"
+            android:layout_width="40dp"
+            android:layout_height="30dp"
+            android:src="@drawable/return_arrow"
+            android:layout_gravity="start"
+            android:contentDescription="@string/cd_back_button"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Poster and QR Code Section - Fully Centered -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_marginBottom="20dp">
+
+            <!-- Hint text inside poster area -->
+            <TextView
+                android:id="@+id/poster_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Event Poster\nHere If Exists"
+                android:textColor="@color/moss_green"
+                android:textSize="12sp"
+                android:gravity="center"
+                android:layout_marginBottom="4dp" />
+
+            <ImageView
+                android:id="@+id/event_poster"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:background="@color/weird_piss"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_gallery"
+                android:contentDescription="@string/cd_event_poster" />
+        </LinearLayout>
+
+        <!-- Event Name and Status - Fully Centered -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/event_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Vaguely Fun Event"
+                android:textColor="@color/forest_green"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/event_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/event_open"
+                android:textColor="@color/moss_green"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp"
+                android:gravity="center" />
+        </LinearLayout>
+
+        <!-- Event Description - Centered -->
+        <TextView
+            android:id="@+id/event_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Loooooong fullll version of event description with all the words and sentences and punctuation and length and width and word count."
+            android:textColor="@color/moss_green"
+            android:textSize="14sp"
+            android:gravity="center_horizontal"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Two-column layout with divider -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:divider="@drawable/vertical_divider"
+            android:showDividers="middle"
+            android:layout_marginBottom="20dp">
+
+            <!-- Left Column: Location, Dates, Host, Stats -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingEnd="8dp">
+
+                <!-- Location Item -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <ImageView
+                        android:id="@+id/location_icon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/location"
+                        android:contentDescription="Location icon"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:id="@+id/event_location"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Fun Location, Edmonton, AB"
+                        android:textColor="@color/forest_green"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Start Date Item -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <ImageView
+                        android:id="@+id/start_date_icon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/clock"
+                        android:contentDescription="Start date icon"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:id="@+id/event_start_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="March 2 2026, 8:00 am"
+                        android:textColor="@color/forest_green"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- End Date Item -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="16dp">
+
+                    <ImageView
+                        android:id="@+id/end_date_icon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/clock"
+                        android:contentDescription="End date icon"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:id="@+id/event_end_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="March 2 2026, 9:00 am"
+                        android:textColor="@color/forest_green"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Host and Stats Section -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/event_hosted_by"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/event_organization"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/organization_name"
+                        android:textColor="@color/forest_green"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="4dp">
+
+                        <ImageView
+                            android:id="@+id/icon_counts"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/signed_up_people"
+                            android:contentDescription="Counts icon"
+                            android:layout_marginEnd="8dp" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/event_spots_count"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="•  x spots"
+                                android:textColor="@color/moss_green"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/event_waitlisted_count"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="•  y wait listed"
+                                android:textColor="@color/moss_green"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/event_registered_count"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="•  z registered"
+                                android:textColor="@color/moss_green"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Right Column: Criteria/Guidelines -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingStart="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/criteria_guidelines"
+                    android:textColor="@color/forest_green"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/event_guidelines"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Criteria here"
+                    android:textColor="@color/moss_green"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Wide Join Button - using event_card_shape for pill shape, light green background -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp">
+
+            <Button
+                android:id="@+id/primary_button"
+                android:layout_width="220dp"
+                android:layout_height="60dp"
+                android:text="@string/join"
+                android:textSize="18sp"
+                android:textColor="@color/forest_green"
+                android:background="@drawable/event_card_shape"
+                android:minHeight="60dp"
+                android:padding="12dp"
+                android:letterSpacing="0.05" />
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>
