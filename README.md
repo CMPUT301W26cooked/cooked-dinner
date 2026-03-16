@@ -4,7 +4,7 @@ This repo is the **project repo** for our CMPUT 301 team (Org: `CMPUT301W26cooke
 It contains **everything** 
 
 ## Current Phase
-- **Project Part 2** — product backlog, UI mockups + storyboard sequences, CRC cards, and consistent GitHub usage.
+- **Project Part 3** — Half-Way Checkpoint, updated UI mockups + storyboard sequences, updated CRC cards, and consistent GitHub usage.
 
 ## Where everything lives
 
