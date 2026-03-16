@@ -13,73 +13,63 @@ public class Notification {
         WAITING_LIST,
         INVITED,
         CANCELLED,
-        OTHER
+        OTHER,
+        CHOSEN,
+        NOT_CHOSEN
     }
 
+    private String notificationId;
+    private ArrayList<String> entrantIds;
+    private String organizerId;
+    private String eventId;
+    private String type;
+    private String message;
+    private Long timestamp;
 
-
-    String notificationId;
-    //List of entrants that were notified
-    ArrayList<String> entrantIds;
-    //Sent from
-    String OrganizerId;
-    //Relating to which event
-    String EventId;
-
-    String Type;
-
-    //Any message to be sent with the Notification
-    String message;
-
-    public Long getTimestamp() {
-        return Timestamp;
-    }
-
-    public void setTimestamp(Long timestamp) {
-        this.Timestamp = timestamp;
-    }
-
-    Long Timestamp;
-
-
-
-    Notification(ArrayList<String> entrantIds, String organizerId, String eventId, NotificationType type, String message){
+    public Notification(ArrayList<String> entrantIds, String organizerId, String eventId,
+                        NotificationType type, String message) {
         this.notificationId = UUID.randomUUID().toString();
         this.entrantIds = entrantIds;
-        this.OrganizerId = organizerId;
-        this.EventId = eventId;
-        this.Type = type.name();
+        this.organizerId = organizerId;
+        this.eventId = eventId;
+        this.type = type.name();
         this.message = message;
-        this.Timestamp = System.currentTimeMillis()/1000;
+        this.timestamp = System.currentTimeMillis() / 1000L;
     }
 
-    Notification(){};
-
+    public Notification() {
+    }
 
     public String getNotificationId() {
         return notificationId;
+    }
+
+    public void setNotificationId(String notificationId) {
+        this.notificationId = notificationId;
     }
 
     public ArrayList<String> getEntrantIds() {
         return entrantIds;
     }
 
-
+    public void setEntrantIds(ArrayList<String> entrantIds) {
+        this.entrantIds = entrantIds;
+    }
 
     public String getOrganizerId() {
-        return OrganizerId;
+        return organizerId;
     }
 
     public void setOrganizerId(String organizerId) {
-        OrganizerId = organizerId;
+        this.organizerId = organizerId;
     }
 
-    public void setEventId(String eventId){
-        EventId = eventId;
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
     }
 
     public String getEventId() {
-        return EventId;
+        return eventId;
     }
 
     public ArrayList<String> getEntrantsIds() {
@@ -94,33 +84,46 @@ public class Notification {
         return this.message = message;
     }
 
+    public Long getTimestamp() {
+        return timestamp;
+    }
 
-    // Getter/setter convert between String and Enum
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
+    }
+
     public NotificationType getType() {
-        return NotificationType.valueOf(Type);
+        return NotificationType.valueOf(type);
     }
 
     public void setType(NotificationType type) {
-        this.Type = type.name(); // stores "CHOSEN", "CANCELLED" etc.
+        this.type = type.name();
     }
 
-    //Used to check if notifications are equal, notably for Firebase
+    public String getTypeString() {
+        return type;
+    }
+
+    public void setTypeString(String type) {
+        this.type = type;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Notification)) return false;
         Notification that = (Notification) o;
         return Objects.equals(notificationId, that.notificationId)
-                && Objects.equals(OrganizerId, that.OrganizerId)
                 && Objects.equals(entrantIds, that.entrantIds)
-                && Objects.equals(EventId, that.EventId)
-                && Objects.equals(Type, that.Type)
-                && Objects.equals(Timestamp, that.Timestamp)
+                && Objects.equals(organizerId, that.organizerId)
+                && Objects.equals(eventId, that.eventId)
+                && Objects.equals(type, that.type)
+                && Objects.equals(timestamp, that.timestamp)
                 && Objects.equals(message, that.message);
     }
 
-
-
-
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(notificationId, entrantIds, organizerId, eventId, type, timestamp, message);
+    }
 }

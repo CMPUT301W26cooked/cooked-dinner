@@ -1,15 +1,11 @@
 package com.eventwise.database;
 
-import android.util.Log;
-
 import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.EventEntrantStatus;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -32,12 +28,11 @@ import java.util.ArrayList;
 
 public class EntrantDatabaseManager extends DatabaseManager {
 
-
-    public EntrantDatabaseManager(){
+    public EntrantDatabaseManager() {
         super();
     }
 
-    public EntrantDatabaseManager(FirebaseFirestore db){
+    public EntrantDatabaseManager(FirebaseFirestore db) {
         super(db);
     }
 
@@ -51,6 +46,96 @@ public class EntrantDatabaseManager extends DatabaseManager {
         return super.addProfile(entrant);
     }
 
+    public Task<Entrant> getEntrantFromId(String entrantId) {
+        return super.getProfileFromId(entrantId)
+                .continueWith(task -> (Entrant) task.getResult());
+    }
+
+    public Task<Void> clearEntrantProfile(String entrantId) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (entrantId == null || entrantId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("EntrantId cannot be null or empty"));
+            return tcs.getTask();
+        }
+
+        long timestamp = System.currentTimeMillis() / 1000L;
+
+        profiles.document(entrantId).get()
+                .addOnSuccessListener(profileSnapshot -> {
+                    Entrant entrant = profileSnapshot.toObject(Entrant.class);
+
+                    if (entrant == null) {
+                        tcs.setException(new DatabaseException("Error getting Entrant"));
+                        return;
+                    }
+
+                    entrant.setName("");
+                    entrant.setEmail("");
+                    entrant.setPhone("");
+
+                    ArrayList<Entrant.EventStateEntry> eventStates = entrant.getEventStates();
+                    if (eventStates != null) {
+                        for (Entrant.EventStateEntry entry : eventStates) {
+                            if (entry == null || entry.getStatus() == null) {
+                                continue;
+                            }
+
+                            if (entry.getStatus() == EventEntrantStatus.ACCEPTED
+                                    || entry.getStatus() == EventEntrantStatus.ENROLLED) {
+                                entry.setStatus(EventEntrantStatus.CANCELLED);
+                                entry.setTimestampEpochSec(timestamp);
+                            }
+                        }
+                    }
+
+                    events.get()
+                            .addOnSuccessListener(eventSnapshots -> {
+                                WriteBatch batch = db.batch();
+
+                                batch.set(profiles.document(entrantId), entrant);
+
+                                for (DocumentSnapshot eventSnapshot : eventSnapshots.getDocuments()) {
+                                    Event event = eventSnapshot.toObject(Event.class);
+                                    if (event == null || event.getEntrantStatuses() == null) {
+                                        continue;
+                                    }
+
+                                    boolean changed = false;
+                                    for (Event.EntrantStatusEntry entry : event.getEntrantStatuses()) {
+                                        if (entry == null
+                                                || entry.getEntrantProfileId() == null
+                                                || entry.getStatus() == null) {
+                                            continue;
+                                        }
+
+                                        if (entrantId.equals(entry.getEntrantProfileId())
+                                                && (entry.getStatus() == EventEntrantStatus.ACCEPTED
+                                                || entry.getStatus() == EventEntrantStatus.ENROLLED)) {
+                                            entry.setStatus(EventEntrantStatus.CANCELLED);
+                                            entry.setTimestampEpochSec(timestamp);
+                                            changed = true;
+                                        }
+                                    }
+
+                                    if (changed) {
+                                        batch.set(eventSnapshot.getReference(), event);
+                                    }
+                                }
+
+                                batch.commit()
+                                        .addOnSuccessListener(unused -> tcs.setResult(null))
+                                        .addOnFailureListener(e ->
+                                                tcs.setException(new DatabaseException("Error clearing Entrant profile")));
+                            })
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Error loading events")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Error getting Entrant")));
+
+        return tcs.getTask();
+    }
 
     /**
      * US 01.02.02
@@ -68,15 +153,14 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * Registers an entrant in the waiting list for a specific event in the database.
      * Updates the event document by adding the entrant's profile ID to the "waitingList" array.
      *
-     * @param entrantID The ID of the entrant to be registered.
-     * @param eventID   The ID of the event for which the entrant is registering.
+     * @param entrantId The ID of the entrant to be registered.
+     * @param eventId   The ID of the event for which the entrant is registering.
      * @throws DatabaseException If there is an error updating the database or if the entrant cannot be added.
      */
-
-    public Task<Void> registerEntrantInEvent(String entrantID, String eventID, long timestamp) {
+    public Task<Void> registerEntrantInEvent(String entrantId, String eventId, long timestamp) {
         TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
-        events.document(eventID).get()
+        events.document(eventId).get()
                 .addOnSuccessListener(eventSnapshot -> {
                     Event event = eventSnapshot.toObject(Event.class);
 
@@ -85,7 +169,7 @@ public class EntrantDatabaseManager extends DatabaseManager {
                         return;
                     }
 
-                    profiles.document(entrantID).get()
+                    profiles.document(entrantId).get()
                             .addOnSuccessListener(profileSnapshot -> {
                                 Entrant entrant = profileSnapshot.toObject(Entrant.class);
 
@@ -94,13 +178,12 @@ public class EntrantDatabaseManager extends DatabaseManager {
                                     return;
                                 }
 
-                                event.addOrUpdateEntrantStatus(entrantID, EventEntrantStatus.WAITLISTED, timestamp);
-                                entrant.addOrUpdateEventState(eventID, EventEntrantStatus.WAITLISTED, timestamp);
-
+                                event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.WAITLISTED, timestamp);
+                                entrant.addOrUpdateEventState(eventId, EventEntrantStatus.WAITLISTED, timestamp);
 
                                 WriteBatch batch = super.db.batch();
-                                batch.set(events.document(eventID), event);
-                                batch.set(profiles.document(entrantID), entrant);
+                                batch.set(events.document(eventId), event);
+                                batch.set(profiles.document(entrantId), entrant);
 
                                 batch.commit()
                                         .addOnSuccessListener(unused -> tcs.setResult(null))
@@ -110,47 +193,46 @@ public class EntrantDatabaseManager extends DatabaseManager {
                             .addOnFailureListener(e ->
                                     tcs.setException(new DatabaseException("Error getting Entrant")));
                 })
-                .addOnFailureListener(e -> {
-                        tcs.setException(new DatabaseException("Error getting Event"));
-                });
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Error getting Event")));
 
         return tcs.getTask();
     }
-
 
     /**
      * US 01.01.02
      * Unregisters an entrant in the waiting list for a specific event in the database.
      * Updates the event document by removing the entrant's profile ID from the "waitingList" array.
      *
-     * @param entrantID The entrant to be unregistered.
-     * @param eventID   The event for which the entrant is unregistering.
+     * @param entrantId The entrant to be unregistered.
+     * @param eventId   The event for which the entrant is unregistering.
      * @throws DatabaseException If there is an error updating the database or if the entrant cannot be added.
      */
-
-    public Task<Void> unregisterEntrantInEvent(String entrantID, String eventID, long timestamp) {
+    public Task<Void> unregisterEntrantInEvent(String entrantId, String eventId, long timestamp) {
         TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
-        events.document(eventID).get()
+        events.document(eventId).get()
                 .addOnSuccessListener(eventSnapshot -> {
                     Event event = eventSnapshot.toObject(Event.class);
                     if (event == null) {
                         tcs.setException(new DatabaseException("Error getting Event"));
                         return;
                     }
-                    profiles.document(entrantID).get()
+
+                    profiles.document(entrantId).get()
                             .addOnSuccessListener(profileSnapshot -> {
                                 Entrant entrant = profileSnapshot.toObject(Entrant.class);
                                 if (entrant == null) {
                                     tcs.setException(new DatabaseException("Error getting Entrant"));
                                     return;
                                 }
-                                event.addOrUpdateEntrantStatus(entrantID, EventEntrantStatus.LEFT_WAITLIST, timestamp);
-                                entrant.addOrUpdateEventState(eventID, EventEntrantStatus.LEFT_WAITLIST, timestamp);
+
+                                event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
+                                entrant.addOrUpdateEventState(eventId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
 
                                 WriteBatch batch = super.db.batch();
-                                batch.set(events.document(eventID), event);
-                                batch.set(profiles.document(entrantID), entrant);
+                                batch.set(events.document(eventId), event);
+                                batch.set(profiles.document(entrantId), entrant);
 
                                 batch.commit()
                                         .addOnSuccessListener(unused -> tcs.setResult(null))
@@ -166,19 +248,19 @@ public class EntrantDatabaseManager extends DatabaseManager {
         return tcs.getTask();
     }
 
-    public Task<ArrayList<Event>> getEventsWhereEntrantIsInWaitingList(String entrantID){
+    public Task<ArrayList<Event>> getEventsWhereEntrantIsInWaitingList(String entrantId) {
         TaskCompletionSource<ArrayList<Event>> tcs = new TaskCompletionSource<>();
-        ArrayList<Event> events_array = new ArrayList<Event>();
+        ArrayList<Event> eventsArray = new ArrayList<>();
 
         events.get()
                 .addOnSuccessListener(result -> {
                     for (DocumentSnapshot document : result) {
                         Event event = document.toObject(Event.class);
-                        if (event != null && event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(entrantID)) {
-                            events_array.add(event);
+                        if (event != null && event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(entrantId)) {
+                            eventsArray.add(event);
                         }
                     }
-                    tcs.setResult(events_array);
+                    tcs.setResult(eventsArray);
                 })
                 .addOnFailureListener(exception -> {
                     tcs.setException(new DatabaseException("Error getting events"));
@@ -186,8 +268,6 @@ public class EntrantDatabaseManager extends DatabaseManager {
 
         return tcs.getTask();
     }
-
-
 
     /**
      * US 01.05.03
@@ -201,15 +281,14 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * 5. Update Entrant profile state
      * 6. Save both updates in a Firestore WriteBatch
      *
-     * @param entrantID The ID of the entrant declining the invitation
-     * @param eventID   The ID of the event they are declining
+     * @param entrantId The ID of the entrant declining the invitation
+     * @param eventId   The ID of the event they are declining
      * @return Task<Void> a Task that completes when the decline action is saved
      */
-    public Task<Void> declineInvitation(String entrantID, String eventID, long timestamp) {
+    public Task<Void> declineInvitation(String entrantId, String eventId, long timestamp) {
         TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
-        // 1. Load Event
-        events.document(eventID).get()
+        events.document(eventId).get()
                 .addOnSuccessListener(eventSnapshot -> {
                     Event event = eventSnapshot.toObject(Event.class);
                     if (event == null) {
@@ -217,8 +296,7 @@ public class EntrantDatabaseManager extends DatabaseManager {
                         return;
                     }
 
-                    // 2. Load Entrant profile
-                    profiles.document(entrantID).get()
+                    profiles.document(entrantId).get()
                             .addOnSuccessListener(profileSnapshot -> {
                                 Entrant entrant = profileSnapshot.toObject(Entrant.class);
                                 if (entrant == null) {
@@ -226,11 +304,10 @@ public class EntrantDatabaseManager extends DatabaseManager {
                                     return;
                                 }
 
-                                // 3. Validate current status
                                 ArrayList<Event.EntrantStatusEntry> entries = event.getEntrantStatuses();
                                 EventEntrantStatus currentStatus = null;
                                 for (Event.EntrantStatusEntry e : entries) {
-                                    if (e.getEntrantProfileId().equals(entrantID)) {
+                                    if (e.getEntrantProfileId().equals(entrantId)) {
                                         currentStatus = e.getStatus();
                                         break;
                                     }
@@ -251,30 +328,25 @@ public class EntrantDatabaseManager extends DatabaseManager {
                                 }
 
                                 // 4. Update state to DECLINED
-                                event.addOrUpdateEntrantStatus(entrantID, EventEntrantStatus.DECLINED, timestamp);
-                                entrant.addOrUpdateEventState(eventID, EventEntrantStatus.DECLINED, timestamp);
+                                event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.DECLINED, timestamp);
+                                entrant.addOrUpdateEventState(eventId, EventEntrantStatus.DECLINED, timestamp);
 
                                 // 5. Save both: Event + Entrant
                                 WriteBatch batch = super.db.batch();
-                                batch.set(events.document(eventID), event);
-                                batch.set(profiles.document(entrantID), entrant);
+                                batch.set(events.document(eventId), event);
+                                batch.set(profiles.document(entrantId), entrant);
 
                                 // 6. Commit batch
                                 batch.commit()
                                         .addOnSuccessListener(unused -> tcs.setResult(null))
                                         .addOnFailureListener(e ->
-                                                tcs.setException(new DatabaseException("Error declining invitation"))
-                                        );
-
+                                                tcs.setException(new DatabaseException("Error declining invitation")));
                             })
                             .addOnFailureListener(e ->
-                                    tcs.setException(new DatabaseException("Error retrieving Entrant"))
-                            );
-
+                                    tcs.setException(new DatabaseException("Error retrieving Entrant")));
                 })
                 .addOnFailureListener(e ->
-                        tcs.setException(new DatabaseException("Error retrieving Event"))
-                );
+                        tcs.setException(new DatabaseException("Error retrieving Event")));
 
         return tcs.getTask();
     }
@@ -290,31 +362,24 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * Idempotency:
      * - If the profile doc does not exist, we still attempt to clean events and resolve as success.
      *
-     * @param entrantID The ID of the entrant to delete.
+     * @param entrantId The ID of the entrant to delete.
      * @return Task<Void> that completes when the whole operation is done.
      */
-    public Task<Void> deleteEntrant(String entrantID) {
+    public Task<Void> deleteEntrant(String entrantId) {
         TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
-        if (entrantID == null || entrantID.trim().isEmpty()) {
-            tcs.setException(new DatabaseException("EntrantID cannot be null or empty"));
+        if (entrantId == null || entrantId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("EntrantId cannot be null or empty"));
             return tcs.getTask();
         }
 
         // 1) Try to delete the profile doc (ignore 404-like case by treating as success)
-        DocumentReference profileRef = profiles.document(entrantID);
+        DocumentReference profileRef = profiles.document(entrantId);
 
         // We chain: delete profile -> load events -> remove references -> batch commit
         profileRef.delete()
-                .addOnSuccessListener(unused -> cleanEntrantFromAllEvents(entrantID, tcs))
-                .addOnFailureListener(e -> {
-                    // If deletion fails because doc not found, still continue to clean events.
-                    // Firestore delete on non-existing doc usually resolves success,
-                    // but if a failure happens (e.g., permission), we propagate the error.
-                    // Here we choose to continue only if it's a "not found"-like case is not exposed.
-                    // For simplicity, attempt to clean events anyway, then decide success/failure on that step.
-                    cleanEntrantFromAllEvents(entrantID, tcs);
-                });
+                .addOnSuccessListener(unused -> cleanEntrantFromAllEvents(entrantId, tcs))
+                .addOnFailureListener(e -> cleanEntrantFromAllEvents(entrantId, tcs));
 
         return tcs.getTask();
     }
@@ -323,7 +388,7 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * Iterate all events and remove any entrant status entries for the given entrantID.
      * Commit all changes in one WriteBatch.
      */
-    private void cleanEntrantFromAllEvents(String entrantID, TaskCompletionSource<Void> tcs) {
+    private void cleanEntrantFromAllEvents(String entrantId, TaskCompletionSource<Void> tcs) {
         events.get()
                 .addOnSuccessListener(snapshot -> {
                     WriteBatch batch = db.batch();
@@ -342,8 +407,8 @@ public class EntrantDatabaseManager extends DatabaseManager {
                         boolean removed = false;
                         for (Event.EntrantStatusEntry e : entries) {
                             if (e == null || e.getEntrantProfileId() == null) continue;
-                            if (entrantID.equals(e.getEntrantProfileId())) {
-                                removed = true; // mark removal
+                            if (entrantId.equals(e.getEntrantProfileId())) {
+                                removed = true;
                             } else {
                                 filtered.add(e);
                             }

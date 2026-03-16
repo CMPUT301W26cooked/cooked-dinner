@@ -7,14 +7,27 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.eventwise.R;
 import com.eventwise.fragments.EntrantEventsCommunityFragment;
+import com.eventwise.fragments.EntrantProfileEmptyFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import androidx.fragment.app.Fragment;
+
+import com.eventwise.database.EntrantDatabaseManager;
+import com.eventwise.database.SessionStore;
+import com.eventwise.fragments.EntrantProfileExistsFormFragment;
 
 /**
  * This is the landing page for the entrant profile.
+ *
  * @author Luke Forster
- * @version 1.0
+ * @version 2.0
  * @since 2026-03-09
+ * Updated By Becca Irving on 2026-03-13
  */
+
+// TODO (EntrantMainActivity.java)
+// - Replace the placeholder notifications page later.
+// - Replace the placeholder QR page later.
+// - Swap the profile tab to the full profile flow once backend is wired up.
 
 public class EntrantMainActivity extends AppCompatActivity {
 
@@ -54,11 +67,49 @@ public class EntrantMainActivity extends AppCompatActivity {
             }
 
             if (item.getItemId() == R.id.profile_icon) {
-                // TODO: replace with EntrantProfileFragment later
+                openProfileTab();
                 return true;
             }
 
             return false;
         });
+    }
+
+    private void openProfileTab() {
+        SessionStore sessionStore = new SessionStore(this);
+        String entrantId = sessionStore.getOrCreateDeviceId();
+
+        EntrantDatabaseManager entrantDatabaseManager = new EntrantDatabaseManager();
+
+        entrantDatabaseManager.getEntrantFromId(entrantId)
+                .addOnSuccessListener(entrant -> {
+                    Fragment fragmentToShow;
+
+                    if (entrant != null && entrant.hasCompletedProfile()) {
+                        fragmentToShow = EntrantProfileExistsFormFragment.newUpdateInstance(
+                                entrant.getName(),
+                                entrant.getEmail(),
+                                entrant.getPhone(),
+                                entrant.getNotificationsEnabled()
+                        );
+                    } else {
+                        boolean notificationsEnabled = entrant == null || entrant.getNotificationsEnabled();
+                        fragmentToShow = EntrantProfileEmptyFragment.newInstance(notificationsEnabled);
+                    }
+
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.entrant_fragment_container, fragmentToShow)
+                            .commit();
+                })
+                .addOnFailureListener(e -> {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(
+                                    R.id.entrant_fragment_container,
+                                    EntrantProfileEmptyFragment.newInstance(true)
+                            )
+                            .commit();
+                });
     }
 }

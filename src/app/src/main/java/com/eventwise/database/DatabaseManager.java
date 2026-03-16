@@ -1,8 +1,5 @@
 package com.eventwise.database;
 
-import android.provider.ContactsContract;
-import android.util.Log;
-
 import com.eventwise.Admin;
 import com.eventwise.Entrant;
 import com.eventwise.Event;
@@ -21,9 +18,6 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import org.checkerframework.checker.units.qual.A;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -63,7 +57,7 @@ public abstract class DatabaseManager {
         db = FirebaseFirestore.getInstance();
         profiles = db.collection("profiles");
         events = db.collection("events");
-        locations = db.collection("locations");;
+        locations = db.collection("locations");
         tags = db.collection("tags");
         notifications = db.collection("notifications");
     }
@@ -77,49 +71,26 @@ public abstract class DatabaseManager {
         this.db = db;
         profiles = db.collection("profiles");
         events = db.collection("events");
-        locations = db.collection("locations");;
+        locations = db.collection("locations");
         tags = db.collection("tags");
         notifications = db.collection("notifications");
-   }
-
-
-    //**************************************************************************************************
-    // *                                            Profiles
-    // *************************************************************************************************/
-
-    /**
-     * Adds a new profile to the Firestore database.
-     * This method creates a document in the "profiles" collection using the profile's unique ID
-     * and stores the provided profile object.
-     *
-     * @param profile The {@link Profile} object containing the data to be stored.
-     * @return A {@link Task} representing the asynchronous database write operation.
-     */
-    protected Task<Void> addProfile(Profile profile) {
-        return profiles.document(profile.getProfileID()).set(profile);
     }
 
+    protected Task<Void> addProfile(Profile profile) {
+        return profiles.document(profile.getProfileId()).set(profile);
+    }
 
-    /**
-     * Updates an existing profile in the database.
-     * This method first verifies that a profile with the given ID exists before attempting to
-     * overwrite it. If the profile does not exist, the returned task will fail with a
-     * {@link DatabaseException}.
-     *
-     * @param profile The {@link Profile} object containing the updated information and a valid profile ID.
-     * @return A {@link Task} that will be completed when the update is successful.
-     */
     protected Task<Void> updateProfile(Profile profile) {
-        return profiles.document(profile.getProfileID()).get().continueWithTask(task -> {
+        return profiles.document(profile.getProfileId()).get().continueWithTask(task -> {
             if (!task.isSuccessful() || !task.getResult().exists()) {
                 return Tasks.forException(new DatabaseException("Profile does not exist"));
             }
-            return profiles.document(profile.getProfileID()).set(profile);
+            return profiles.document(profile.getProfileId()).set(profile);
         });
     }
 
-    protected Task<Void> deleteProfileFromID(String profileID) {
-        return profiles.document(profileID).delete();
+    protected Task<Void> deleteProfileFromId(String profileId) {
+        return profiles.document(profileId).delete();
     }
 
 
@@ -129,25 +100,22 @@ public abstract class DatabaseManager {
      * This method performs an asynchronous fetch and returns a Task that will resolve
      * to the Profile object if found.
      *
-     * @param profileID The unique identifier of the profile to retrieve.
+     * @param profileId The unique identifier of the profile to retrieve.
      * @return A {@link Task} that will contain the {@link Profile} object upon success,
      *         or a {@link DatabaseException} if the profile does not exist or the fetch fails.
      */
-    protected Task<Profile> getProfileFromID(String profileID) {
+    protected Task<Profile> getProfileFromId(String profileId) {
         TaskCompletionSource<Profile> tcs = new TaskCompletionSource<>();
 
-        profiles.document(profileID).get().addOnSuccessListener(documentSnapshot -> {
+        profiles.document(profileId).get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
-                if (documentSnapshot.getData().get("profileType").equals(ProfileType.ENTRANT.toString())){
+                if (documentSnapshot.getData().get("profileType").equals(ProfileType.ENTRANT.toString())) {
                     tcs.setResult(documentSnapshot.toObject(Entrant.class));
-                }
-                else if (documentSnapshot.getData().get("profileType").equals(ProfileType.ORGANIZER.toString())) {
+                } else if (documentSnapshot.getData().get("profileType").equals(ProfileType.ORGANIZER.toString())) {
                     tcs.setResult(documentSnapshot.toObject(Organizer.class));
-                }
-                else if (documentSnapshot.getData().get("profileType").equals(ProfileType.ADMIN.toString())) {
+                } else if (documentSnapshot.getData().get("profileType").equals(ProfileType.ADMIN.toString())) {
                     tcs.setResult(documentSnapshot.toObject(Admin.class));
                 }
-
             } else {
                 tcs.setException(new DatabaseException("Error getting Profile"));
             }
@@ -170,15 +138,15 @@ public abstract class DatabaseManager {
     protected Task<ArrayList<Entrant>> getEntrants(){
 
         TaskCompletionSource<ArrayList<Entrant>> tcs = new TaskCompletionSource<>();
-        ArrayList<Entrant> entrants_array = new ArrayList<Entrant>();
+        ArrayList<Entrant> entrantsArray = new ArrayList<>();
 
-        profiles.get().addOnSuccessListener( result -> {
+        profiles.get().addOnSuccessListener(result -> {
             for (DocumentSnapshot document : result) {
-                if (document.getData().get("profileType").equals(ProfileType.ENTRANT.toString())){
-                    entrants_array.add(document.toObject(Entrant.class));
+                if (document.getData().get("profileType").equals(ProfileType.ENTRANT.toString())) {
+                    entrantsArray.add(document.toObject(Entrant.class));
                 }
             }
-            tcs.setResult(entrants_array);
+            tcs.setResult(entrantsArray);
         }).addOnFailureListener(exception -> {
             tcs.setException(new DatabaseException("Error getting Entrants"));
         });
@@ -199,18 +167,19 @@ public abstract class DatabaseManager {
     protected Task<ArrayList<Admin>> getAdmins(){
 
         TaskCompletionSource<ArrayList<Admin>> tcs = new TaskCompletionSource<>();
-        ArrayList<Admin> admin_array = new ArrayList<Admin>();
+        ArrayList<Admin> adminArray = new ArrayList<>();
 
-        profiles.get().addOnSuccessListener( result -> {
+        profiles.get().addOnSuccessListener(result -> {
             for (DocumentSnapshot document : result) {
-                if (document.getData().get("profileType").equals(ProfileType.ADMIN.toString())){
-                    admin_array.add(document.toObject(Admin.class));
+                if (document.getData().get("profileType").equals(ProfileType.ADMIN.toString())) {
+                    adminArray.add(document.toObject(Admin.class));
                 }
             }
-            tcs.setResult(admin_array);
+            tcs.setResult(adminArray);
         }).addOnFailureListener(exception -> {
             tcs.setException(new DatabaseException("Error getting Admins"));
         });
+
         return tcs.getTask();
     }
 
@@ -227,17 +196,17 @@ public abstract class DatabaseManager {
     protected Task<ArrayList<Organizer>> getOrganizers(){
 
         TaskCompletionSource<ArrayList<Organizer>> tcs = new TaskCompletionSource<>();
-        ArrayList<Organizer> organizer_array = new ArrayList<Organizer>();
+        ArrayList<Organizer> organizerArray = new ArrayList<>();
 
-        profiles.get().addOnSuccessListener( result -> {
+        profiles.get().addOnSuccessListener(result -> {
             for (DocumentSnapshot document : result) {
-                if (document.getData().get("profileType").equals(ProfileType.ORGANIZER.toString())){
-                    organizer_array.add(document.toObject(Organizer.class));
+                if (document.getData().get("profileType").equals(ProfileType.ORGANIZER.toString())) {
+                    organizerArray.add(document.toObject(Organizer.class));
                 }
             }
-            tcs.setResult(organizer_array);
+            tcs.setResult(organizerArray);
         }).addOnFailureListener(exception -> {
-                    tcs.setException(new DatabaseException("Error getting Organizers"));
+            tcs.setException(new DatabaseException("Error getting Organizers"));
         });
         return tcs.getTask();
     }
@@ -255,16 +224,23 @@ public abstract class DatabaseManager {
      */
     protected Task<ArrayList<Event>> getEvents(){
         TaskCompletionSource<ArrayList<Event>> tcs = new TaskCompletionSource<>();
-        ArrayList<Event> events_array = new ArrayList<Event>();
+        ArrayList<Event> eventsArray = new ArrayList<>();
 
-        events.get().addOnSuccessListener( result -> {
+        events.get().addOnSuccessListener(result -> {
             for (DocumentSnapshot document : result) {
-                events_array.add(document.toObject(Event.class));
+                Event event = document.toObject(Event.class);
+                if (event != null) {
+                    if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+                        event.setEventId(document.getId());
+                    }
+                    eventsArray.add(event);
+                }
             }
-            tcs.setResult(events_array);
+            tcs.setResult(eventsArray);
         }).addOnFailureListener(exception -> {
             tcs.setException(new DatabaseException("Error getting events"));
         });
+
         return tcs.getTask();
     }
 
@@ -277,13 +253,13 @@ public abstract class DatabaseManager {
      * @return A {@link Task} representing the asynchronous database write operation.
      */
     protected Task<Void> addEvent(Event event) {
-        return events.document(event.getEventId()).set(event);
+        if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+            DocumentReference newEventRef = events.document();
+            event.setEventId(newEventRef.getId());
+            return newEventRef.set(event);
+        }
 
-//        DocumentReference newEventRef = events.document(); // asking Firestore to create one here
-//
-//        event.setEventId(event.getEventId()); // Event class expects ID is already existing
-//
-//        return newEventRef.set(event);
+        return events.document(event.getEventId()).set(event);
     }
 //**************************************************************************************************
 //*                                            Location
@@ -299,29 +275,18 @@ public abstract class DatabaseManager {
      */
     protected Task<ArrayList<Location>> getLocations(){
         TaskCompletionSource<ArrayList<Location>> tcs = new TaskCompletionSource<>();
-        ArrayList<Location> location_array = new ArrayList<Location>();
+        ArrayList<Location> locationArray = new ArrayList<>();
 
-        locations.get().addOnSuccessListener( result -> {
+        locations.get().addOnSuccessListener(result -> {
             for (DocumentSnapshot document : result) {
-                location_array.add(document.toObject(Location.class));
+                locationArray.add(document.toObject(Location.class));
             }
-            tcs.setResult(location_array);
+            tcs.setResult(locationArray);
         }).addOnFailureListener(exception -> {
             tcs.setException(new DatabaseException("Error getting locations"));
         });
         return tcs.getTask();
     }
-    /**
-     * Adds a new location to the Firestore database.
-     * This method creates a document in the "location" collection using the location's unique ID
-     * and stores the provided location object.
-     *
-     * @param location The {@link Location} object containing the data to be stored.
-     * @return A {@link Task} representing the asynchronous database write operation.
-     */
-//    public void addLocation(Location location) {
-//        return locations.document(location.getName()).set(location);
-//    }
 
 //**************************************************************************************************
 // *                                            Topic
@@ -337,13 +302,13 @@ public abstract class DatabaseManager {
      */
     protected Task<ArrayList<Tag>> getTags() {
         TaskCompletionSource<ArrayList<Tag>> tcs = new TaskCompletionSource<>();
-        ArrayList<Tag> tags_array = new ArrayList<>();
+        ArrayList<Tag> tagsArray = new ArrayList<>();
 
         tags.get().addOnSuccessListener(result -> {
             for (DocumentSnapshot document : result) {
-                tags_array.add(document.toObject(Tag.class));
+                tagsArray.add(document.toObject(Tag.class));
             }
-            tcs.setResult(tags_array);
+            tcs.setResult(tagsArray);
         }).addOnFailureListener(exception -> {
             tcs.setException(new DatabaseException("Error getting Tags"));
         });
@@ -351,31 +316,19 @@ public abstract class DatabaseManager {
         return tcs.getTask();
     }
 
-//    /**
-//     * DO NOT USE, CHANGED TO TAGS.
-//     * Adds a new topic to the Firestore database.
-//     * This method creates a document in the "topic" collection using the topic's unique ID
-//     * and stores the provided topic object.
-//     *
-//     * @param topic The {@link Topic} object containing the data to be stored.
-//     * @return A {@link Task} representing the asynchronous database write operation.
-//     */
-//    public Task<Void> addTopic(Topic topic) {
-//        return topics.document(topic.getName()).add(topic);
-//    }
-
 //**************************************************************************************************
 // *                                           Notifications
 // *************************************************************************************************/
 
-    protected Task<Void> addNotification(Notification notification){
+
+    protected Task<Void> addNotification(Notification notification) {
         return notifications.document(notification.getNotificationId()).set(notification);
     }
 
-    protected Task<Notification> getNotificationByID(String notificationID){
+    protected Task<Notification> getNotificationById(String notificationId) {
         TaskCompletionSource<Notification> tcs = new TaskCompletionSource<>();
 
-        notifications.document(notificationID).get()
+        notifications.document(notificationId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         Notification notification = documentSnapshot.toObject(Notification.class);
@@ -385,10 +338,11 @@ public abstract class DatabaseManager {
                     }
                 })
                 .addOnFailureListener(exception -> {
-                        tcs.setException(new DatabaseException("Error getting Notification"));
-                    });
-                return tcs.getTask();
-                }
+                    tcs.setException(new DatabaseException("Error getting Notification"));
+                });
+
+        return tcs.getTask();
+    }
 
 //**************************************************************************************************
 // *                                            Images

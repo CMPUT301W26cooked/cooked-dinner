@@ -21,40 +21,22 @@ public class Organizer extends Profile {
     /** List of event IDs created by this organizer. */
     private ArrayList<String> createdEventIds = new ArrayList<>();
 
-    /**
-     * Required for Firestore.
-     */
     public Organizer() {
         super();
     }
 
-    /**
-     * Creates an Organizer.
-     *
-     * @param name organizer name
-     * @param email organizer email
-     * @param phone organizer phone
-     * @param notificationsEnabled notification preference
-     */
     public Organizer(String name, String email, String phone, boolean notificationsEnabled) {
         super(name, email, phone, notificationsEnabled, ProfileType.ORGANIZER);
     }
 
-    /** @return created event ids */
     public ArrayList<String> getCreatedEventIds() {
         return createdEventIds;
     }
 
-    /** @param createdEventIds created event ids */
     public void setCreatedEventIds(ArrayList<String> createdEventIds) {
         this.createdEventIds = createdEventIds;
     }
 
-    /**
-     * Adds an event to this organizer's created list if not already present.
-     *
-     * @param eventId event id
-     */
     public void addCreatedEventId(String eventId) {
         if (createdEventIds == null) {
             createdEventIds = new ArrayList<>();

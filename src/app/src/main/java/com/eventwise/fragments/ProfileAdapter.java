@@ -63,7 +63,7 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
 
         // Remove button callback
         holder.removeButton.setOnClickListener(v ->
-                listener.onRemoveClicked(profile.getProfileID())
+                listener.onRemoveClicked(profile.getProfileId())
         );
     }
 

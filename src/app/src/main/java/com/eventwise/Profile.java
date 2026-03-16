@@ -14,7 +14,7 @@ import java.util.UUID;
 
 
 public abstract class Profile {
-    private String profileID;
+    private String profileId;
     private String name;
     private String email;
     private String phone;
@@ -23,7 +23,7 @@ public abstract class Profile {
     public Profile(){}
 
     public Profile(String name, String email, String phone, boolean notificationsEnabled, ProfileType profileType) {
-        this.profileID = UUID.randomUUID().toString();
+        this.profileId = UUID.randomUUID().toString();
         this.name = name;
         this.email = email;
         this.phone = phone;
@@ -31,10 +31,12 @@ public abstract class Profile {
         this.profileType = profileType;
     }
 
+    public String getProfileId() {
+        return profileId;
+    }
 
-    //Getters and setters for the fields
-    public String getProfileID() {
-        return profileID;
+    public void setProfileId(String profileId) {
+        this.profileId = profileId;
     }
     public String getName() {
         return name;
@@ -45,6 +47,7 @@ public abstract class Profile {
     public String getPhone() {
         return phone;
     }
+
     public boolean getNotificationsEnabled() {
         return notificationsEnabled;
     }
@@ -69,6 +72,7 @@ public abstract class Profile {
     public void toggleNotifications() {
         this.notificationsEnabled = !this.notificationsEnabled;
     }
+
     public void updateProfile(String name, String email, String phone) {
         setName(name);
         setEmail(email);
@@ -81,17 +85,17 @@ public abstract class Profile {
         if (this == o) return true;
         if (!(o instanceof Profile)) return false;
         Profile that = (Profile) o;
-        return Objects.equals(profileID, that.profileID)
+        return notificationsEnabled == that.notificationsEnabled
+                && Objects.equals(profileId, that.profileId)
                 && Objects.equals(name, that.name)
                 && Objects.equals(email, that.email)
                 && Objects.equals(phone, that.phone)
-                && Objects.equals(notificationsEnabled, that.notificationsEnabled)
-                && Objects.equals(profileType, that.profileType);
+                && profileType == that.profileType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(profileID, name, email, phone, notificationsEnabled, profileType);
+        return Objects.hash(profileId, name, email, phone, notificationsEnabled, profileType);
     }
 }
 

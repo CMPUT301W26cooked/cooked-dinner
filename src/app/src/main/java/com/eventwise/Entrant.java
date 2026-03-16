@@ -30,7 +30,7 @@ public class Entrant extends Profile {
      */
 
     /** Unique identifier used for all entrant identification (US 01.07.01). */
-    private String deviceID;
+    private String deviceId;
 
     /** List of all historical and current event states. */
     private ArrayList<EventStateEntry> eventStates = new ArrayList<>();
@@ -46,7 +46,7 @@ public class Entrant extends Profile {
     }
 
     /**
-     * Makes an Entrant. The entrant identity is the deviceId, and profileID is set to deviceId.
+     * Makes an Entrant. The entrant identity is the deviceId, and profileId is set to deviceId.
      *
      * @param name entrant name
      * @param email entrant email
@@ -58,36 +58,40 @@ public class Entrant extends Profile {
 
 
         SessionStore session = new SessionStore(context);
-        //Get stored value
-        this.deviceID =  session.getDeviceID();
-
-        //Brand new install, no deviceID created yet
-        if (this.deviceID == null){
-            this.deviceID = UUID.randomUUID().toString();
-            //Store deviceID locally
-            session.setDeviceID(this.deviceID);
-        }
-        Log.d("Entrant", "DeviceID: " + this.deviceID);
-
+        this.deviceId = session.getOrCreateDeviceId();
+        setProfileId(this.deviceId);
+        Log.d("Entrant", "DeviceId/ProfileId: " + this.deviceId);
     }
 
-    /** @return device id */
-    public String getDeviceID() { return deviceID; }
+    public String getDeviceId() {
+        return deviceId;
+    }
 
-    /** @param deviceID device id */
-    public void setDeviceID(String deviceID) { this.deviceID = deviceID; }
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
 
-    /** @return event states */
-    public ArrayList<EventStateEntry> getEventStates() { return eventStates; }
+    public ArrayList<EventStateEntry> getEventStates() {
+        return eventStates;
+    }
 
-    /** @param eventStates event states */
-    public void setEventStates(ArrayList<EventStateEntry> eventStates) { this.eventStates = eventStates; }
+    public void setEventStates(ArrayList<EventStateEntry> eventStates) {
+        this.eventStates = eventStates;
+    }
 
-    /** @return notification ids */
-    public ArrayList<String> getNotificationIDs() { return notificationIDs; }
+    public ArrayList<String> getNotificationIDs() {
+        return notificationIDs;
+    }
 
-    /** @param notificationIDs notification ids */
-    public void setNotificationIDs(ArrayList<String> notificationIDs) { this.notificationIDs = notificationIDs; }
+    public void setNotificationIDs(ArrayList<String> notificationIDs) {
+        this.notificationIDs = notificationIDs;
+    }
+
+    @Exclude
+    public boolean hasCompletedProfile() {
+        return getName() != null && !getName().trim().isEmpty()
+                && getEmail() != null && !getEmail().trim().isEmpty();
+    }
 
     /**
      * Adds a new event state or updates an existing one.
@@ -101,8 +105,6 @@ public class Entrant extends Profile {
         if (eventStates == null) {
             eventStates = new ArrayList<>();
         }
-
-//        long nowEpochSec = System.currentTimeMillis() / 1000L;
 
         for (EventStateEntry entry : eventStates) {
             if (entry != null && eventId != null && eventId.equals(entry.getEventId())) {
@@ -179,13 +181,12 @@ public class Entrant extends Profile {
         return getEventIdsForStatus(EventEntrantStatus.CANCELLED);
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Entrant)) return false;
         Entrant that = (Entrant) o;
-        return Objects.equals(deviceID, that.deviceID)
+        return Objects.equals(deviceId, that.deviceId)
                 && Objects.equals(eventStates, that.eventStates)
                 && Objects.equals(notificationIDs, that.notificationIDs)
                 && super.equals(o);
@@ -193,7 +194,7 @@ public class Entrant extends Profile {
 
     @Override
     public int hashCode() {
-        return Objects.hash(deviceID, eventStates, notificationIDs, super.hashCode());
+        return Objects.hash(deviceId, eventStates, notificationIDs, super.hashCode());
     }
 
 
@@ -220,7 +221,7 @@ public class Entrant extends Profile {
         /**
          * Constructs an event state entry.
          *
-         * @param eventId event ID
+         * @param eventId event d
          * @param status status
          * @param timestampEpochSec timestamp
          */
@@ -230,23 +231,29 @@ public class Entrant extends Profile {
             this.timestampEpochSec = timestampEpochSec;
         }
 
-        /** @return event id */
-        public String getEventId() { return eventId; }
+        public String getEventId() {
+            return eventId;
+        }
 
-        /** @param eventId event id */
-        public void setEventId(String eventId) { this.eventId = eventId; }
+        public void setEventId(String eventId) {
+            this.eventId = eventId;
+        }
 
-        /** @return status */
-        public EventEntrantStatus getStatus() { return status; }
+        public EventEntrantStatus getStatus() {
+            return status;
+        }
 
-        /** @param status status */
-        public void setStatus(EventEntrantStatus status) { this.status = status; }
+        public void setStatus(EventEntrantStatus status) {
+            this.status = status;
+        }
 
-        /** @return timestamp */
-        public long getTimestampEpochSec() { return timestampEpochSec; }
+        public long getTimestampEpochSec() {
+            return timestampEpochSec;
+        }
 
-        /** @param timestampEpochSec timestamp */
-        public void setTimestampEpochSec(long timestampEpochSec) { this.timestampEpochSec = timestampEpochSec; }
+        public void setTimestampEpochSec(long timestampEpochSec) {
+            this.timestampEpochSec = timestampEpochSec;
+        }
 
         @Override
         public boolean equals(Object o) {

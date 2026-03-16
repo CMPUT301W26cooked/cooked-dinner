@@ -5,11 +5,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentResultListener;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,7 +17,7 @@ import com.eventwise.Event;
 import com.eventwise.EventAdapter;
 import com.eventwise.R;
 import com.eventwise.database.EventSearcherDatabaseManager;
-import com.eventwise.database.OrganizerDatabaseManager;  // ====== New import ======
+import com.eventwise.database.OrganizerDatabaseManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,15 +25,26 @@ import java.util.List;
 /**
  * This class is responsible for the admin Organizer Your Events Fragment.
  * @author Luke Forster
- * @version 1.0
+ * @version 2.0
  * @since 2026-03-09
  * Updated by Hao on 2026-03-11 - Added organizer event loading by ID
+ * Updated By Becca Irving on 2026-03-13
  */
 public class OrganizerYourEventsFragment extends Fragment {
+
+    /**
+     * TODO (OrganizerYourEventsFragment.java)
+     * - Replace the temporary organizer id when real organizer session wiring exists.
+     * - Add tests for organizer-only loading and delete from list/detail.
+     */
+
+    private static final String TEST_ORGANIZER_ID = "TEMP_ORGANIZER_ID";
+
     private RecyclerView eventListView;
     private EventAdapter eventAdapter;
     private List<Event> eventList;
     private EventSearcherDatabaseManager eventSearcherDBMan;
+    private OrganizerDatabaseManager organizerDatabaseManager;
 
     public OrganizerYourEventsFragment() {}
 
@@ -64,79 +75,88 @@ public class OrganizerYourEventsFragment extends Fragment {
         eventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
         eventList = new ArrayList<>();
 
-        // Set up EventAdapter with edit/cancel type
-        eventAdapter = new EventAdapter(eventList, EventAdapter.TYPE_EDIT_CANCEL, this::deleteEvent);
+        eventAdapter = new EventAdapter(
+                eventList,
+                EventAdapter.TYPE_EDIT_CANCEL,
+                this::deleteEvent,
+                this::openEventDetail
+        );
         eventListView.setAdapter(eventAdapter);
 
-        // Fetch events from Firebase
-        EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();
-        eventSearcherDBMan.getEvents()
-                .addOnSuccessListener(returnedList ->{
-                    for (int i = 0; i < returnedList.size(); i++) {
-                        Log.d("Event", returnedList.get(i).getName());
-                        eventList.add(returnedList.get(i));
-                    }
-                    eventAdapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(param-> {
-                    Log.d("Event", "Event failed to get...");
-                });
+        getParentFragmentManager().setFragmentResultListener(
+                OrganizerEventDetailFragment.REQUEST_KEY_EVENT_CANCELLED,
+                getViewLifecycleOwner(),
+                new FragmentResultListener() {
+                    @Override
+                    public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
+                        String deletedEventId = result.getString(OrganizerEventDetailFragment.BUNDLE_KEY_DELETED_EVENT_ID);
+                        if (deletedEventId == null) {
+                            return;
+                        }
 
-        // ====== New code start ======
-        // Call the method to demonstrate profile-event linking
+                        for (int i = 0; i < eventList.size(); i++) {
+                            Event event = eventList.get(i);
+                            if (deletedEventId.equals(event.getEventId())) {
+                                eventList.remove(i);
+                                eventAdapter.notifyItemRemoved(i);
+                                break;
+                            }
+                        }
+                    }
+                }
+        );
+
         loadOrganizerEvents();
-        // ====== New code end ======
     }
 
     /**
-     * Delete an event
-     * @param event The event to delete
+     * Loads only the current organizer's events.
      */
-    public void deleteEvent(Event event){
+    private void loadOrganizerEvents() {
+        organizerDatabaseManager.getOrganizersCreatedEventsFromOrganizerID(TEST_ORGANIZER_ID)
+                .addOnSuccessListener(returnedList -> {
+                    eventList.clear();
+                    if (returnedList != null) {
+                        eventList.addAll(returnedList);
+                    }
+                    eventAdapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e ->
+                        Log.e("OrganizerEvents", "Failed to load organizer events", e));
+    }
+
+    /**
+     * Deletes one event from the organizer modular view.
+     *
+     * @param event event to delete
+     */
+    public void deleteEvent(Event event) {
+        if (event == null || event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+            Log.e("Event", "Cannot delete event because eventId is null or empty");
+            return;
+        }
+
         eventSearcherDBMan.deleteEvent(event)
-            .addOnSuccessListener(unused -> {
-                eventList.remove(event);
-                eventAdapter.notifyDataSetChanged();
-                Log.d("Event", "Event deleted successfully...");
-            })
-            .addOnFailureListener(e -> {
-                Log.d("Event", "Event delete failed...");
-            });
+                .addOnSuccessListener(unused -> {
+                    eventList.remove(event);
+                    eventAdapter.notifyDataSetChanged();
+                    Log.d("Event", "Event deleted successfully...");
+                })
+                .addOnFailureListener(e -> Log.e("Event", "Event delete failed...", e));
     }
 
     // ====== New method start ======
 
     /**
-     * Load events created by this organizer
-     * This method demonstrates linking profiles to created events
+     * Opens the organizer event detail page for one event.
+     *
+     * @param event event to open
      */
-    private void loadOrganizerEvents() {
-        // Use the same test ID as in CreateEventFragment
-        String TEST_ORGANIZER_ID = "TEMP_ORGANIZER_ID";
-
-        OrganizerDatabaseManager organizerDBMan = new OrganizerDatabaseManager();
-        organizerDBMan.getOrganizersCreatedEventsFromOrganizerID(TEST_ORGANIZER_ID)
-                .addOnSuccessListener(events -> {
-                    if (events == null || events.isEmpty()) {
-                        Log.d("OrganizerEvents", "No events found for this organizer");
-                        return;
-                    }
-
-                    // Log the events to demonstrate linking
-                    for (Event event : events) {
-                        Log.d("OrganizerEvents", "Event: " + event.getName() +
-                                " (ID: " + event.getEventId() +
-                                ") created by: " + event.getOrganizerProfileId());
-                    }
-
-                    Toast.makeText(getContext(),
-                            "Found " + events.size() + " events linked to your profile",
-                            Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("OrganizerEvents", "Error loading events: " + e.getMessage());
-                });
+    private void openEventDetail(Event event) {
+        getParentFragmentManager()
+                .beginTransaction()
+                .replace(R.id.organizer_fragment_container, OrganizerEventDetailFragment.newInstance(event))
+                .addToBackStack(null)
+                .commit();
     }
-
-    // ====== New method end ======
 }

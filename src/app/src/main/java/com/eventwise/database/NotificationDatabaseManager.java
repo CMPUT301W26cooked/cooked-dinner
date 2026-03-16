@@ -44,8 +44,8 @@ public class NotificationDatabaseManager extends DatabaseManager {
         super(db);
     }
 
-    public Task<Notification> getNotificationByID(String notificationID) {
-        return super.getNotificationByID(notificationID);
+    public Task<Notification> getNotificationById(String notificationId) {
+        return super.getNotificationById(notificationId);
     }
 
     /**
@@ -61,8 +61,8 @@ public class NotificationDatabaseManager extends DatabaseManager {
         //Make a batch of writes that complete atomically
         WriteBatch batch = super.db.batch();
 
-        for (String entrantID : notification.getEntrantIds()) {
-            DocumentReference docRef = profiles.document(entrantID);
+        for (String entrantId : notification.getEntrantIds()) {
+            DocumentReference docRef = profiles.document(entrantId);
             batch.update(docRef, "notificationIDs", FieldValue.arrayUnion(notification.getNotificationId()));
         }
         // Commit the batch, then chain the addNotification operation
@@ -81,16 +81,16 @@ public class NotificationDatabaseManager extends DatabaseManager {
      * This method fetches the profile corresponding to the provided entrant ID and extracts
      * its associated notification identifiers.
      *
-     * @param entrantID The unique identifier of the entrant whose notifications are being retrieved.
+     * @param entrantId The unique identifier of the entrant whose notifications are being retrieved.
      * @return A {@link Task} that resolves to an {@link ArrayList} of strings containing the notification IDs.
      * The task will fail with a {@link DatabaseException} if the profile is not an instance of {@link Entrant}
      * or if the database retrieval fails.
      */
-    public Task<ArrayList<String>> getNotificationsIDsByEntrantID(String entrantID) {
+    public Task<ArrayList<String>> getNotificationsIDsByEntrantID(String entrantId) {
         TaskCompletionSource<ArrayList<String>> tcs = new TaskCompletionSource<>();
 
         //Get the entrant
-        super.getProfileFromID(entrantID)
+        super.getProfileFromId(entrantId)
                 .addOnSuccessListener(profile -> {
                     if (profile instanceof Entrant) {
                         Entrant entrant = (Entrant) profile;
@@ -100,9 +100,9 @@ public class NotificationDatabaseManager extends DatabaseManager {
                         tcs.setException(new DatabaseException("Error getting NotificationsIDs"));
                     }
                 })
-                .addOnFailureListener(notUsed -> {
-                    tcs.setException(new DatabaseException("Error getting NotificationsIDs"));
-                });
+                .addOnFailureListener(notUsed ->
+                        tcs.setException(new DatabaseException("Error getting NotificationsIDs")));
+
         return tcs.getTask();
     }
 
@@ -112,26 +112,24 @@ public class NotificationDatabaseManager extends DatabaseManager {
      * This method fetches the notification object from the database using its ID
      * and extracts the list of IDs for the entrants who are recipients of that notification.
      *
-     * @param notificationID The unique identifier of the notification.
+     * @param notificationId The unique identifier of the notification.
      * @return A {@link Task} that resolves to an {@link ArrayList} of strings containing the entrant IDs.
      * If the notification is not found or an error occurs, the task will fail with a {@link DatabaseException}.
      */
-    public Task<ArrayList<String>> getEntrantIDsByNotificationID(String notificationID) {
+    public Task<ArrayList<String>> getEntrantIdsByNotificationId(String notificationId) {
         TaskCompletionSource<ArrayList<String>> tcs = new TaskCompletionSource<>();
 
-        super.getNotificationByID(notificationID)
+        super.getNotificationById(notificationId)
                 .addOnSuccessListener(notification -> {
                     if (notification != null) {
-                        //Set return to Entrants of Notification
                         tcs.setResult(notification.getEntrantIds());
                     } else {
-                        tcs.setException(new DatabaseException("Error getting EntrantsIDs"));
+                        tcs.setException(new DatabaseException("Error getting EntrantIds"));
                     }
                 })
-                .addOnFailureListener(notUsed -> {
-                    tcs.setException(new DatabaseException("Error getting EntrantsIDs"));
-                });
+                .addOnFailureListener(notUsed ->
+                        tcs.setException(new DatabaseException("Error getting EntrantIds")));
+
         return tcs.getTask();
     }
 }
-
