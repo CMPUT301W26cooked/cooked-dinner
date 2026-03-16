@@ -22,7 +22,7 @@ public class Entrant extends Profile {
 
     /**
      * TODO (Entrant.java)
-     * - Confirm how we're getting deviceId (Android ID?, Firebase ID?, etc...)
+     * - Confirm how we're getting deviceId (Android Id?, Firebase Id?, etc...)
      * - Add DatabaseManager methods to update entrant event states async and atomically.
      * - Add unit tests!!!!
      * - Figure out the deal with empty constructor for Firestore.
@@ -35,8 +35,8 @@ public class Entrant extends Profile {
     /** List of all historical and current event states. */
     private ArrayList<EventStateEntry> eventStates = new ArrayList<>();
 
-    /** Notification IDs associated with this entrant. */
-    private ArrayList<String> notificationIDs = new ArrayList<>();
+    /** Notification Ids associated with this entrant. */
+    private ArrayList<String> notificationIds = new ArrayList<>();
 
     /**
      * Required for Firestore.
@@ -78,12 +78,12 @@ public class Entrant extends Profile {
         this.eventStates = eventStates;
     }
 
-    public ArrayList<String> getNotificationIDs() {
-        return notificationIDs;
+    public ArrayList<String> getNotificationIds() {
+        return notificationIds;
     }
 
-    public void setNotificationIDs(ArrayList<String> notificationIDs) {
-        this.notificationIDs = notificationIDs;
+    public void setNotificationIds(ArrayList<String> notificationIds) {
+        this.notificationIds = notificationIds;
     }
 
     @Exclude
@@ -97,7 +97,7 @@ public class Entrant extends Profile {
      *
      * One event should only appear once in this list.
      *
-     * @param eventId event ID
+     * @param eventId event Id
      * @param status entrant state for that event
      */
     public void addOrUpdateEventState(String eventId, EventEntrantStatus status, long timestamp) {
@@ -117,10 +117,10 @@ public class Entrant extends Profile {
     }
 
     /**
-     * Gets event IDs matching a specific status.
+     * Gets event Ids matching a specific status.
      *
      * @param status status to filter by
-     * @return set of event IDs
+     * @return set of event Ids
      */
     @Exclude
     public Set<String> getEventIdsForStatus(EventEntrantStatus status) {
@@ -141,9 +141,9 @@ public class Entrant extends Profile {
     }
 
     /**
-     * Returns all waitlisted event IDs.
+     * Returns all waitlisted event Ids.
      *
-     * @return set of event IDs
+     * @return set of event Ids
      */
     @Exclude
     public Set<String> getWaitlistedEventIds() {
@@ -151,9 +151,9 @@ public class Entrant extends Profile {
     }
 
     /**
-     * Returns all invited event IDs.
+     * Returns all invited event Ids.
      *
-     * @return set of event IDs
+     * @return set of event Ids
      */
     @Exclude
     public Set<String> getInvitedEventIds() {
@@ -161,9 +161,9 @@ public class Entrant extends Profile {
     }
 
     /**
-     * Returns all enrolled event IDs.
+     * Returns all enrolled event Ids.
      *
-     * @return set of event IDs
+     * @return set of event Ids
      */
     @Exclude
     public Set<String> getEnrolledEventIds() {
@@ -171,9 +171,9 @@ public class Entrant extends Profile {
     }
 
     /**
-     * Returns all cancelled event IDs.
+     * Returns all cancelled event Ids.
      *
-     * @return set of event IDs
+     * @return set of event Ids
      */
     @Exclude
     public Set<String> getCancelledEventIds() {
@@ -187,13 +187,13 @@ public class Entrant extends Profile {
         Entrant that = (Entrant) o;
         return Objects.equals(deviceId, that.deviceId)
                 && Objects.equals(eventStates, that.eventStates)
-                && Objects.equals(notificationIDs, that.notificationIDs)
+                && Objects.equals(notificationIds, that.notificationIds)
                 && super.equals(o);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(deviceId, eventStates, notificationIDs, super.hashCode());
+        return Objects.hash(deviceId, eventStates, notificationIds, super.hashCode());
     }
 
 
@@ -203,7 +203,7 @@ public class Entrant extends Profile {
      */
     public static class EventStateEntry {
 
-        /** Event ID associated with this state. */
+        /** Event Id associated with this state. */
         private String eventId;
 
         /** Status for the entrant in this event. */
@@ -220,7 +220,7 @@ public class Entrant extends Profile {
         /**
          * Constructs an event state entry.
          *
-         * @param eventId event ID
+         * @param eventId event Id
          * @param status status
          * @param timestampEpochSec timestamp
          */

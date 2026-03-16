@@ -30,7 +30,7 @@ public class ProfileFragment extends Fragment {
     private Button btnDelete;
     private ProgressBar progress;
 
-    // TODO: 这里填入“当前登录用户/当前要删除的 Entrant 的 ID”
+    // TODO: 这里填入“当前登录用户/当前要删除的 Entrant 的 Id”
     private String currentEntrantId = "REPLACE_WITH_REAL_ID";
 
     private EntrantDatabaseManager entrantDb;

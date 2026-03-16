@@ -37,7 +37,7 @@ public class EventIdentityAndDeletionTests extends DatabaseManagerTests {
     public void addEventWithoutIdAssignsIdAndPersistsDocument() throws Exception {
         OrganizerDatabaseManager organizerDb = new OrganizerDatabaseManager(testDb);
 
-        Event event = buildEvent("ORG_AUTO", "Auto ID Event");
+        Event event = buildEvent("ORG_AUTO", "Auto Id Event");
 
         Tasks.await(organizerDb.addEvent(event));
 

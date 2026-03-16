@@ -83,7 +83,7 @@ public abstract class DatabaseManager {
 
     /**
      * Adds a new profile to the Firestore database.
-     * This method creates a document in the "profiles" collection using the profile's unique ID
+     * This method creates a document in the "profiles" collection using the profile's unique Id
      * and stores the provided profile object.
      *
      * @param profile The {@link Profile} object containing the data to be stored.
@@ -96,11 +96,11 @@ public abstract class DatabaseManager {
 
     /**
      * Updates an existing profile in the database.
-     * This method first verifies that a profile with the given ID exists before attempting to
+     * This method first verifies that a profile with the given Id exists before attempting to
      * overwrite it. If the profile does not exist, the returned task will fail with a
      * {@link DatabaseException}.
      *
-     * @param profile The {@link Profile} object containing the updated information and a valid profile ID.
+     * @param profile The {@link Profile} object containing the updated information and a valid profile Id.
      * @return A {@link Task} that will be completed when the update is successful.
      */
     protected Task<Void> updateProfile(Profile profile) {
@@ -119,7 +119,7 @@ public abstract class DatabaseManager {
 
 
     /**
-     * Retrieves a profile from the Firestore database using the specified profile ID.
+     * Retrieves a profile from the Firestore database using the specified profile Id.
      * This method performs an asynchronous fetch and returns a Task that will resolve
      * to the Profile object if found.
      *
@@ -271,7 +271,7 @@ public abstract class DatabaseManager {
 
     /**
      * Adds a new event to the Firestore database.
-     * This method creates a document in the "event" collection using the event's unique ID
+     * This method creates a document in the "event" collection using the event's unique Id
      * and stores the provided event object.
      *
      * @param event The {@link Event} object containing the data to be stored.
@@ -288,7 +288,7 @@ public abstract class DatabaseManager {
 
 //        DocumentReference newEventRef = events.document(); // asking Firestore to create one here
 //
-//        event.setEventId(event.getEventId()); // Event class expects ID is already existing
+//        event.setEventId(event.getEventId()); // Event class expects Id is already existing
 //
 //        return newEventRef.set(event);
     }
@@ -320,7 +320,7 @@ public abstract class DatabaseManager {
     }
     /**
      * Adds a new location to the Firestore database.
-     * This method creates a document in the "location" collection using the location's unique ID
+     * This method creates a document in the "location" collection using the location's unique Id
      * and stores the provided location object.
      *
      * @param location The {@link Location} object containing the data to be stored.
@@ -361,7 +361,7 @@ public abstract class DatabaseManager {
 //    /**
 //     * DO NOT USE, CHANGED TO TAGS.
 //     * Adds a new topic to the Firestore database.
-//     * This method creates a document in the "topic" collection using the topic's unique ID
+//     * This method creates a document in the "topic" collection using the topic's unique Id
 //     * and stores the provided topic object.
 //     *
 //     * @param topic The {@link Topic} object containing the data to be stored.

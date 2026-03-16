@@ -32,7 +32,7 @@ public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
         testTags.add(new Tag("Testing", "TestKeyword"));
 
         Event event = new Event(
-                "TestOrganizerProfileID",
+                "TestOrganizerProfileId",
                 "Test Event",
                 "Test Description",
                 10.0,

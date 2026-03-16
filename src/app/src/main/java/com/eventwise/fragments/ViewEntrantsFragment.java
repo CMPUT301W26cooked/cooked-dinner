@@ -152,19 +152,19 @@ public class ViewEntrantsFragment extends Fragment {
                 break;
 
             case FILTER_INVITEES:
-                organizerDatabaseManager.getEntrantsIDsInChosenList(eventId)
+                organizerDatabaseManager.getEntrantsIdsInChosenList(eventId)
                         .addOnSuccessListener(this::loadEntrantsFromIds)
                         .addOnFailureListener(e -> handleLoadFailure("invitees", e));
                 break;
 
             case FILTER_CANCELED:
-                organizerDatabaseManager.getEntrantsIDsInCancelledListFromEventID(eventId)
+                organizerDatabaseManager.getEntrantsIdsInCancelledListFromEventId(eventId)
                         .addOnSuccessListener(this::loadEntrantsFromIds)
                         .addOnFailureListener(e -> handleLoadFailure("canceled", e));
                 break;
 
             case FILTER_REGISTERED:
-                organizerDatabaseManager.getEntrantsIDsInConfirmedListFromEventID(eventId)
+                organizerDatabaseManager.getEntrantsIdsInConfirmedListFromEventId(eventId)
                         .addOnSuccessListener(this::loadEntrantsFromIds)
                         .addOnFailureListener(e -> handleLoadFailure("registered", e));
                 break;
@@ -219,14 +219,14 @@ public class ViewEntrantsFragment extends Fragment {
                     if (entrant != null) {
                         String displayId = safeEntrantId(entrant);
                         results.add(new EntrantListItem(
-                                "User ID: " + displayId,
+                                "User Id: " + displayId,
                                 safeText(entrant.getName()),
                                 safeText(entrant.getEmail()),
                                 safeText(entrant.getPhone())
                         ));
                     } else {
                         results.add(new EntrantListItem(
-                                "User ID: " + safeText(entrantId),
+                                "User Id: " + safeText(entrantId),
                                 "",
                                 "",
                                 ""
@@ -239,7 +239,7 @@ public class ViewEntrantsFragment extends Fragment {
                     Log.e("ViewEntrants", "Failed to load entrant " + entrantId, e);
 
                     results.add(new EntrantListItem(
-                            "User ID: " + safeText(entrantId),
+                            "User Id: " + safeText(entrantId),
                             "",
                             "",
                             ""

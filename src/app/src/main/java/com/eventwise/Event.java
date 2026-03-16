@@ -17,8 +17,8 @@ public class Event {
 
     /**
      * TODO (Event.java)
-     * - Event IDs will be Firestore auto generated so add eventId creation inside DatabaseManager when creating events.
-     * - Decide if Location should stay a string or become an object/ID.
+     * - Event Ids will be Firestore auto generated so add eventId creation inside DatabaseManager when creating events.
+     * - Decide if Location should stay a string or become an object/Id.
      * - Add validation rules! (e.g., end after start, registration open before close).
      * - Add DatabaseManager methods to join/leave waiting list.
      * - Add logic to handle cancelled/declined entrants triggering redraws.
@@ -163,7 +163,7 @@ public class Event {
     }
 
     /**
-     * Returns all entrant IDs matching a given status.
+     * Returns all entrant Ids matching a given status.
      *
      * @param status status to filter by
      * @return entrant ids

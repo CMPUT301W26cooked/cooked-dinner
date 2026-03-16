@@ -24,10 +24,10 @@ import java.util.Objects;
  *
  * <p>Key functionalities include:</p>
  * <ul>
- *     <li>Retrieving notification data by ID.</li>
+ *     <li>Retrieving notification data by Id.</li>
  *     <li>Creating new notifications and atomically updating associated entrant profiles.</li>
- *     <li>Fetching lists of notification IDs for a specific entrant.</li>
- *     <li>Fetching lists of entrant IDs associated with a specific notification.</li>
+ *     <li>Fetching lists of notification Ids for a specific entrant.</li>
+ *     <li>Fetching lists of entrant Ids associated with a specific notification.</li>
  * </ul>
  *
  * @see Notification
@@ -50,7 +50,7 @@ public class NotificationDatabaseManager extends DatabaseManager {
 
     /**
      * Creates a new notification in the database and updates all associated entrants' profiles
-     * to include this notification's ID. This operation is performed atomically for the entrant updates.
+     * to include this notification's Id. This operation is performed atomically for the entrant updates.
      *
      * @param notification The {@link Notification} object to be created and linked to entrants.
      * @return A {@link Task} that resolves when the notification has been successfully created
@@ -63,7 +63,7 @@ public class NotificationDatabaseManager extends DatabaseManager {
 
         for (String entrantId : notification.getEntrantIds()) {
             DocumentReference docRef = profiles.document(entrantId);
-            batch.update(docRef, "notificationIDs", FieldValue.arrayUnion(notification.getNotificationId()));
+            batch.update(docRef, "notificationIds", FieldValue.arrayUnion(notification.getNotificationId()));
         }
         // Commit the batch, then chain the addNotification operation
         return batch.commit()
@@ -77,16 +77,16 @@ public class NotificationDatabaseManager extends DatabaseManager {
     }
 
     /**
-     * Retrieves a list of notification IDs associated with a specific entrant.
-     * This method fetches the profile corresponding to the provided entrant ID and extracts
+     * Retrieves a list of notification Ids associated with a specific entrant.
+     * This method fetches the profile corresponding to the provided entrant Id and extracts
      * its associated notification identifiers.
      *
      * @param entrantId The unique identifier of the entrant whose notifications are being retrieved.
-     * @return A {@link Task} that resolves to an {@link ArrayList} of strings containing the notification IDs.
+     * @return A {@link Task} that resolves to an {@link ArrayList} of strings containing the notification Ids.
      * The task will fail with a {@link DatabaseException} if the profile is not an instance of {@link Entrant}
      * or if the database retrieval fails.
      */
-    public Task<ArrayList<String>> getNotificationsIDsByEntrantID(String entrantId) {
+    public Task<ArrayList<String>> getNotificationsIdsByEntrantId(String entrantId) {
         TaskCompletionSource<ArrayList<String>> tcs = new TaskCompletionSource<>();
 
         //Get the entrant
@@ -95,25 +95,25 @@ public class NotificationDatabaseManager extends DatabaseManager {
                     if (profile instanceof Entrant) {
                         Entrant entrant = (Entrant) profile;
                         //Set return to Notifications of Entrant
-                        tcs.setResult(entrant.getNotificationIDs());
+                        tcs.setResult(entrant.getNotificationIds());
                     } else {
-                        tcs.setException(new DatabaseException("Error getting NotificationsIDs"));
+                        tcs.setException(new DatabaseException("Error getting NotificationsIds"));
                     }
                 })
                 .addOnFailureListener(notUsed ->
-                        tcs.setException(new DatabaseException("Error getting NotificationsIDs")));
+                        tcs.setException(new DatabaseException("Error getting NotificationsIds")));
 
         return tcs.getTask();
     }
 
 
     /**
-     * Retrieves a list of entrant IDs associated with a specific notification.
-     * This method fetches the notification object from the database using its ID
-     * and extracts the list of IDs for the entrants who are recipients of that notification.
+     * Retrieves a list of entrant Ids associated with a specific notification.
+     * This method fetches the notification object from the database using its Id
+     * and extracts the list of Ids for the entrants who are recipients of that notification.
      *
      * @param notificationId The unique identifier of the notification.
-     * @return A {@link Task} that resolves to an {@link ArrayList} of strings containing the entrant IDs.
+     * @return A {@link Task} that resolves to an {@link ArrayList} of strings containing the entrant Ids.
      * If the notification is not found or an error occurs, the task will fail with a {@link DatabaseException}.
      */
     public Task<ArrayList<String>> getEntrantIdsByNotificationId(String notificationId) {

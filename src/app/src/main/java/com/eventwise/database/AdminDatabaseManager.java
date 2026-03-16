@@ -40,11 +40,11 @@ public class AdminDatabaseManager extends DatabaseManager {
     }
 
     /**
-     * Retrieves an entrant's profile from the database using their unique ID.
+     * Retrieves an entrant's profile from the database using their unique Id.
      * This method fetches the profile data and casts it to an {@link Entrant} object.
      *
      * @param entrantId The unique identifier of the entrant to retrieve.
-     * @return A {@link Task} that resolves to the {@link Entrant} object associated with the ID.
+     * @return A {@link Task} that resolves to the {@link Entrant} object associated with the Id.
      */
     public Task<Entrant> getEntrantFromId(String entrantId) {
         return super.getProfileFromId(entrantId)

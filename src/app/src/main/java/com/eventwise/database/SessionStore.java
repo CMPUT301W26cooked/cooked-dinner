@@ -50,9 +50,9 @@ public class SessionStore {
     }
 
     /**
-     * Retrieves the stored device ID from the session preferences.
+     * Retrieves the stored device Id from the session preferences.
      *
-     * @return The stored device ID string if available; {@code null} otherwise.
+     * @return The stored device Id string if available; {@code null} otherwise.
      */
     public String getDeviceId() {
         return sp.getString("deviceId", null);
@@ -72,9 +72,9 @@ public class SessionStore {
 
 
     /**
-     * Retrieves the stored entrant ID from the session.
+     * Retrieves the stored entrant Id from the session.
      *
-     * @return The entrant ID string if it exists; null otherwise.
+     * @return The entrant Id string if it exists; null otherwise.
      */
     public String getEntrantId() {
         return sp.getString("entrantId", null);

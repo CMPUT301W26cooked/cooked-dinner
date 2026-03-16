@@ -125,7 +125,7 @@ public class EntrantMainActivity extends AppCompatActivity {
         String deviceId = sessionStore.getDeviceId();
 
         if (deviceId == null || deviceId.trim().isEmpty()) {
-            Log.e("EntrantMainActivity", "No device ID found");
+            Log.e("EntrantMainActivity", "No device Id found");
             return;
         }
 

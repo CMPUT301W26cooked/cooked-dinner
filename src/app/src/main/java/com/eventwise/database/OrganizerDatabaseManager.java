@@ -84,13 +84,6 @@ public class OrganizerDatabaseManager extends DatabaseManager{
     }
 
     /**
-     * Compatibility wrapper while other files are still being renamed.
-     */
-    public Task<ArrayList<String>> getEntrantsIDsInWaitingListFromEventID(String eventID) {
-        return getEntrantsIdsInWaitingListFromEventId(eventID);
-    }
-
-    /**
      * Retrieves the list of entrant Ids who have been cancelled for a specific event.
      *
      * @param eventId The Id of the event for which to retrieve the cancelled list.
@@ -115,12 +108,6 @@ public class OrganizerDatabaseManager extends DatabaseManager{
         return tcs.getTask();
     }
 
-    /**
-     * Compatibility wrapper while other files are still being renamed.
-     */
-    public Task<ArrayList<String>> getEntrantsIDsInCancelledListFromEventID(String eventID) {
-        return getEntrantsIdsInCancelledListFromEventId(eventID);
-    }
 
     /**
      * Retrieves the list of entrant Ids who have been confirmed for a specific event.
@@ -146,12 +133,6 @@ public class OrganizerDatabaseManager extends DatabaseManager{
         return tcs.getTask();
     }
 
-    /**
-     * Compatibility wrapper while other files are still being renamed.
-     */
-    public Task<ArrayList<String>> getEntrantsIDsInConfirmedListFromEventID(String eventID) {
-        return getEntrantsIdsInConfirmedListFromEventId(eventID);
-    }
 
     /**
      * Retrieves the list of entrant Ids who have been chosen for a specific event.
@@ -177,12 +158,6 @@ public class OrganizerDatabaseManager extends DatabaseManager{
         return tcs.getTask();
     }
 
-    /**
-     * Compatibility wrapper while other files are still being renamed.
-     */
-    public Task<ArrayList<String>> getEntrantsIDsInChosenList(String eventID) {
-        return getEntrantsIdsInChosenList(eventID);
-    }
 
     /**
      * Retrieves all events created by a specific organizer from the database.
@@ -206,13 +181,6 @@ public class OrganizerDatabaseManager extends DatabaseManager{
                 tcs.setException(new DatabaseException("Error getting organizers Events")));
 
         return tcs.getTask();
-    }
-
-    /**
-     * Compatibility wrapper while other files are still being renamed.
-     */
-    public Task<ArrayList<Event>> getOrganizersCreatedEventsFromOrganizerID(String organizerID) {
-        return getOrganizersCreatedEventsFromOrganizerId(organizerID);
     }
 
     //**************************************************************************************************
@@ -259,7 +227,7 @@ public class OrganizerDatabaseManager extends DatabaseManager{
     /**
      * Updates and replaces an existing event poster image in local storage and updates the database reference.
      *
-     * @param eventId   The unique ID of the event for which the poster is being updated.
+     * @param eventId   The unique Id of the event for which the poster is being updated.
      * @param imageData The raw byte array of the new poster image.
      * @param context   The application context used to access internal storage.
      * @return A {@link Task} that resolves to a {@link String} containing the local file path of the updated image.

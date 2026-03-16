@@ -18,7 +18,7 @@ public class Organizer extends Profile {
      * - Add unit tests.
      */
 
-    /** List of event IDs created by this organizer. */
+    /** List of event Ids created by this organizer. */
     private ArrayList<String> createdEventIds = new ArrayList<>();
 
     public Organizer() {

@@ -40,7 +40,7 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
             Tasks.await(new EntrantDatabaseManager(testDb).addEntrant(entrant));
         }
 
-        //Generate RandomIDs for everything to avoid collisions
+        //Generate RandomIds for everything to avoid collisions
         randomEventId = UUID.randomUUID().toString();
 
         //Make a dummy event to add the entrant to
@@ -51,7 +51,7 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
         testTags.add(new Tag("Testing", "TestKeyword"));
 
         Event event = new Event(
-                "TestOrganizerProfileID",
+                "TestOrganizerProfileId",
                 "Test Event",
                 "Test Description",
                 10.0,
@@ -90,7 +90,7 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
     public void createNotification() throws ExecutionException, InterruptedException {
         Notification notification = new Notification(
                 randomEntrantIds,
-                "TestOrganizerProfileID",
+                "TestOrganizerProfileId",
                 randomEventId,
                 Notification.NotificationType.INVITED,
                 "Test Message"
@@ -109,7 +109,7 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
     public void verifyNotificationInEntrantsNotificationList() throws ExecutionException, InterruptedException {
         Notification notification = new Notification(
                 randomEntrantIds,
-                "TestOrganizerProfileID",
+                "TestOrganizerProfileId",
                 randomEventId,
                 Notification.NotificationType.INVITED,
                 "Test Message"
@@ -122,7 +122,7 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
 
         for (String entrantId : randomEntrantIds) {
             Entrant entrant = Tasks.await(adminDbManager.getEntrantFromId(entrantId));
-            Assert.assertTrue(entrant.getNotificationIDs().contains(notification.getNotificationId()));
+            Assert.assertTrue(entrant.getNotificationIds().contains(notification.getNotificationId()));
         }
     }
 
@@ -131,7 +131,7 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
         //Create Notification with target entrants
         Notification notification = new Notification(
                 randomEntrantIds,
-                "TestOrganizerProfileID",
+                "TestOrganizerProfileId",
                 randomEventId,
                 Notification.NotificationType.INVITED,
                 "Test Message"
@@ -154,7 +154,7 @@ public class NotificationDatabaseManagerTests extends DatabaseManagerTests{
     public void verifyNoDataLoss() throws ExecutionException, InterruptedException {
         Notification notification = new Notification(
                 randomEntrantIds,
-                "TestOrganizerProfileID",
+                "TestOrganizerProfileId",
                 randomEventId,
                 Notification.NotificationType.INVITED,
                 "Test Message"

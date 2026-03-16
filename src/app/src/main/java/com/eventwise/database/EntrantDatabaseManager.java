@@ -156,10 +156,10 @@ public class EntrantDatabaseManager extends DatabaseManager {
     /**
      * US 01.01.01
      * Registers an entrant in the waiting list for a specific event in the database.
-     * Updates the event document by adding the entrant's profile ID to the "waitingList" array.
+     * Updates the event document by adding the entrant's profile Id to the "waitingList" array.
      *
-     * @param entrantId The ID of the entrant to be registered.
-     * @param eventId   The ID of the event for which the entrant is registering.
+     * @param entrantId The Id of the entrant to be registered.
+     * @param eventId   The Id of the event for which the entrant is registering.
      * @throws DatabaseException If there is an error updating the database or if the entrant cannot be added.
      */
     public Task<Void> registerEntrantInEvent(String entrantId, String eventId, long timestamp) {
@@ -177,14 +177,14 @@ public class EntrantDatabaseManager extends DatabaseManager {
                     profiles.document(entrantId).get()
                             .addOnSuccessListener(profileSnapshot -> {
                                 if (!profileSnapshot.exists()) {
-                                    tcs.setException(new DatabaseException("Entrant profile does not exist for ID: " + entrantId));
+                                    tcs.setException(new DatabaseException("Entrant profile does not exist for Id: " + entrantId));
                                     return;
                                 }
 
                                 Entrant entrant = profileSnapshot.toObject(Entrant.class);
 
                                 if (entrant == null) {
-                                    tcs.setException(new DatabaseException("Entrant document could not be parsed for ID: " + entrantId));
+                                    tcs.setException(new DatabaseException("Entrant document could not be parsed for Id: " + entrantId));
                                     return;
                                 }
 
@@ -213,7 +213,7 @@ public class EntrantDatabaseManager extends DatabaseManager {
     /**
      * US 01.01.02
      * Unregisters an entrant in the waiting list for a specific event in the database.
-     * Updates the event document by removing the entrant's profile ID from the "waitingList" array.
+     * Updates the event document by removing the entrant's profile Id from the "waitingList" array.
      *
      * @param entrantId The entrant to be unregistered.
      * @param eventId   The event for which the entrant is unregistering.
@@ -294,8 +294,8 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * 5. Update Entrant profile state
      * 6. Save both updates in a Firestore WriteBatch
      *
-     * @param entrantId The ID of the entrant declining the invitation
-     * @param eventId   The ID of the event they are declining
+     * @param entrantId The Id of the entrant declining the invitation
+     * @param eventId   The Id of the event they are declining
      * @return Task<Void> a Task that completes when the decline action is saved
      */
     public Task<Void> declineInvitation(String entrantId, String eventId, long timestamp) {
@@ -375,14 +375,14 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * US 01.05.01 — Delete entrant profile
      *
      * Steps:
-     * 1) Delete the entrant's profile document in "profiles/{entrantID}".
-     * 2) Scan all events; for each event, remove any EntrantStatusEntry whose entrantProfileId == entrantID.
+     * 1) Delete the entrant's profile document in "profiles/{entrantId}".
+     * 2) Scan all events; for each event, remove any EntrantStatusEntry whose entrantProfileId == entrantId.
      * 3) Commit changes in a single WriteBatch to keep consistency.
      *
      * Idempotency:
      * - If the profile doc does not exist, we still attempt to clean events and resolve as success.
      *
-     * @param entrantId The ID of the entrant to delete.
+     * @param entrantId The Id of the entrant to delete.
      * @return Task<Void> that completes when the whole operation is done.
      */
     public Task<Void> deleteEntrant(String entrantId) {
@@ -412,7 +412,7 @@ public class EntrantDatabaseManager extends DatabaseManager {
     }
 
     /**
-     * Iterate all events and remove any entrant status entries for the given entrantID.
+     * Iterate all events and remove any entrant status entries for the given entrantId.
      * Commit all changes in one WriteBatch.
      */
     private void cleanEntrantFromAllEvents(String entrantId, TaskCompletionSource<Void> tcs) {

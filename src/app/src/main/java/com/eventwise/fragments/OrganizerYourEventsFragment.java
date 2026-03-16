@@ -113,7 +113,7 @@ public class OrganizerYourEventsFragment extends Fragment {
      * Loads only the current organizer's events.
      */
     private void loadOrganizerEvents() {
-        organizerDatabaseManager.getOrganizersCreatedEventsFromOrganizerID(TEST_ORGANIZER_ID)
+        organizerDatabaseManager.getOrganizersCreatedEventsFromOrganizerId(TEST_ORGANIZER_ID)
                 .addOnSuccessListener(returnedList -> {
                     eventList.clear();
                     if (returnedList != null) {
