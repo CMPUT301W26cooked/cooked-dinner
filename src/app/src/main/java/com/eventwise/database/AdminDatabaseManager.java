@@ -8,14 +8,22 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-
+/**
+ * Manages database operations specific to admins, including event, profile,,
+ * and location deletion. This class extends {@link DatabaseManager}
+ * to provide specialized Firestore interactions for admin-related data.
+ *
+ * @author Pablo Osorio
+ * @version 1.0
+ * @since 2026-03-07
+ */
 public class AdminDatabaseManager extends DatabaseManager {
 
     public AdminDatabaseManager() {
         super();
     }
 
-    public AdminDatabaseManager(FirebaseFirestore db) {
+    public AdminDatabaseManager(FirebaseFirestore db){
         super(db);
     }
 
@@ -31,10 +39,26 @@ public class AdminDatabaseManager extends DatabaseManager {
         return super.deleteProfileFromId(profileId);
     }
 
+    /**
+     * Retrieves an entrant's profile from the database using their unique ID.
+     * This method fetches the profile data and casts it to an {@link Entrant} object.
+     *
+     * @param entrantId The unique identifier of the entrant to retrieve.
+     * @return A {@link Task} that resolves to the {@link Entrant} object associated with the ID.
+     */
     public Task<Entrant> getEntrantFromId(String entrantId) {
         return super.getProfileFromId(entrantId)
                 .continueWith(task -> (Entrant) task.getResult());
     }
+//    public Task<Void> removeLocation(Location location) {
+//        return locations.document(location.getName()).delete();
+//    }
+
+//    public Task<Void> removeTopics(Topics topics) {
+//        return topics.document(topics.getName()).delete();
+//    }
+
+
 
     public Task<ArrayList<Entrant>> getAllEntrants() {
         return super.getEntrants();

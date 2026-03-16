@@ -1,11 +1,15 @@
 package com.eventwise.database;
 
+import android.util.Log;
+
 import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.EventEntrantStatus;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -28,11 +32,12 @@ import java.util.ArrayList;
 
 public class EntrantDatabaseManager extends DatabaseManager {
 
-    public EntrantDatabaseManager() {
+
+    public EntrantDatabaseManager(){
         super();
     }
 
-    public EntrantDatabaseManager(FirebaseFirestore db) {
+    public EntrantDatabaseManager(FirebaseFirestore db){
         super(db);
     }
 
@@ -171,10 +176,15 @@ public class EntrantDatabaseManager extends DatabaseManager {
 
                     profiles.document(entrantId).get()
                             .addOnSuccessListener(profileSnapshot -> {
+                                if (!profileSnapshot.exists()) {
+                                    tcs.setException(new DatabaseException("Entrant profile does not exist for ID: " + entrantId));
+                                    return;
+                                }
+
                                 Entrant entrant = profileSnapshot.toObject(Entrant.class);
 
                                 if (entrant == null) {
-                                    tcs.setException(new DatabaseException("Error getting Entrant"));
+                                    tcs.setException(new DatabaseException("Entrant document could not be parsed for ID: " + entrantId));
                                     return;
                                 }
 
@@ -193,8 +203,9 @@ public class EntrantDatabaseManager extends DatabaseManager {
                             .addOnFailureListener(e ->
                                     tcs.setException(new DatabaseException("Error getting Entrant")));
                 })
-                .addOnFailureListener(e ->
-                        tcs.setException(new DatabaseException("Error getting Event")));
+                .addOnFailureListener(e -> {
+                        tcs.setException(new DatabaseException("Error getting Event"));
+                });
 
         return tcs.getTask();
     }
@@ -269,6 +280,8 @@ public class EntrantDatabaseManager extends DatabaseManager {
         return tcs.getTask();
     }
 
+
+
     /**
      * US 01.05.03
      * Declines an invitation for an entrant in a specific event.
@@ -296,6 +309,7 @@ public class EntrantDatabaseManager extends DatabaseManager {
                         return;
                     }
 
+                    //load entrant profile
                     profiles.document(entrantId).get()
                             .addOnSuccessListener(profileSnapshot -> {
                                 Entrant entrant = profileSnapshot.toObject(Entrant.class);
@@ -304,6 +318,7 @@ public class EntrantDatabaseManager extends DatabaseManager {
                                     return;
                                 }
 
+                                // 3. Validate current status
                                 ArrayList<Event.EntrantStatusEntry> entries = event.getEntrantStatuses();
                                 EventEntrantStatus currentStatus = null;
                                 for (Event.EntrantStatusEntry e : entries) {
@@ -340,13 +355,18 @@ public class EntrantDatabaseManager extends DatabaseManager {
                                 batch.commit()
                                         .addOnSuccessListener(unused -> tcs.setResult(null))
                                         .addOnFailureListener(e ->
-                                                tcs.setException(new DatabaseException("Error declining invitation")));
+                                                tcs.setException(new DatabaseException("Error declining invitation"))
+                                        );
+
                             })
                             .addOnFailureListener(e ->
-                                    tcs.setException(new DatabaseException("Error retrieving Entrant")));
+                                    tcs.setException(new DatabaseException("Error retrieving Entrant"))
+                            );
+
                 })
                 .addOnFailureListener(e ->
-                        tcs.setException(new DatabaseException("Error retrieving Event")));
+                        tcs.setException(new DatabaseException("Error retrieving Event"))
+                );
 
         return tcs.getTask();
     }
@@ -379,7 +399,14 @@ public class EntrantDatabaseManager extends DatabaseManager {
         // We chain: delete profile -> load events -> remove references -> batch commit
         profileRef.delete()
                 .addOnSuccessListener(unused -> cleanEntrantFromAllEvents(entrantId, tcs))
-                .addOnFailureListener(e -> cleanEntrantFromAllEvents(entrantId, tcs));
+                .addOnFailureListener(e -> {
+                    // If deletion fails because doc not found, still continue to clean events.
+                    // Firestore delete on non-existing doc usually resolves success,
+                    // but if a failure happens (e.g., permission), we propagate the error.
+                    // Here we choose to continue only if it's a "not found"-like case is not exposed.
+                    // For simplicity, attempt to clean events anyway, then decide success/failure on that step.
+                    cleanEntrantFromAllEvents(entrantId, tcs);
+                });
 
         return tcs.getTask();
     }

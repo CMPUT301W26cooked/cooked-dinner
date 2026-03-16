@@ -74,12 +74,35 @@ public abstract class DatabaseManager {
         locations = db.collection("locations");
         tags = db.collection("tags");
         notifications = db.collection("notifications");
-    }
+   }
 
+
+    //**************************************************************************************************
+    // *                                            Profiles
+    // *************************************************************************************************/
+
+    /**
+     * Adds a new profile to the Firestore database.
+     * This method creates a document in the "profiles" collection using the profile's unique ID
+     * and stores the provided profile object.
+     *
+     * @param profile The {@link Profile} object containing the data to be stored.
+     * @return A {@link Task} representing the asynchronous database write operation.
+     */
     protected Task<Void> addProfile(Profile profile) {
         return profiles.document(profile.getProfileId()).set(profile);
     }
 
+
+    /**
+     * Updates an existing profile in the database.
+     * This method first verifies that a profile with the given ID exists before attempting to
+     * overwrite it. If the profile does not exist, the returned task will fail with a
+     * {@link DatabaseException}.
+     *
+     * @param profile The {@link Profile} object containing the updated information and a valid profile ID.
+     * @return A {@link Task} that will be completed when the update is successful.
+     */
     protected Task<Void> updateProfile(Profile profile) {
         return profiles.document(profile.getProfileId()).get().continueWithTask(task -> {
             if (!task.isSuccessful() || !task.getResult().exists()) {
@@ -109,11 +132,13 @@ public abstract class DatabaseManager {
 
         profiles.document(profileId).get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
-                if (documentSnapshot.getData().get("profileType").equals(ProfileType.ENTRANT.toString())) {
+                if (documentSnapshot.getData().get("profileType").equals(ProfileType.ENTRANT.toString())){
                     tcs.setResult(documentSnapshot.toObject(Entrant.class));
-                } else if (documentSnapshot.getData().get("profileType").equals(ProfileType.ORGANIZER.toString())) {
+                }
+                else if (documentSnapshot.getData().get("profileType").equals(ProfileType.ORGANIZER.toString())) {
                     tcs.setResult(documentSnapshot.toObject(Organizer.class));
-                } else if (documentSnapshot.getData().get("profileType").equals(ProfileType.ADMIN.toString())) {
+                }
+                else if (documentSnapshot.getData().get("profileType").equals(ProfileType.ADMIN.toString())) {
                     tcs.setResult(documentSnapshot.toObject(Admin.class));
                 }
             } else {
@@ -140,7 +165,7 @@ public abstract class DatabaseManager {
         TaskCompletionSource<ArrayList<Entrant>> tcs = new TaskCompletionSource<>();
         ArrayList<Entrant> entrantsArray = new ArrayList<>();
 
-        profiles.get().addOnSuccessListener(result -> {
+        profiles.get().addOnSuccessListener( result -> {
             for (DocumentSnapshot document : result) {
                 if (document.getData().get("profileType").equals(ProfileType.ENTRANT.toString())) {
                     entrantsArray.add(document.toObject(Entrant.class));
@@ -169,7 +194,7 @@ public abstract class DatabaseManager {
         TaskCompletionSource<ArrayList<Admin>> tcs = new TaskCompletionSource<>();
         ArrayList<Admin> adminArray = new ArrayList<>();
 
-        profiles.get().addOnSuccessListener(result -> {
+        profiles.get().addOnSuccessListener( result -> {
             for (DocumentSnapshot document : result) {
                 if (document.getData().get("profileType").equals(ProfileType.ADMIN.toString())) {
                     adminArray.add(document.toObject(Admin.class));
@@ -198,7 +223,7 @@ public abstract class DatabaseManager {
         TaskCompletionSource<ArrayList<Organizer>> tcs = new TaskCompletionSource<>();
         ArrayList<Organizer> organizerArray = new ArrayList<>();
 
-        profiles.get().addOnSuccessListener(result -> {
+        profiles.get().addOnSuccessListener( result -> {
             for (DocumentSnapshot document : result) {
                 if (document.getData().get("profileType").equals(ProfileType.ORGANIZER.toString())) {
                     organizerArray.add(document.toObject(Organizer.class));
@@ -206,7 +231,7 @@ public abstract class DatabaseManager {
             }
             tcs.setResult(organizerArray);
         }).addOnFailureListener(exception -> {
-            tcs.setException(new DatabaseException("Error getting Organizers"));
+                    tcs.setException(new DatabaseException("Error getting Organizers"));
         });
         return tcs.getTask();
     }
@@ -226,7 +251,7 @@ public abstract class DatabaseManager {
         TaskCompletionSource<ArrayList<Event>> tcs = new TaskCompletionSource<>();
         ArrayList<Event> eventsArray = new ArrayList<>();
 
-        events.get().addOnSuccessListener(result -> {
+        events.get().addOnSuccessListener( result -> {
             for (DocumentSnapshot document : result) {
                 Event event = document.toObject(Event.class);
                 if (event != null) {
@@ -260,6 +285,12 @@ public abstract class DatabaseManager {
         }
 
         return events.document(event.getEventId()).set(event);
+
+//        DocumentReference newEventRef = events.document(); // asking Firestore to create one here
+//
+//        event.setEventId(event.getEventId()); // Event class expects ID is already existing
+//
+//        return newEventRef.set(event);
     }
 //**************************************************************************************************
 //*                                            Location
@@ -277,7 +308,7 @@ public abstract class DatabaseManager {
         TaskCompletionSource<ArrayList<Location>> tcs = new TaskCompletionSource<>();
         ArrayList<Location> locationArray = new ArrayList<>();
 
-        locations.get().addOnSuccessListener(result -> {
+        locations.get().addOnSuccessListener( result -> {
             for (DocumentSnapshot document : result) {
                 locationArray.add(document.toObject(Location.class));
             }
@@ -287,6 +318,17 @@ public abstract class DatabaseManager {
         });
         return tcs.getTask();
     }
+    /**
+     * Adds a new location to the Firestore database.
+     * This method creates a document in the "location" collection using the location's unique ID
+     * and stores the provided location object.
+     *
+     * @param location The {@link Location} object containing the data to be stored.
+     * @return A {@link Task} representing the asynchronous database write operation.
+     */
+//    public void addLocation(Location location) {
+//        return locations.document(location.getName()).set(location);
+//    }
 
 //**************************************************************************************************
 // *                                            Topic
@@ -316,12 +358,24 @@ public abstract class DatabaseManager {
         return tcs.getTask();
     }
 
+//    /**
+//     * DO NOT USE, CHANGED TO TAGS.
+//     * Adds a new topic to the Firestore database.
+//     * This method creates a document in the "topic" collection using the topic's unique ID
+//     * and stores the provided topic object.
+//     *
+//     * @param topic The {@link Topic} object containing the data to be stored.
+//     * @return A {@link Task} representing the asynchronous database write operation.
+//     */
+//    public Task<Void> addTopic(Topic topic) {
+//        return topics.document(topic.getName()).add(topic);
+//    }
+
 //**************************************************************************************************
 // *                                           Notifications
 // *************************************************************************************************/
 
-
-    protected Task<Void> addNotification(Notification notification) {
+    protected Task<Void> addNotification(Notification notification){
         return notifications.document(notification.getNotificationId()).set(notification);
     }
 
@@ -338,18 +392,24 @@ public abstract class DatabaseManager {
                     }
                 })
                 .addOnFailureListener(exception -> {
-                    tcs.setException(new DatabaseException("Error getting Notification"));
-                });
-
-        return tcs.getTask();
-    }
+                        tcs.setException(new DatabaseException("Error getting Notification"));
+                    });
+                return tcs.getTask();
+                }
 
 //**************************************************************************************************
 // *                                            Images
 // *************************************************************************************************/
 
    
-    // TODO: JAVADOCS
+    /**
+     * Asynchronously retrieves a list of all event poster image paths from the Firestore database.
+     * This method iterates through all documents in the "events" collection and extracts
+     * non-null and non-empty poster path strings.
+     *
+     * @return A {@link Task} that, when successful, contains an {@link ArrayList} of
+     *         {@link String} paths, or a {@link DatabaseException} if the fetch fails.
+     */
     //return a list of all event poster paths, excluding null and empty strings
     // 
     protected Task<ArrayList<String>> getEventPosterPaths() {
@@ -370,7 +430,14 @@ public abstract class DatabaseManager {
         return tcs.getTask();
     }
 
-    //update the poster path of an existing event in Firestore
+    /**
+     * Updates the poster image path for an existing event in the Firestore database.
+     * This method updates only the "posterPath" field of the specified event document.
+     *
+     * @param eventId    The unique identifier of the event to update.
+     * @param posterPath The new string path or URI for the event poster.
+     * @return A {@link Task} representing the asynchronous database update operation.
+     */ //update the poster path of an existing event in Firestore
     protected Task<Void> updateEventPosterPath(String eventId, String posterPath) {
         return events.document(eventId).update("posterPath", posterPath);
     }

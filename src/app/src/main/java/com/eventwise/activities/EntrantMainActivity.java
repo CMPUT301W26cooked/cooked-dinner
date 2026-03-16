@@ -14,10 +14,14 @@ import androidx.fragment.app.Fragment;
 import com.eventwise.database.EntrantDatabaseManager;
 import com.eventwise.database.SessionStore;
 import com.eventwise.fragments.EntrantProfileExistsFormFragment;
+import android.util.Log;
+
+import com.eventwise.Entrant;
+import com.eventwise.database.EntrantDatabaseManager;
+import com.eventwise.database.SessionStore;
 
 /**
  * This is the landing page for the entrant profile.
- *
  * @author Luke Forster
  * @version 2.0
  * @since 2026-03-09
@@ -36,6 +40,8 @@ public class EntrantMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main_entrant);
+
+        ensureEntrantExists();
 
         if (savedInstanceState == null) {
             getSupportFragmentManager()
@@ -67,13 +73,14 @@ public class EntrantMainActivity extends AppCompatActivity {
             }
 
             if (item.getItemId() == R.id.profile_icon) {
-                openProfileTab();
+                // TODO: replace with EntrantProfileFragment later
                 return true;
             }
 
             return false;
         });
     }
+
 
     private void openProfileTab() {
         SessionStore sessionStore = new SessionStore(this);
@@ -110,6 +117,40 @@ public class EntrantMainActivity extends AppCompatActivity {
                                     EntrantProfileEmptyFragment.newInstance(true)
                             )
                             .commit();
+                });
+    }
+
+    private void ensureEntrantExists() {
+        SessionStore sessionStore = new SessionStore(this);
+        String deviceId = sessionStore.getDeviceId();
+
+        if (deviceId == null || deviceId.trim().isEmpty()) {
+            Log.e("EntrantMainActivity", "No device ID found");
+            return;
+        }
+
+        EntrantDatabaseManager db = new EntrantDatabaseManager();
+
+        db.getEntrantFromId(deviceId)
+                .addOnSuccessListener(entrant -> {
+                    Log.d("EntrantMainActivity", "Entrant already exists: " + deviceId);
+                })
+                .addOnFailureListener(e -> {
+                    Log.d("EntrantMainActivity", "Entrant not found, creating new entrant: " + deviceId);
+
+                    Entrant newEntrant = new Entrant(
+                            "New Entrant",
+                            "",
+                            "",
+                            true,
+                            this
+                    );
+
+                    db.addEntrant(newEntrant)
+                            .addOnSuccessListener(unused ->
+                                    Log.d("EntrantMainActivity", "Entrant created successfully"))
+                            .addOnFailureListener(createError ->
+                                    Log.e("EntrantMainActivity", "Failed to create entrant", createError));
                 });
     }
 }

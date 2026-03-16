@@ -56,7 +56,6 @@ public class Entrant extends Profile {
     public Entrant(String name, String email, String phone, boolean notificationsEnabled, android.content.Context context) {
         super(name, email, phone, notificationsEnabled, ProfileType.ENTRANT);
 
-
         SessionStore session = new SessionStore(context);
         this.deviceId = session.getOrCreateDeviceId();
         setProfileId(this.deviceId);
@@ -221,7 +220,7 @@ public class Entrant extends Profile {
         /**
          * Constructs an event state entry.
          *
-         * @param eventId event d
+         * @param eventId event ID
          * @param status status
          * @param timestampEpochSec timestamp
          */
@@ -231,29 +230,23 @@ public class Entrant extends Profile {
             this.timestampEpochSec = timestampEpochSec;
         }
 
-        public String getEventId() {
-            return eventId;
-        }
+        /** @return event id */
+        public String getEventId() { return eventId; }
 
-        public void setEventId(String eventId) {
-            this.eventId = eventId;
-        }
+        /** @param eventId event id */
+        public void setEventId(String eventId) { this.eventId = eventId; }
 
-        public EventEntrantStatus getStatus() {
-            return status;
-        }
+        /** @return status */
+        public EventEntrantStatus getStatus() { return status; }
 
-        public void setStatus(EventEntrantStatus status) {
-            this.status = status;
-        }
+        /** @param status status */
+        public void setStatus(EventEntrantStatus status) { this.status = status; }
 
-        public long getTimestampEpochSec() {
-            return timestampEpochSec;
-        }
+        /** @return timestamp */
+        public long getTimestampEpochSec() { return timestampEpochSec; }
 
-        public void setTimestampEpochSec(long timestampEpochSec) {
-            this.timestampEpochSec = timestampEpochSec;
-        }
+        /** @param timestampEpochSec timestamp */
+        public void setTimestampEpochSec(long timestampEpochSec) { this.timestampEpochSec = timestampEpochSec; }
 
         @Override
         public boolean equals(Object o) {

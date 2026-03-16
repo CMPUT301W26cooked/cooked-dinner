@@ -3,6 +3,7 @@ package com.eventwise;
 import com.google.firebase.firestore.Exclude;
 
 import java.util.ArrayList;
+import com.google.firebase.firestore.IgnoreExtraProperties;
 
 /**
  * Event for Entrants to join, Organizers to create and Admin's to mod.
@@ -11,6 +12,7 @@ import java.util.ArrayList;
  * @since 2026-03-04
  * Updated By Becca Irving on 2026-03-09
  */
+@IgnoreExtraProperties
 public class Event {
 
     /**

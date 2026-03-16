@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
+import com.eventwise.EventEntrantStatus;
 /**
  * This Event Adapter class takes each event item into a visual widget on screen.
  *
@@ -19,7 +19,7 @@ import java.util.Locale;
  * @version 2.0
  * @since 2026-03-03
  * Updated By Becca Irving on 2026-03-09
- * TODO: The primary secondary logic in onBindViewHolder is wonky please help.
+ * TODO: The primary secondary  logic in onBindViewHolder is wonky please help.
  */
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
 
@@ -30,6 +30,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     private final List<Event> eventList;
     private final int mode;
+    private final String currentEntrantId;
 
     public interface OnPrimaryButtonClickListener {
         void onPrimaryButtonClick(Event event);
@@ -50,33 +51,52 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
      * @param primaryButtonClickListener primary button callback
      */
     public EventAdapter(List<Event> eventList, int mode, OnPrimaryButtonClickListener primaryButtonClickListener) {
-        this(eventList, mode, primaryButtonClickListener, null);
+        this(eventList, mode, null, primaryButtonClickListener, null);
     }
 
-    /**
-     * Makes an event adapter.
-     *
-     * @param eventList events to display
-     * @param mode widget mode to use
-     * @param primaryButtonClickListener primary button callback
-     * @param eventCardClickListener card click callback
-     */
+    public EventAdapter(List<Event> eventList, int mode, String currentEntrantId, OnPrimaryButtonClickListener primaryButtonClickListener) {
+        this(eventList, mode, currentEntrantId, primaryButtonClickListener, null);
+    }
+
     public EventAdapter(
             List<Event> eventList,
             int mode,
             OnPrimaryButtonClickListener primaryButtonClickListener,
             OnEventCardClickListener eventCardClickListener
     ) {
+        this(eventList, mode, null, primaryButtonClickListener, eventCardClickListener);
+    }
+
+    public EventAdapter(
+            List<Event> eventList,
+            int mode,
+            String currentEntrantId,
+            OnPrimaryButtonClickListener primaryButtonClickListener,
+            OnEventCardClickListener eventCardClickListener
+    ) {
         this.eventList = eventList;
         this.mode = mode;
+        this.currentEntrantId = currentEntrantId;
         this.primaryButtonClickListener = primaryButtonClickListener;
         this.eventCardClickListener = eventCardClickListener;
     }
 
     @Override
     public int getItemViewType(int position) {
-        return mode;
+        Event event = eventList.get(position);
+
+        if (mode == TYPE_EDIT_LEAVE || mode == TYPE_EDIT_CANCEL) {
+            return mode;
+        }
+
+        if (currentEntrantId != null
+                && event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(currentEntrantId)) {
+            return TYPE_CANCEL;
+        }
+
+        return TYPE_JOIN;
     }
+
 
     /**
      * Holds one event widget row.
@@ -172,10 +192,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         holder.eventRegisteredCount.setText("•  " + registered + " registered");
 
         if (holder.primaryButton != null) {
-            if (mode == TYPE_JOIN) {
-                holder.primaryButton.setEnabled(event.isRegistrationOpenNow() && !event.isWaitingListFull());
+            if (getItemViewType(position) == TYPE_JOIN) {
+                if (event.isRegistrationOpenNow() && !event.isWaitingListFull()) {
+                    holder.primaryButton.setEnabled(true);
+                } else {
+                    holder.primaryButton.setEnabled(false);
+                }
             }
-
             holder.primaryButton.setOnClickListener(v -> {
                 if (primaryButtonClickListener != null) {
                     primaryButtonClickListener.onPrimaryButtonClick(event);
