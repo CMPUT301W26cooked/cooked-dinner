@@ -29,7 +29,7 @@ public class AdminMainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main_admin);
+        setContentView(R.layout.activity_admin);
 
         if (savedInstanceState == null) {
             getSupportFragmentManager()

@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: This XML file contains the fragment for organizer event details.
+    profile tab.
+    Author: Becca Irving
+    LastRevAuthor: Becca Irving
+    Version: 1
+    Date: 2026-03-16
+-->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -24,15 +32,29 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <FrameLayout
+    <ScrollView
+        android:id="@+id/create_event_scroll_view"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="@color/bacon_color"
-        android:padding="16dp">
+        android:background="@color/bacon_color">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@color/bacon_color"
+                android:padding="16dp">
 
-        <include layout="@layout/widget_organizer_event_detail_view" />
+                <include layout="@layout/widget_organizer_event_detail_view" />
 
-    </FrameLayout>
+            </FrameLayout>
+        </LinearLayout>
+    </ScrollView>
+
 
 </LinearLayout>

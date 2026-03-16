@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: This XML file is the fragment for event details
+    Author: Hao
+    LastRevAuthor: Becca Irving
+    Version: 1
+    Date: 2026-03-16
+    TODO: Standardize with the Figma.
+-->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -12,7 +20,7 @@
         android:gravity="center"
         android:background="@color/moss_green"
         android:orientation="vertical"
-        android:paddingVertical="26dp">
+        android:paddingVertical="@dimen/spacing_lg">
 
         <TextView
             android:id="@+id/header_title"
@@ -29,10 +37,8 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:background="@color/bacon_color"
-        android:padding="16dp">
-
+        android:padding="@dimen/spacing_md">
         <include layout="@layout/widget_admin_event_detail_view" />
-
     </FrameLayout>
 
 </LinearLayout>

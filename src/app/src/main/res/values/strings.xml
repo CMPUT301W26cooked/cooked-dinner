@@ -45,4 +45,7 @@
     <string name="registered_format">•  %d registered</string>
     <string name="time_range_format">%s – %s</string>
 
+
+    <string name="empty_list_message">Nothing to see here.</string>
+
 </resources>

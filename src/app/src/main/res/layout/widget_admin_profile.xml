@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: This XML file contains the widget for profiles in the admin users profiles tab.
+    Author: Becca Irving
+    LastRevAuthor: Becca Irving
+    Version: 1
+    Date: 2026-03-16
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"

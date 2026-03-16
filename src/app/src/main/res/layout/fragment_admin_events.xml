@@ -2,14 +2,13 @@
 <!--
     Description: This XML file will be the eventual layout for the admin events community view.
     Author: Luke Forster
-    LastRevAuthor: Luke Forster
+    LastRevAuthor: Becca Irving
     Version: 1
-    Date: 2026-03-05
+    Date: 2026-03-16
     TODO: I have to implement a top toggle menu for the header. this should be a separate item in menu not just hardcoded in each view.
 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -21,7 +20,7 @@
         android:gravity="center"
         android:background="@color/moss_green"
         android:orientation="vertical"
-        android:paddingVertical="26dp">
+        android:paddingVertical="@dimen/spacing_lg">
 
         <TextView
             android:id="@+id/header_title"
@@ -49,7 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Nothing to see here"
+            android:text="@string/empty_list_message"
             android:textColor="@color/forest_green"
             android:textSize="20sp"
             android:textStyle="bold"

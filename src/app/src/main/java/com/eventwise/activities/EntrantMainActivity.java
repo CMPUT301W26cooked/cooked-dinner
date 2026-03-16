@@ -17,8 +17,6 @@ import com.eventwise.fragments.EntrantProfileExistsFormFragment;
 import android.util.Log;
 
 import com.eventwise.Entrant;
-import com.eventwise.database.EntrantDatabaseManager;
-import com.eventwise.database.SessionStore;
 
 /**
  * This is the landing page for the entrant profile.
@@ -39,7 +37,7 @@ public class EntrantMainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main_entrant);
+        setContentView(R.layout.activity_entrant);
 
         ensureEntrantExists();
 

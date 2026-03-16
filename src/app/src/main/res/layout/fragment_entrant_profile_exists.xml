@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: This XML file contains the fragment for users who have created a profile in the
+    profile tab.
+    Author: Becca Irving
+    LastRevAuthor: Becca Irving
+    Version: 1
+    Date: 2026-03-16
+-->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -13,6 +21,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
 
     <include
         android:id="@+id/white_inner_background"

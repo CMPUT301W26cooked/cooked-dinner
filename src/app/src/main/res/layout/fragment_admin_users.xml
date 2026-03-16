@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: This XML file contains the profiles list in the users tab.
+    Author: Becca Irving
+    LastRevAuthor: Becca Irving
+    Version: 1
+    Date: 2026-03-16
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,8 +18,8 @@
         android:layout_height="wrap_content"
         android:background="@color/moss_green"
         android:orientation="vertical"
-        android:paddingTop="28dp"
-        android:paddingBottom="16dp">
+        android:paddingTop="@dimen/spacing_lg"
+        android:paddingBottom="@dimen/spacing_md">
 
         <LinearLayout
             android:id="@+id/admin_users_tabs"
