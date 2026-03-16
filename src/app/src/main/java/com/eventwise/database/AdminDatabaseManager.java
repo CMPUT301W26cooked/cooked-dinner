@@ -1,13 +1,13 @@
 package com.eventwise.database;
 
-
 import com.eventwise.Entrant;
 import com.eventwise.Event;
-import com.eventwise.Location;
+import com.eventwise.Organizer;
 import com.eventwise.Profile;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 /**
  * Manages database operations specific to admins, including event, profile,,
  * and location deletion. This class extends {@link DatabaseManager}
@@ -19,7 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
  */
 public class AdminDatabaseManager extends DatabaseManager {
 
-    public AdminDatabaseManager(){
+    public AdminDatabaseManager() {
         super();
     }
 
@@ -32,18 +32,22 @@ public class AdminDatabaseManager extends DatabaseManager {
     }
 
     public Task<Void> removeProfile(Profile profile) {
-        return profiles.document(profile.getProfileID()).delete();
+        return profiles.document(profile.getProfileId()).delete();
+    }
+
+    public Task<Void> removeProfileById(String profileId) {
+        return super.deleteProfileFromId(profileId);
     }
 
     /**
-     * Retrieves an entrant's profile from the database using their unique ID.
+     * Retrieves an entrant's profile from the database using their unique Id.
      * This method fetches the profile data and casts it to an {@link Entrant} object.
      *
-     * @param entrantID The unique identifier of the entrant to retrieve.
-     * @return A {@link Task} that resolves to the {@link Entrant} object associated with the ID.
+     * @param entrantId The unique identifier of the entrant to retrieve.
+     * @return A {@link Task} that resolves to the {@link Entrant} object associated with the Id.
      */
-    public Task<Entrant> getEntrantFromID(String entrantID) {
-        return super.getProfileFromID(entrantID)
+    public Task<Entrant> getEntrantFromId(String entrantId) {
+        return super.getProfileFromId(entrantId)
                 .continueWith(task -> (Entrant) task.getResult());
     }
 //    public Task<Void> removeLocation(Location location) {
@@ -56,6 +60,11 @@ public class AdminDatabaseManager extends DatabaseManager {
 
 
 
+    public Task<ArrayList<Entrant>> getAllEntrants() {
+        return super.getEntrants();
+    }
 
-
+    public Task<ArrayList<Organizer>> getAllOrganizers() {
+        return super.getOrganizers();
+    }
 }

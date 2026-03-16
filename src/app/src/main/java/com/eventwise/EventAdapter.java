@@ -14,40 +14,108 @@ import java.util.Locale;
 import com.eventwise.EventEntrantStatus;
 /**
  * This Event Adapter class takes each event item into a visual widget on screen.
+ *
  * @author Luke Forster
- * @version 1.0
+ * @version 2.0
  * @since 2026-03-03
  * Updated By Becca Irving on 2026-03-09
  * TODO: The primary secondary  logic in onBindViewHolder is wonky please help.
  */
-
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
 
     public static final int TYPE_JOIN = 0;
     public static final int TYPE_CANCEL = 1;
     public static final int TYPE_EDIT_LEAVE = 2;
     public static final int TYPE_EDIT_CANCEL = 3;
+
     private final List<Event> eventList;
-    private int mode;
+    private final int mode;
     private final String currentEntrantId;
 
     public interface OnPrimaryButtonClickListener {
         void onPrimaryButtonClick(Event event);
     }
 
-    private final OnPrimaryButtonClickListener primaryButtonClickListener;
-    public EventAdapter(List<Event> eventList, int mode, OnPrimaryButtonClickListener primaryButtonClickListener) {
-        this.eventList = eventList;
-        this.mode = mode;
-        this.primaryButtonClickListener = primaryButtonClickListener;
-        this.currentEntrantId = null;
+    public interface OnSecondaryButtonClickListener {
+        void onSecondaryButtonClick(Event event);
     }
 
-    public EventAdapter(List<Event> eventList, int mode, String currentEntrantId, OnPrimaryButtonClickListener primaryButtonClickListener) {
+    public interface OnEventCardClickListener {
+        void onEventCardClick(Event event);
+    }
+
+    private final OnPrimaryButtonClickListener primaryButtonClickListener;
+
+    private final OnSecondaryButtonClickListener secondaryButtonClickListener;
+    private final OnEventCardClickListener eventCardClickListener;
+
+    /**
+     * Makes an event adapter without a card click callback.
+     *
+     * @param eventList events to display
+     * @param mode widget mode to use
+     * @param primaryButtonClickListener primary button callback
+     */
+    public EventAdapter(
+            List<Event> eventList,
+            int mode,
+            OnPrimaryButtonClickListener primaryButtonClickListener
+    ) {
+        this(eventList, mode, null, primaryButtonClickListener, null, null);
+    }
+
+    public EventAdapter(
+            List<Event> eventList,
+            int mode,
+            String currentEntrantId,
+            OnPrimaryButtonClickListener primaryButtonClickListener
+    ) {
+        this(eventList, mode, currentEntrantId, primaryButtonClickListener, null, null);
+    }
+
+    public EventAdapter(
+            List<Event> eventList,
+            int mode,
+            OnPrimaryButtonClickListener primaryButtonClickListener,
+            OnEventCardClickListener eventCardClickListener
+    ) {
+        this(eventList, mode, null, primaryButtonClickListener, null, eventCardClickListener);
+    }
+
+    public EventAdapter(
+            List<Event> eventList,
+            int mode,
+            String currentEntrantId,
+            OnPrimaryButtonClickListener primaryButtonClickListener,
+            OnEventCardClickListener eventCardClickListener
+    ) {
+        this(eventList, mode, currentEntrantId, primaryButtonClickListener, null, eventCardClickListener);
+    }
+
+    public EventAdapter(
+            List<Event> eventList,
+            int mode,
+            OnPrimaryButtonClickListener primaryButtonClickListener,
+            OnSecondaryButtonClickListener secondaryButtonClickListener,
+            OnEventCardClickListener eventCardClickListener
+    ) {
+        this(eventList, mode, null, primaryButtonClickListener, secondaryButtonClickListener, eventCardClickListener);
+    }
+
+    public EventAdapter(
+            List<Event> eventList,
+            int mode,
+            String currentEntrantId,
+            OnPrimaryButtonClickListener primaryButtonClickListener,
+            OnSecondaryButtonClickListener secondaryButtonClickListener,
+            OnEventCardClickListener eventCardClickListener
+    ) {
         this.eventList = eventList;
         this.mode = mode;
         this.currentEntrantId = currentEntrantId;
         this.primaryButtonClickListener = primaryButtonClickListener;
+        this.secondaryButtonClickListener = secondaryButtonClickListener;
+        this.eventCardClickListener = eventCardClickListener;
     }
 
     @Override
@@ -58,8 +126,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             return mode;
         }
 
-        if (currentEntrantId != null &&
-                event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(currentEntrantId)) {
+        if (currentEntrantId != null
+                && event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(currentEntrantId)) {
             return TYPE_CANCEL;
         }
 
@@ -67,6 +135,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     }
 
 
+    /**
+     * Holds one event widget row.
+     */
     public static class EventViewHolder extends RecyclerView.ViewHolder {
 
         TextView eventName;
@@ -83,7 +154,11 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         Button primaryButton;
         Button secondaryButton;
 
-
+        /**
+         * Finds the event widget views.
+         *
+         * @param itemView row view
+         */
         public EventViewHolder(@NonNull View itemView) {
             super(itemView);
 
@@ -154,7 +229,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         holder.eventRegisteredCount.setText("•  " + registered + " registered");
 
         if (holder.primaryButton != null) {
-            if (mode == TYPE_JOIN) {
+            if (getItemViewType(position) == TYPE_JOIN) {
                 if (event.isRegistrationOpenNow() && !event.isWaitingListFull()) {
                     holder.primaryButton.setEnabled(true);
                 } else {
@@ -167,6 +242,20 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 }
             });
         }
+
+        if (holder.secondaryButton != null) {
+            holder.secondaryButton.setOnClickListener(v -> {
+                if (secondaryButtonClickListener != null) {
+                    secondaryButtonClickListener.onSecondaryButtonClick(event);
+                }
+            });
+        }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (eventCardClickListener != null) {
+                eventCardClickListener.onEventCardClick(event);
+            }
+        });
     }
 
     @Override
@@ -174,6 +263,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         return eventList.size();
     }
 
+    /**
+     * Formats an event epoch time for display.
+     *
+     * @param epochSeconds epoch seconds
+     * @return formatted date and time
+     */
     private String formatEpoch(long epochSeconds) {
         Date date = new Date(epochSeconds * 1000L);
         SimpleDateFormat sdf = new SimpleDateFormat("MMM d yyyy, h:mm a", Locale.getDefault());

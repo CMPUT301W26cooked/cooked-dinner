@@ -7,19 +7,29 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.eventwise.R;
 import com.eventwise.fragments.EntrantEventsCommunityFragment;
+import com.eventwise.fragments.EntrantProfileEmptyFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import androidx.fragment.app.Fragment;
+
+import com.eventwise.database.EntrantDatabaseManager;
+import com.eventwise.database.SessionStore;
+import com.eventwise.fragments.EntrantProfileExistsFormFragment;
 import android.util.Log;
 
 import com.eventwise.Entrant;
-import com.eventwise.database.EntrantDatabaseManager;
-import com.eventwise.database.SessionStore;
 
 /**
  * This is the landing page for the entrant profile.
  * @author Luke Forster
- * @version 1.0
+ * @version 2.0
  * @since 2026-03-09
+ * Updated By Becca Irving on 2026-03-13
  */
+
+// TODO (EntrantMainActivity.java)
+// - Replace the placeholder notifications page later.
+// - Replace the placeholder QR page later.
+// - Swap the profile tab to the full profile flow once backend is wired up.
 
 public class EntrantMainActivity extends AppCompatActivity {
 
@@ -27,7 +37,7 @@ public class EntrantMainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main_entrant);
+        setContentView(R.layout.activity_entrant);
 
         ensureEntrantExists();
 
@@ -69,18 +79,57 @@ public class EntrantMainActivity extends AppCompatActivity {
         });
     }
 
+
+    private void openProfileTab() {
+        SessionStore sessionStore = new SessionStore(this);
+        String entrantId = sessionStore.getOrCreateDeviceId();
+
+        EntrantDatabaseManager entrantDatabaseManager = new EntrantDatabaseManager();
+
+        entrantDatabaseManager.getEntrantFromId(entrantId)
+                .addOnSuccessListener(entrant -> {
+                    Fragment fragmentToShow;
+
+                    if (entrant != null && entrant.hasCompletedProfile()) {
+                        fragmentToShow = EntrantProfileExistsFormFragment.newUpdateInstance(
+                                entrant.getName(),
+                                entrant.getEmail(),
+                                entrant.getPhone(),
+                                entrant.getNotificationsEnabled()
+                        );
+                    } else {
+                        boolean notificationsEnabled = entrant == null || entrant.getNotificationsEnabled();
+                        fragmentToShow = EntrantProfileEmptyFragment.newInstance(notificationsEnabled);
+                    }
+
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.entrant_fragment_container, fragmentToShow)
+                            .commit();
+                })
+                .addOnFailureListener(e -> {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(
+                                    R.id.entrant_fragment_container,
+                                    EntrantProfileEmptyFragment.newInstance(true)
+                            )
+                            .commit();
+                });
+    }
+
     private void ensureEntrantExists() {
         SessionStore sessionStore = new SessionStore(this);
-        String deviceId = sessionStore.getDeviceID();
+        String deviceId = sessionStore.getDeviceId();
 
         if (deviceId == null || deviceId.trim().isEmpty()) {
-            Log.e("EntrantMainActivity", "No device ID found");
+            Log.e("EntrantMainActivity", "No device Id found");
             return;
         }
 
         EntrantDatabaseManager db = new EntrantDatabaseManager();
 
-        db.getEntrantFromID(deviceId)
+        db.getEntrantFromId(deviceId)
                 .addOnSuccessListener(entrant -> {
                     Log.d("EntrantMainActivity", "Entrant already exists: " + deviceId);
                 })

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Description: Entrant join event card.
+    Description: This is the template event widget populated with the join button
     Author: Luke Forster
     LastRevAuthor: Luke Forster
     Version: 1
-    Date: 2026-03-08
-    TODO: Should just be fine tuning this now and linking fields to the event object.
+    Date: 2026-03-16
+    TODO:
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/event_community_event_widget"
+    android:id="@+id/cancel_event_widget"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="25dp"

@@ -26,10 +26,10 @@ import java.util.Objects;
  */
 public class Invitation {
 
-    /** ID of the event to which this invitation belongs. */
+    /** Id of the event to which this invitation belongs. */
     private String eventId;
 
-    /** Profile ID of the entrant who receives the invitation. */
+    /** Profile Id of the entrant who receives the invitation. */
     private String entrantId;
 
     /** Current invitation status. */
@@ -60,8 +60,8 @@ public class Invitation {
     /**
      * Constructor for creating a new invitation.
      *
-     * @param eventId ID of the event
-     * @param entrantId ID of the entrant receiving the invitation
+     * @param eventId Id of the event
+     * @param entrantId Id of the entrant receiving the invitation
      * @param expiresAtEpochSec optional expiration time (epoch seconds)
      * @param note optional custom message or note
      */

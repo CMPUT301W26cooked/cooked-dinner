@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Description: This XML file contains the admin notification logs tab.
-    Author: Luke Forster
+    Author: Becca Irving
     LastRevAuthor: Luke Forster
     Version: 1
-    Date: 2026-03-10
+    Date: 2026-03-16
 -->
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    >
+    android:background="@color/bacon_color">
+
     <LinearLayout
         android:id="@+id/top_bar"
         android:layout_width="match_parent"
@@ -20,7 +19,7 @@
         android:gravity="center"
         android:background="@color/moss_green"
         android:orientation="vertical"
-        android:paddingVertical="26dp">
+        android:paddingVertical="@dimen/spacing_lg">
 
         <TextView
             android:id="@+id/header_title"
@@ -31,11 +30,29 @@
             android:textSize="32sp"
             android:textStyle="bold" />
     </LinearLayout>
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/list_view"
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@color/bacon_color" />
+        android:gravity="center"
+        android:paddingHorizontal="@dimen/spacing_xl"
+        android:orientation="vertical">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/empty_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/empty_list_message"
+            android:textColor="@color/forest_green"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+    </LinearLayout>
 
 </LinearLayout>

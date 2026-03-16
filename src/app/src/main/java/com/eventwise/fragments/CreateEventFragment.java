@@ -262,9 +262,9 @@ public class CreateEventFragment extends Fragment {
                     .addOnSuccessListener(param -> {
                         Log.d("CreateEvent", "Event added successfully to Firebase");
                         // ====== New code start ======
-                        Log.d("ProfileLinking", "Event created with organizer ID: " +
+                        Log.d("ProfileLinking", "Event created with organizer Id: " +
                                 event.getOrganizerProfileId());
-                        Log.d("ProfileLinking", "Event ID: " + event.getEventId());
+                        Log.d("ProfileLinking", "Event Id: " + event.getEventId());
                         Log.d("ProfileLinking", "Successfully linked profile to created event");
                         // ====== New code end ======
 

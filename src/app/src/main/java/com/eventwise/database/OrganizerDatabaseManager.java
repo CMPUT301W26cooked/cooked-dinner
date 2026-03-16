@@ -59,21 +59,46 @@ public class OrganizerDatabaseManager extends DatabaseManager{
     // *************************************************************************************************/
 
     /**
-     * Retrieves the list of entrant IDs who are in the waiting list for a specific event.
+     * Retrieves the list of entrant Ids who are in the waiting list for a specific event.
      *
-     * @param eventID The ID of the event for which to retrieve the waiting list.
-     * @return A {@link Task} that resolves to an {@link ArrayList} of strings containing the IDs of waiting entrants.
+     * @param eventId The Id of the event for which to retrieve the waiting list.
+     * @return A {@link Task} that resolves to an {@link ArrayList} of strings containing the Ids of waiting entrants.
      */
-    public Task<ArrayList<String>> getEntrantsIDsInWaitingListFromEventID(String eventID){
+    public Task<ArrayList<String>> getEntrantsIdsInWaitingListFromEventId(String eventId) {
         TaskCompletionSource<ArrayList<String>> tcs = new TaskCompletionSource<>();
 
-        events.document(eventID).get()
+        events.document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    Event returned_event = documentSnapshot.toObject(Event.class);
-                    if (returned_event == null) {
+                    Event returnedEvent = documentSnapshot.toObject(Event.class);
+                    if (returnedEvent == null) {
                         tcs.setResult(new ArrayList<>());
                     } else {
-                        tcs.setResult(returned_event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED));
+                        tcs.setResult(returnedEvent.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    tcs.setException(new DatabaseException("Error getting event data"));
+                });
+
+        return tcs.getTask();
+    }
+
+    /**
+     * Retrieves the list of entrant Ids who have been cancelled for a specific event.
+     *
+     * @param eventId The Id of the event for which to retrieve the cancelled list.
+     * @return A {@link Task} that resolves to an {@link ArrayList} of strings containing the Ids of cancelled entrants.
+     */
+    public Task<ArrayList<String>> getEntrantsIdsInCancelledListFromEventId(String eventId) {
+        TaskCompletionSource<ArrayList<String>> tcs = new TaskCompletionSource<>();
+
+        events.document(eventId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    Event returnedEvent = documentSnapshot.toObject(Event.class);
+                    if (returnedEvent == null) {
+                        tcs.setResult(new ArrayList<>());
+                    } else {
+                        tcs.setResult(returnedEvent.getEntrantIdsByStatus(EventEntrantStatus.CANCELLED));
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -85,106 +110,89 @@ public class OrganizerDatabaseManager extends DatabaseManager{
 
 
     /**
-     * Retrieves the list of entrant IDs who have been cancelled for a specific event.
+     * Retrieves the list of entrant Ids who have been confirmed for a specific event.
      *
-     * @param eventID The ID of the event for which to retrieve the cancelled list.
-     * @return A {@link Task} that resolves to an {@link ArrayList} of strings containing the IDs of cancelled entrants.
+     * @param eventId The Id of the event for which to retrieve the confirmed list.
+     * @return A {@link Task} that resolves to an {@link ArrayList} of strings containing the Ids of confirmed entrants.
      */
-    public Task<ArrayList<String>> getEntrantsIDsInCancelledListFromEventID(String eventID){
+    public Task<ArrayList<String>> getEntrantsIdsInConfirmedListFromEventId(String eventId) {
         TaskCompletionSource<ArrayList<String>> tcs = new TaskCompletionSource<>();
 
-        events.document(eventID).get()
+        events.document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    Event returned_event = documentSnapshot.toObject(Event.class);
-                    if (returned_event == null) {
+                    Event returnedEvent = documentSnapshot.toObject(Event.class);
+                    if (returnedEvent == null) {
                         tcs.setResult(new ArrayList<>());
                     } else {
-                        tcs.setResult(returned_event.getEntrantIdsByStatus(EventEntrantStatus.CANCELLED));
+                        tcs.setResult(returnedEvent.getEntrantIdsByStatus(EventEntrantStatus.ENROLLED));
                     }
                 })
-                .addOnFailureListener(e -> {
-                    tcs.setException(new DatabaseException("Error getting event data"));
-                });
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Error getting event data")));
 
         return tcs.getTask();
     }
+
 
     /**
-     * Retrieves the list of entrant IDs who have been confirmed for a specific event.
+     * Retrieves the list of entrant Ids who have been chosen for a specific event.
      *
-     * @param eventID The ID of the event for which to retrieve the confirmed list.
-     * @return A {@link Task} that resolves to an {@link ArrayList} of strings containing the IDs of confirmed entrants.
+     * @param eventId The Id of the event for which to retrieve the chosen list.
+     * @return A {@link Task} that resolves to an {@link ArrayList} of strings containing the Ids of chosen entrants.
      */
-    public Task<ArrayList<String>> getEntrantsIDsInConfirmedListFromEventID(String eventID){
+    public Task<ArrayList<String>> getEntrantsIdsInChosenList(String eventId) {
         TaskCompletionSource<ArrayList<String>> tcs = new TaskCompletionSource<>();
 
-        events.document(eventID).get()
+        events.document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    Event returned_event = documentSnapshot.toObject(Event.class);
-                    if (returned_event == null) {
+                    Event returnedEvent = documentSnapshot.toObject(Event.class);
+                    if (returnedEvent == null) {
                         tcs.setResult(new ArrayList<>());
                     } else {
-                        tcs.setResult(returned_event.getEntrantIdsByStatus(EventEntrantStatus.ENROLLED));
+                        tcs.setResult(returnedEvent.getEntrantIdsByStatus(EventEntrantStatus.INVITED));
                     }
                 })
-                .addOnFailureListener(e -> {
-                    tcs.setException(new DatabaseException("Error getting event data"));
-                });
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Error getting event data")));
 
         return tcs.getTask();
     }
 
-    /**
-     * Retrieves the list of entrant IDs who have been chosen for a specific event.
-     *
-     * @param eventID The ID of the event for which to retrieve the chosen list.
-     * @return A {@link Task} that resolves to an {@link ArrayList} of strings containing the IDs of chosen entrants.
-     */
-    public Task<ArrayList<String>> getEntrantsIDsInChosenList(String eventID){
-        TaskCompletionSource<ArrayList<String>> tcs = new TaskCompletionSource<>();
-
-        events.document(eventID).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    Event returned_event = documentSnapshot.toObject(Event.class);
-                    if (returned_event == null) {
-                        tcs.setResult(new ArrayList<>());
-                    } else {
-                        tcs.setResult(returned_event.getEntrantIdsByStatus(EventEntrantStatus.INVITED));
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    tcs.setException(new DatabaseException("Error getting event data"));
-                });
-
-        return tcs.getTask();
-    }
 
     /**
      * Retrieves all events created by a specific organizer from the database.
      *
-     * @param organizerID The unique identifier of the organizer whose events are to be retrieved.
+     * @param organizerId The unique identifier of the organizer whose events are to be retrieved.
      * @return A {@link Task} that resolves to an {@link ArrayList} of {@link Event} containing the events created by the organizer.
      */
-    public Task<ArrayList<Event>> getOrganizersCreatedEventsFromOrganizerID(String organizerID){
+    public Task<ArrayList<Event>> getOrganizersCreatedEventsFromOrganizerId(String organizerId) {
         TaskCompletionSource<ArrayList<Event>> tcs = new TaskCompletionSource<>();
-        ArrayList<Event> events_array = new ArrayList<Event>();
+        ArrayList<Event> eventsArray = new ArrayList<>();
 
-        events.get().addOnSuccessListener( result -> {
+        events.get().addOnSuccessListener(result -> {
             for (DocumentSnapshot document : result) {
-                if (document.getData().get("organizerProfileId").equals(organizerID)){
-                    events_array.add(document.toObject(Event.class));
+                // some events were mising their Id we need to restore the event Id for these.
+                Object organizerProfileId = document.getData() == null ? null : document.getData().get("organizerProfileId");
+                if (organizerProfileId != null && organizerProfileId.equals(organizerId)) {
+                    Event event = document.toObject(Event.class);
+                    if (event != null) {
+                        if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+                            event.setEventId(document.getId());
+                        }
+                        eventsArray.add(event);
+                    }
                 }
             }
-            tcs.setResult(events_array);
-        }).addOnFailureListener(exception -> {
-            tcs.setException(new DatabaseException("Error getting organizers Events"));
-        });
+            tcs.setResult(eventsArray);
+        }).addOnFailureListener(exception ->
+                tcs.setException(new DatabaseException("Error getting organizers Events")));
+
         return tcs.getTask();
     }
 
-//**************************************************************************************************
-// *                                       Event Poster Images
-// *************************************************************************************************/
+    //**************************************************************************************************
+    // *                                       Event Poster Images
+    // *************************************************************************************************/
 
     
     /**
@@ -226,7 +234,7 @@ public class OrganizerDatabaseManager extends DatabaseManager{
     /**
      * Updates and replaces an existing event poster image in local storage and updates the database reference.
      *
-     * @param eventId   The unique ID of the event for which the poster is being updated.
+     * @param eventId   The unique Id of the event for which the poster is being updated.
      * @param imageData The raw byte array of the new poster image.
      * @param context   The application context used to access internal storage.
      * @return A {@link Task} that resolves to a {@link String} containing the local file path of the updated image.

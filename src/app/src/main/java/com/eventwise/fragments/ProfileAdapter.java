@@ -63,7 +63,7 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
 
         // Remove button callback
         holder.removeButton.setOnClickListener(v ->
-                listener.onRemoveClicked(profile.getProfileID())
+                listener.onRemoveClicked(profile.getProfileId())
         );
     }
 
@@ -84,7 +84,7 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            // Match IDs from item_profile.xml layout
+            // Match Ids from item_profile.xml layout
             name = itemView.findViewById(R.id.profile_name);
             email = itemView.findViewById(R.id.profile_email);
             phone = itemView.findViewById(R.id.profile_phone);

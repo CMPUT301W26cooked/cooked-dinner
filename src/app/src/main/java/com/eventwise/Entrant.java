@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import android.content.Context;
 
 /**
  * Entrant type for user who enrolls and participates in events.
@@ -23,7 +22,7 @@ public class Entrant extends Profile {
 
     /**
      * TODO (Entrant.java)
-     * - Confirm how we're getting deviceId (Android ID?, Firebase ID?, etc...)
+     * - Confirm how we're getting deviceId (Android Id?, Firebase Id?, etc...)
      * - Add DatabaseManager methods to update entrant event states async and atomically.
      * - Add unit tests!!!!
      * - Figure out the deal with empty constructor for Firestore.
@@ -31,13 +30,13 @@ public class Entrant extends Profile {
      */
 
     /** Unique identifier used for all entrant identification (US 01.07.01). */
-    private String deviceID;
+    private String deviceId;
 
     /** List of all historical and current event states. */
     private ArrayList<EventStateEntry> eventStates = new ArrayList<>();
 
-    /** Notification IDs associated with this entrant. */
-    private ArrayList<String> notificationIDs = new ArrayList<>();
+    /** Notification Ids associated with this entrant. */
+    private ArrayList<String> notificationIds = new ArrayList<>();
 
     /**
      * Required for Firestore.
@@ -47,7 +46,7 @@ public class Entrant extends Profile {
     }
 
     /**
-     * Makes an Entrant. The entrant identity is the deviceId, and profileID is set to deviceId.
+     * Makes an Entrant. The entrant identity is the deviceId, and profileId is set to deviceId.
      *
      * @param name entrant name
      * @param email entrant email
@@ -58,49 +57,53 @@ public class Entrant extends Profile {
         super(name, email, phone, notificationsEnabled, ProfileType.ENTRANT);
 
         SessionStore session = new SessionStore(context);
-        this.deviceID =  session.getDeviceID();
-
-        if (this.deviceID == null){
-            this.deviceID = UUID.randomUUID().toString();
-            session.setDeviceID(this.deviceID);
-        }
-
-        setProfileID(this.deviceID);
-        Log.d("Entrant", "DeviceID: " + this.deviceID);
+        this.deviceId = session.getOrCreateDeviceId();
+        setProfileId(this.deviceId);
+        Log.d("Entrant", "DeviceId/ProfileId: " + this.deviceId);
     }
 
-    /** @return device id */
-    public String getDeviceID() { return deviceID; }
+    public String getDeviceId() {
+        return deviceId;
+    }
 
-    /** @param deviceID device id */
-    public void setDeviceID(String deviceID) { this.deviceID = deviceID; }
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
 
-    /** @return event states */
-    public ArrayList<EventStateEntry> getEventStates() { return eventStates; }
+    public ArrayList<EventStateEntry> getEventStates() {
+        return eventStates;
+    }
 
-    /** @param eventStates event states */
-    public void setEventStates(ArrayList<EventStateEntry> eventStates) { this.eventStates = eventStates; }
+    public void setEventStates(ArrayList<EventStateEntry> eventStates) {
+        this.eventStates = eventStates;
+    }
 
-    /** @return notification ids */
-    public ArrayList<String> getNotificationIDs() { return notificationIDs; }
+    public ArrayList<String> getNotificationIds() {
+        return notificationIds;
+    }
 
-    /** @param notificationIDs notification ids */
-    public void setNotificationIDs(ArrayList<String> notificationIDs) { this.notificationIDs = notificationIDs; }
+    public void setNotificationIds(ArrayList<String> notificationIds) {
+        this.notificationIds = notificationIds;
+    }
+
+    @Exclude
+    public boolean hasCompletedProfile() {
+        return getName() != null && !getName().trim().isEmpty()
+                && getEmail() != null && !getEmail().trim().isEmpty();
+    }
 
     /**
      * Adds a new event state or updates an existing one.
      *
      * One event should only appear once in this list.
      *
-     * @param eventId event ID
+     * @param eventId event Id
      * @param status entrant state for that event
      */
     public void addOrUpdateEventState(String eventId, EventEntrantStatus status, long timestamp) {
         if (eventStates == null) {
             eventStates = new ArrayList<>();
         }
-
-//        long nowEpochSec = System.currentTimeMillis() / 1000L;
 
         for (EventStateEntry entry : eventStates) {
             if (entry != null && eventId != null && eventId.equals(entry.getEventId())) {
@@ -114,10 +117,10 @@ public class Entrant extends Profile {
     }
 
     /**
-     * Gets event IDs matching a specific status.
+     * Gets event Ids matching a specific status.
      *
      * @param status status to filter by
-     * @return set of event IDs
+     * @return set of event Ids
      */
     @Exclude
     public Set<String> getEventIdsForStatus(EventEntrantStatus status) {
@@ -138,9 +141,9 @@ public class Entrant extends Profile {
     }
 
     /**
-     * Returns all waitlisted event IDs.
+     * Returns all waitlisted event Ids.
      *
-     * @return set of event IDs
+     * @return set of event Ids
      */
     @Exclude
     public Set<String> getWaitlistedEventIds() {
@@ -148,9 +151,9 @@ public class Entrant extends Profile {
     }
 
     /**
-     * Returns all invited event IDs.
+     * Returns all invited event Ids.
      *
-     * @return set of event IDs
+     * @return set of event Ids
      */
     @Exclude
     public Set<String> getInvitedEventIds() {
@@ -158,9 +161,9 @@ public class Entrant extends Profile {
     }
 
     /**
-     * Returns all enrolled event IDs.
+     * Returns all enrolled event Ids.
      *
-     * @return set of event IDs
+     * @return set of event Ids
      */
     @Exclude
     public Set<String> getEnrolledEventIds() {
@@ -168,30 +171,29 @@ public class Entrant extends Profile {
     }
 
     /**
-     * Returns all cancelled event IDs.
+     * Returns all cancelled event Ids.
      *
-     * @return set of event IDs
+     * @return set of event Ids
      */
     @Exclude
     public Set<String> getCancelledEventIds() {
         return getEventIdsForStatus(EventEntrantStatus.CANCELLED);
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Entrant)) return false;
         Entrant that = (Entrant) o;
-        return Objects.equals(deviceID, that.deviceID)
+        return Objects.equals(deviceId, that.deviceId)
                 && Objects.equals(eventStates, that.eventStates)
-                && Objects.equals(notificationIDs, that.notificationIDs)
+                && Objects.equals(notificationIds, that.notificationIds)
                 && super.equals(o);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(deviceID, eventStates, notificationIDs, super.hashCode());
+        return Objects.hash(deviceId, eventStates, notificationIds, super.hashCode());
     }
 
 
@@ -201,7 +203,7 @@ public class Entrant extends Profile {
      */
     public static class EventStateEntry {
 
-        /** Event ID associated with this state. */
+        /** Event Id associated with this state. */
         private String eventId;
 
         /** Status for the entrant in this event. */
@@ -218,7 +220,7 @@ public class Entrant extends Profile {
         /**
          * Constructs an event state entry.
          *
-         * @param eventId event ID
+         * @param eventId event Id
          * @param status status
          * @param timestampEpochSec timestamp
          */

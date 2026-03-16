@@ -2,6 +2,7 @@ package com.eventwise.database;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import java.util.UUID;
 
 /**
  * A utility class responsible for managing persistent local storage of session-related data
@@ -44,25 +45,36 @@ public class SessionStore {
      *
      * @param deviceId The unique identifier string for the device.
      */
-    public void setDeviceID(String deviceId) {
+    public void setDeviceId(String deviceId) {
         sp.edit().putString("deviceId", deviceId).apply();
     }
 
     /**
-     * Retrieves the stored device ID from the session preferences.
+     * Retrieves the stored device Id from the session preferences.
      *
-     * @return The stored device ID string if available; {@code null} otherwise.
+     * @return The stored device Id string if available; {@code null} otherwise.
      */
-    public String getDeviceID() {
+    public String getDeviceId() {
         return sp.getString("deviceId", null);
+    }
+
+    public String getOrCreateDeviceId() {
+        String deviceId = getDeviceId();
+
+        if (deviceId == null || deviceId.trim().isEmpty()) {
+            deviceId = UUID.randomUUID().toString();
+            setDeviceId(deviceId);
+        }
+
+        return deviceId;
     }
 
 
 
     /**
-     * Retrieves the stored entrant ID from the session.
+     * Retrieves the stored entrant Id from the session.
      *
-     * @return The entrant ID string if it exists; null otherwise.
+     * @return The entrant Id string if it exists; null otherwise.
      */
     public String getEntrantId() {
         return sp.getString("entrantId", null);

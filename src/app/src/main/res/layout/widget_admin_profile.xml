@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: This XML file contains the widget for profiles in the admin users profiles tab.
+    Author: Becca Irving
+    LastRevAuthor: Becca Irving
+    Version: 1
+    Date: 2026-03-16
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="30dp"
+    android:layout_marginTop="21dp"
+    android:layout_marginEnd="30dp"
+    android:background="@drawable/event_card_shape"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingVertical="23dp"
+    android:paddingHorizontal="25dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/profile_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:text="Guy Person"
+            android:textColor="@color/forest_green"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/profile_email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="18dp"
+            android:text="dude@email.com"
+            android:textColor="@color/moss_green"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/profile_phone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(000)-000-0000"
+            android:textColor="@color/moss_green"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="108dp"
+        android:layout_height="72dp"
+        android:background="@drawable/profile_cancel_button_shape">
+
+        <Button
+            android:id="@+id/delete_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:text="Delete"
+            android:textAllCaps="false"
+            android:textColor="@color/lighter_green"
+            android:textSize="20sp" />
+    </FrameLayout>
+
+</LinearLayout>

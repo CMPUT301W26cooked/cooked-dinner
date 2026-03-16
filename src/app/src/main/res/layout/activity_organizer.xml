@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: This XML file is the frame for the activity in organizer profile type.
+    Author: Luke Forster
+    LastRevAuthor: Luke Forster
+    Version: 1
+    Date: 2026-03-16
+    TODO:
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/organizer_main_root"

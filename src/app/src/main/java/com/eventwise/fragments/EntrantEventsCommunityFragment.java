@@ -105,8 +105,8 @@ public class EntrantEventsCommunityFragment extends Fragment {
 
     private String getCurrentEntrantId() {
         SessionStore sessionStore = new SessionStore(requireContext());
-        String deviceId = sessionStore.getDeviceID();
-        Log.d("Event", "Current entrant/device ID: " + deviceId);
+        String deviceId = sessionStore.getDeviceId();
+        Log.d("Event", "Current entrant/device Id: " + deviceId);
         return deviceId;
     }
 

@@ -63,6 +63,7 @@
             android:textStyle="bold" />
     </LinearLayout>
 
+
     <LinearLayout
         android:id="@+id/help_message_layout"
         android:layout_width="match_parent"
