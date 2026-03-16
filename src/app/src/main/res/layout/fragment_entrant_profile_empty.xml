@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bacon_color">
+
+    <include
+        android:id="@+id/profile_top_bar"
+        layout="@layout/widget_entrant_profile_top_bar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <include
+        android:id="@+id/white_inner_background"
+        layout="@layout/fragment_white_inner_background"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="18dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintTop_toBottomOf="@id/profile_top_bar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/profile_empty_helper_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="42dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="42dp"
+        android:gravity="center"
+        android:text="This information is used to auto fill your registration"
+        android:textColor="@color/moss_green"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="@id/white_inner_background"
+        app:layout_constraintStart_toStartOf="@id/white_inner_background"
+        app:layout_constraintEnd_toEndOf="@id/white_inner_background" />
+
+    <TextView
+        android:id="@+id/profile_empty_message"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="112dp"
+        android:layout_marginEnd="48dp"
+        android:gravity="center"
+        android:text="Looks Like you don’t have a profile yet. Would you like to create one?"
+        android:textColor="@color/forest_green"
+        android:textSize="24sp"
+        app:layout_constraintTop_toTopOf="@id/white_inner_background"
+        app:layout_constraintStart_toStartOf="@id/white_inner_background"
+        app:layout_constraintEnd_toEndOf="@id/white_inner_background" />
+
+    <FrameLayout
+        android:layout_width="272dp"
+        android:layout_height="86dp"
+        android:layout_marginTop="110dp"
+        android:background="@drawable/profile_button_shape"
+        app:layout_constraintTop_toBottomOf="@id/profile_empty_message"
+        app:layout_constraintStart_toStartOf="@id/white_inner_background"
+        app:layout_constraintEnd_toEndOf="@id/white_inner_background">
+
+        <Button
+            android:id="@+id/btn_create_profile"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:backgroundTint="@null"
+            app:backgroundTint="@null"
+            android:text="Create Profile"
+            android:textAllCaps="false"
+            android:textColor="@color/lighter_green"
+            android:textSize="24sp" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_receive_notifications"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="34dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="@id/white_inner_background"
+        app:layout_constraintStart_toStartOf="@id/white_inner_background"
+        app:layout_constraintEnd_toEndOf="@id/white_inner_background">
+
+        <ImageView
+            android:id="@+id/image_receive_notifications_checkbox"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/profile_checkbox_checked"
+            android:contentDescription="Receive notifications checkbox" />
+
+        <TextView
+            android:id="@+id/text_receive_notifications"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="Receive Notifications"
+            android:textColor="@color/forest_green"
+            android:textSize="24sp" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

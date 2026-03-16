@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="30dp"
+    android:layout_marginTop="21dp"
+    android:layout_marginEnd="30dp"
+    android:background="@drawable/event_card_shape"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingVertical="23dp"
+    android:paddingHorizontal="25dp">
+
+    <TextView
+        android:id="@+id/organization_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Organization Name"
+        android:textColor="@color/forest_green"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <FrameLayout
+        android:layout_width="108dp"
+        android:layout_height="72dp"
+        android:background="@drawable/profile_cancel_button_shape">
+
+        <Button
+            android:id="@+id/delete_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:text="Delete"
+            android:textAllCaps="false"
+            android:textColor="@color/lighter_green"
+            android:textSize="20sp" />
+    </FrameLayout>
+
+</LinearLayout>
