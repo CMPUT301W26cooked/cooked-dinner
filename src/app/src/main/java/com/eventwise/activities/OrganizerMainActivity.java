@@ -21,7 +21,7 @@ public class OrganizerMainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main_organizer);
+        setContentView(R.layout.activity_organizer);
 
         if (savedInstanceState == null) {
             getSupportFragmentManager()

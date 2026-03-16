@@ -48,7 +48,7 @@ public class AdminOrganizationsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_admin_organizations, container, false);
+        return inflater.inflate(R.layout.fragment_admin_users_organizations, container, false);
     }
 
     @Override
@@ -57,8 +57,8 @@ public class AdminOrganizationsFragment extends Fragment {
 
         adminDatabaseManager = new AdminDatabaseManager();
 
-        recyclerView = view.findViewById(R.id.organizations_recycler_view);
-        emptyText = view.findViewById(R.id.empty_organizations_text);
+        recyclerView = view.findViewById(R.id.organizations_list_view);
+        emptyText = view.findViewById(R.id.empty_organizations_list);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 

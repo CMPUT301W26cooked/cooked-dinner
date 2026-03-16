@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: This XML file contains the admin notification logs tab.
+    Author: Becca Irving
+    LastRevAuthor: Luke Forster
+    Version: 1
+    Date: 2026-03-16
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,7 +19,7 @@
         android:gravity="center"
         android:background="@color/moss_green"
         android:orientation="vertical"
-        android:paddingVertical="26dp">
+        android:paddingVertical="@dimen/spacing_lg">
 
         <TextView
             android:id="@+id/header_title"
@@ -29,13 +36,19 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:gravity="center"
-        android:paddingHorizontal="40dp">
+        android:paddingHorizontal="@dimen/spacing_xl"
+        android:orientation="vertical">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
         <TextView
-            android:id="@+id/empty_notifications_text"
+            android:id="@+id/empty_list"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Nothing to see here."
+            android:text="@string/empty_list_message"
             android:textColor="@color/forest_green"
             android:textSize="24sp"
             android:textStyle="bold"

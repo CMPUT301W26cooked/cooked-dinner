@@ -1,23 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: This XML file is the frame for the activity in admin profile type.
+    Author: Luke Forster
+    LastRevAuthor: Luke Forster
+    Version: 1
+    Date: 2026-03-16
+    TODO:
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/entrant_main_root"
+    android:id="@+id/admin_main_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
     <FrameLayout
-        android:id="@+id/entrant_fragment_container"
+        android:id="@+id/admin_fragment_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/entrant_bottom_navigation"
+        android:id="@+id/admin_bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/moss_green"
-        app:menu="@menu/entrant_bottom_nav_bar"
+        app:menu="@menu/admin_bottom_nav_bar"
         app:itemIconTint="@color/bottom_nav_colors"
         app:itemTextColor="@color/bottom_nav_colors"
         app:itemActiveIndicatorStyle="@null"

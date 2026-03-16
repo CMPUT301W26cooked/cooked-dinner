@@ -52,4 +52,7 @@
     <string name="event_poster_hint">Event Poster\nHere If Exists</string>
     <string name="cd_counts_icon">Counts icon</string>
 
+
+    <string name="empty_list_message">Nothing to see here.</string>
+
 </resources>
