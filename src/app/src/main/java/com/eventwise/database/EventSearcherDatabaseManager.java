@@ -6,9 +6,15 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
+
+//TODO:
+// Add actual search and filter capabilities
+
 /**
- * Manager class responsible for handling database operations related to searching and managing events.
- * Extends the base {@link DatabaseManager} to provide specific event-related data access.
+ * Database manager class specifically designed for searching and managing event data.
+ * @author Pablo Osorio
+ * @version 1.0
+ * @since 2026-03-11
  */
 public class EventSearcherDatabaseManager extends DatabaseManager{
 

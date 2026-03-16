@@ -29,7 +29,7 @@ public class Notification {
     String Type;
 
     //Any message to be sent with the Notification
-    String message;
+    String messageBody;
 
     public Long getTimestamp() {
         return Timestamp;
@@ -41,6 +41,7 @@ public class Notification {
 
     Long Timestamp;
 
+    String messageTitle;
 
 
     Notification(ArrayList<String> entrantIds, String organizerId, String eventId, NotificationType type, String message){
@@ -49,7 +50,7 @@ public class Notification {
         this.OrganizerId = organizerId;
         this.EventId = eventId;
         this.Type = type.name();
-        this.message = message;
+        this.messageBody = message;
         this.Timestamp = System.currentTimeMillis()/1000;
     }
 
@@ -86,12 +87,12 @@ public class Notification {
         return entrantIds;
     }
 
-    public String getMessage() {
-        return message;
+    public String getMessageBody() {
+        return messageBody;
     }
 
     public String setMessage(String message) {
-        return this.message = message;
+        return this.messageBody = message;
     }
 
 
@@ -104,6 +105,14 @@ public class Notification {
         this.Type = type.name(); // stores "CHOSEN", "CANCELLED" etc.
     }
 
+
+    public String getMessageTitle() {
+        return messageTitle;
+    }
+
+    public void setMessageTitle(String messageTitle) {
+        this.messageTitle = messageTitle;
+    }
     //Used to check if notifications are equal, notably for Firebase
     @Override
     public boolean equals(Object o) {
@@ -116,7 +125,7 @@ public class Notification {
                 && Objects.equals(EventId, that.EventId)
                 && Objects.equals(Type, that.Type)
                 && Objects.equals(Timestamp, that.Timestamp)
-                && Objects.equals(message, that.message);
+                && Objects.equals(messageBody, that.messageBody);
     }
 
 
