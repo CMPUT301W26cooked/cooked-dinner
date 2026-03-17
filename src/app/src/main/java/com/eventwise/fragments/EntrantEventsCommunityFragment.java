@@ -28,6 +28,7 @@ import java.util.List;
  * @author Luke Forster
  * @version 1.0
  * @since 2026-03-03
+ * Updated By Becca Irving on 2026-03-16
  */
 
 public class EntrantEventsCommunityFragment extends Fragment {
@@ -53,9 +54,16 @@ public class EntrantEventsCommunityFragment extends Fragment {
         eventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         eventList = new ArrayList<>();
-        eventAdapter = new EventAdapter(eventList, EventAdapter.TYPE_JOIN, getCurrentEntrantId(), this::joinEvent);
+        //eventAdapter = new EventAdapter(eventList, EventAdapter.TYPE_JOIN, getCurrentEntrantId(), this::joinEvent);
+        eventAdapter = new EventAdapter(eventList, EventAdapter.TYPE_JOIN, getCurrentEntrantId(), this::joinEvent, this::openEventDetail);
         eventListView.setAdapter(eventAdapter);
         //Get events from Firebase
+        refreshEvents();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         refreshEvents();
     }
 
@@ -63,12 +71,20 @@ public class EntrantEventsCommunityFragment extends Fragment {
         String entrantId = getCurrentEntrantId();
         long timestamp = System.currentTimeMillis() / 1000L;
 
+        if (entrantId == null || entrantId.trim().isEmpty()) {
+            Log.e("Event", "Join/leave failed: entrant Id is null");
+            return;
+        }
+
         EntrantDatabaseManager db = new EntrantDatabaseManager();
 
         boolean alreadyInEvent =
                 event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(entrantId);
 
         if (alreadyInEvent) {
+            event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
+            eventAdapter.notifyDataSetChanged();
+
             db.unregisterEntrantInEvent(entrantId, event.getEventId(), timestamp)
                     .addOnSuccessListener(unused -> {
                         Log.d("Event", "Successfully left: " + event.getName());
@@ -76,8 +92,14 @@ public class EntrantEventsCommunityFragment extends Fragment {
                     })
                     .addOnFailureListener(e -> {
                         Log.e("Event", "Leave failed", e);
+
+                        event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.WAITLISTED, timestamp);
+                        eventAdapter.notifyDataSetChanged();
                     });
         } else {
+            event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.WAITLISTED, timestamp);
+            eventAdapter.notifyDataSetChanged();
+
             db.registerEntrantInEvent(entrantId, event.getEventId(), timestamp)
                     .addOnSuccessListener(unused -> {
                         Log.d("Event", "Successfully joined: " + event.getName());
@@ -85,19 +107,28 @@ public class EntrantEventsCommunityFragment extends Fragment {
                     })
                     .addOnFailureListener(e -> {
                         Log.e("Event", "Join failed", e);
+
+                        event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
+                        eventAdapter.notifyDataSetChanged();
                     });
         }
     }
 
 
-    private void openInvitationDetail(@NonNull String eventId, @NonNull String entrantId) {
-        com.eventwise.fragments.InvitationDetailFragment frag =
-                com.eventwise.fragments.InvitationDetailFragment.newInstance(eventId, entrantId);
+    private void openEventDetail(@NonNull Event event) {
+        String entrantId = getCurrentEntrantId();
 
-        // TODO: replace R.id.fragment_container with your actual container id in the Activity layout
+        if (entrantId == null || entrantId.trim().isEmpty()) {
+            Log.e("Event", "Cannot open event detail: entrant Id is null");
+            return;
+        }
+
+        EntrantEventDetailFragment frag =
+                EntrantEventDetailFragment.newInstance(event.getEventId(), entrantId);
+
         requireActivity().getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragment_container, frag)
+                .replace(R.id.entrant_fragment_container, frag)
                 .addToBackStack(null)
                 .commit();
     }
@@ -105,7 +136,7 @@ public class EntrantEventsCommunityFragment extends Fragment {
 
     private String getCurrentEntrantId() {
         SessionStore sessionStore = new SessionStore(requireContext());
-        String deviceId = sessionStore.getDeviceId();
+        String deviceId = sessionStore.getOrCreateDeviceId();
         Log.d("Event", "Current entrant/device Id: " + deviceId);
         return deviceId;
     }

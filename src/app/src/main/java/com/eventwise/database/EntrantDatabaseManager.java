@@ -28,6 +28,7 @@ import java.util.ArrayList;
  * @version 1.0
  * @since 2026-03-06
  * Updated By Becca Irving on 2026-03-09
+ * Updated By Becca Irving on 2026-03-16
  */
 
 public class EntrantDatabaseManager extends DatabaseManager {
@@ -165,6 +166,16 @@ public class EntrantDatabaseManager extends DatabaseManager {
     public Task<Void> registerEntrantInEvent(String entrantId, String eventId, long timestamp) {
         TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
+        if (entrantId == null || entrantId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("EntrantId cannot be null or empty"));
+            return tcs.getTask();
+        }
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("EventId cannot be null or empty"));
+            return tcs.getTask();
+        }
+
         events.document(eventId).get()
                 .addOnSuccessListener(eventSnapshot -> {
                     Event event = eventSnapshot.toObject(Event.class);
@@ -221,6 +232,16 @@ public class EntrantDatabaseManager extends DatabaseManager {
      */
     public Task<Void> unregisterEntrantInEvent(String entrantId, String eventId, long timestamp) {
         TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (entrantId == null || entrantId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("EntrantId cannot be null or empty"));
+            return tcs.getTask();
+        }
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("EventId cannot be null or empty"));
+            return tcs.getTask();
+        }
 
         events.document(eventId).get()
                 .addOnSuccessListener(eventSnapshot -> {
@@ -300,6 +321,16 @@ public class EntrantDatabaseManager extends DatabaseManager {
      */
     public Task<Void> declineInvitation(String entrantId, String eventId, long timestamp) {
         TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (entrantId == null || entrantId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("EntrantId cannot be null or empty"));
+            return tcs.getTask();
+        }
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("EventId cannot be null or empty"));
+            return tcs.getTask();
+        }
 
         events.document(eventId).get()
                 .addOnSuccessListener(eventSnapshot -> {
