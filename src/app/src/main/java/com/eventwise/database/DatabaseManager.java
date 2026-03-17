@@ -270,6 +270,33 @@ public abstract class DatabaseManager {
     }
 
     /**
+     * Retrieves an event from the Firestore database using the specified event Id.
+     * This method performs an asynchronous fetch and returns a Task that will resolve
+     * to the Event object if found.
+     *
+     * @param eventId The unique identifier of the event to retrieve.
+     * @return A {@link Task} that will contain the {@link Event} object upon success,
+     *         or a {@link DatabaseException} if the event does not exist or the fetch fails.
+     */
+    protected Task<Event> getEventFromId(String eventId) {
+        TaskCompletionSource <Event> tcs = new TaskCompletionSource<>();
+
+        events.document(eventId).get()
+            .addOnSuccessListener(doc->{
+                if (doc.exists()){
+                    tcs.setResult(doc.toObject(Event.class));
+                }
+                else {
+                    tcs.setException(new DatabaseException("Error getting Event"));
+                }
+            })
+            .addOnFailureListener(notUsed ->{
+                    tcs.setException(new DatabaseException("Error getting Event"));
+            });
+        return tcs.getTask();
+    }
+
+    /**
      * Adds a new event to the Firestore database.
      * This method creates a document in the "event" collection using the event's unique Id
      * and stores the provided event object.
@@ -441,4 +468,26 @@ public abstract class DatabaseManager {
     protected Task<Void> updateEventPosterPath(String eventId, String posterPath) {
         return events.document(eventId).update("posterPath", posterPath);
     }
+
+    protected Task<Void> deletePosterfromEventId(String eventId) {
+        TaskCompletionSource <Void> tcs = new TaskCompletionSource<>();
+
+        getEventFromId(eventId).addOnSuccessListener(event->{
+            if (event.getPosterPath() != null && !event.getPosterPath().isEmpty()) {
+                updateEventPosterPath(eventId, "");
+                tcs.setResult(null);
+            }
+            else {
+                tcs.setException(new DatabaseException("Error deleting poster"));
+
+            }
+                })
+        .addOnFailureListener(exception -> {
+            tcs.setException(new DatabaseException("Error deleting poster"));
+        });
+        return tcs.getTask();
     }
+
+
+
+}
