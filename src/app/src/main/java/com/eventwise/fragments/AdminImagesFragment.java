@@ -69,8 +69,17 @@ public class AdminImagesFragment extends Fragment {
 
         adapter = new AdminImagesAdapter(imageItems,item ->
         {
-            imageItems.remove(item);
-            adapter.notifyDataSetChanged();
+            adminDatabaseManager.deletePoster(item.getFilepath(), requireContext())
+                    .addOnSuccessListener( notUsed-> {
+                        imageItems.remove(item);
+                        adapter.notifyDataSetChanged();
+
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("AdminImages", "Failed to delete image", e);
+                    });
+
+
         });
 //                adminDatabaseManager.removeEventById(item.getEventId())
 //                        .addOnSuccessListener(unused -> {
