@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.eventwise.R;
 import com.eventwise.fragments.AdminEventsFragment;
+import com.eventwise.fragments.AdminImagesFragment;
 import com.eventwise.fragments.AdminUsersFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.eventwise.fragments.AdminNotificationsFragment;
@@ -63,7 +64,10 @@ public class AdminMainActivity extends AppCompatActivity {
             }
 
             if (item.getItemId() == R.id.image_icon) {
-                // TODO: replace with BannersFragment later
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.admin_fragment_container, new AdminImagesFragment())
+                        .commit();
                 return true;
             }
 
