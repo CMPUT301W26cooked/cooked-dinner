@@ -1,13 +1,17 @@
 package com.eventwise;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import android.widget.ImageView;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -156,6 +160,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         Button primaryButton;
         Button secondaryButton;
 
+        ImageView posterView;
+
         /**
          * Finds the event widget views.
          *
@@ -182,6 +188,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
             primaryButton = itemView.findViewById(R.id.primary_button);
             secondaryButton = itemView.findViewById(R.id.secondary_button);
+
+            posterView = itemView.findViewById(R.id.event_poster);
         }
     }
 
@@ -238,6 +246,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         holder.eventSpotsCount.setText("•  " + spots + " spots");
         holder.eventWaitlistedCount.setText("•  " + waitlisted + " waitlisted");
         holder.eventRegisteredCount.setText("•  " + registered + " registered");
+
+        if (event.getPosterPath() != null && !event.getPosterPath().isEmpty()) {
+            File file = new File(holder.itemView.getContext().getFilesDir(), event.getPosterPath());
+            if (file.exists()) {
+                holder.posterView.setImageURI(Uri.fromFile(file));
+            }
+        }
 
         if (holder.primaryButton != null) {
             boolean disableButton = shouldDisablePrimaryButton(event);
