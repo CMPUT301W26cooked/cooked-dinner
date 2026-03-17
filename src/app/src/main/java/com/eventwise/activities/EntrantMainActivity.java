@@ -24,6 +24,7 @@ import com.eventwise.Entrant;
  * @version 2.0
  * @since 2026-03-09
  * Updated By Becca Irving on 2026-03-13
+ * Updated By Becca Irving on 2026-03-16
  */
 
 // TODO (EntrantMainActivity.java)
@@ -71,7 +72,7 @@ public class EntrantMainActivity extends AppCompatActivity {
             }
 
             if (item.getItemId() == R.id.profile_icon) {
-                // TODO: replace with EntrantProfileFragment later
+                openProfileTab();
                 return true;
             }
 
@@ -120,10 +121,10 @@ public class EntrantMainActivity extends AppCompatActivity {
 
     private void ensureEntrantExists() {
         SessionStore sessionStore = new SessionStore(this);
-        String deviceId = sessionStore.getDeviceId();
+        String deviceId = sessionStore.getOrCreateDeviceId();
 
         if (deviceId == null || deviceId.trim().isEmpty()) {
-            Log.e("EntrantMainActivity", "No device Id found");
+            Log.e("EntrantMainActivity", "Failed to create device Id");
             return;
         }
 

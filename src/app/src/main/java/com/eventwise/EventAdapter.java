@@ -6,12 +6,12 @@ import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import android.widget.ImageView;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import com.eventwise.EventEntrantStatus;
 /**
  * This Event Adapter class takes each event item into a visual widget on screen.
  *
@@ -19,14 +19,16 @@ import com.eventwise.EventEntrantStatus;
  * @version 2.0
  * @since 2026-03-03
  * Updated By Becca Irving on 2026-03-09
+ * Updated By Becca Irving on 2026-03-16
  * TODO: The primary secondary  logic in onBindViewHolder is wonky please help.
  */
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
 
     public static final int TYPE_JOIN = 0;
     public static final int TYPE_CANCEL = 1;
-    public static final int TYPE_EDIT_LEAVE = 2;
-    public static final int TYPE_EDIT_CANCEL = 3;
+    public static final int TYPE_WAITLISTED = 2;
+    public static final int TYPE_EDIT_LEAVE = 3;
+    public static final int TYPE_EDIT_CANCEL = 4;
 
     private final List<Event> eventList;
     private final int mode;
@@ -128,7 +130,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         if (currentEntrantId != null
                 && event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(currentEntrantId)) {
-            return TYPE_CANCEL;
+            return TYPE_WAITLISTED;
         }
 
         return TYPE_JOIN;
@@ -150,7 +152,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         TextView eventSpotsCount;
         TextView eventWaitlistedCount;
         TextView eventRegisteredCount;
-
+        ImageView eventStatusIcon;
         Button primaryButton;
         Button secondaryButton;
 
@@ -176,6 +178,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             eventWaitlistedCount = itemView.findViewById(R.id.event_waitlisted_count);
             eventRegisteredCount = itemView.findViewById(R.id.event_event_registered_count);
 
+            eventStatusIcon = itemView.findViewById(R.id.event_status_icon);
+
             primaryButton = itemView.findViewById(R.id.primary_button);
             secondaryButton = itemView.findViewById(R.id.secondary_button);
         }
@@ -195,6 +199,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         } else if(viewType == TYPE_EDIT_CANCEL) {
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.widget_edit_cancel_event, parent, false);
+        } else if(viewType == TYPE_WAITLISTED) {
+            view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.widget_waitlisted_event, parent, false);
         } else if(viewType == TYPE_CANCEL) {
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.widget_cancel_event, parent, false);
@@ -220,6 +227,10 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         holder.eventOrganization.setText("Organization Name");
 
+        if (holder.eventStatusIcon != null) {
+            holder.eventStatusIcon.setImageResource(getEventStatusDrawable(event));
+        }
+
         int spots = event.getMaxWinnersToSample();
         int waitlisted = event.getWaitingListCount();
         int registered = event.getEnrolledCount();
@@ -229,15 +240,23 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         holder.eventRegisteredCount.setText("•  " + registered + " registered");
 
         if (holder.primaryButton != null) {
+            boolean disableButton = shouldDisablePrimaryButton(event);
+
             if (getItemViewType(position) == TYPE_JOIN) {
-                if (event.isRegistrationOpenNow() && !event.isWaitingListFull()) {
-                    holder.primaryButton.setEnabled(true);
-                } else {
-                    holder.primaryButton.setEnabled(false);
-                }
+                boolean joinAllowed = event.isRegistrationOpenNow()
+                        && !event.isWaitingListFull()
+                        && !disableButton;
+                holder.primaryButton.setEnabled(joinAllowed);
+            } else if (getItemViewType(position) == TYPE_WAITLISTED) {
+                holder.primaryButton.setEnabled(!disableButton);
+            } else {
+                holder.primaryButton.setEnabled(!disableButton);
             }
+
+            holder.primaryButton.setAlpha(holder.primaryButton.isEnabled() ? 1.0f : 0.5f);
+
             holder.primaryButton.setOnClickListener(v -> {
-                if (primaryButtonClickListener != null) {
+                if (primaryButtonClickListener != null && holder.primaryButton.isEnabled()) {
                     primaryButtonClickListener.onPrimaryButtonClick(event);
                 }
             });
@@ -261,6 +280,31 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     @Override
     public int getItemCount() {
         return eventList.size();
+    }
+
+
+    private boolean hasEventStarted(Event event) {
+        long nowEpochSec = System.currentTimeMillis() / 1000L;
+        return nowEpochSec >= event.getEventStartEpochSec();
+    }
+
+    private boolean isRegistrationClosed(Event event) {
+        long nowEpochSec = System.currentTimeMillis() / 1000L;
+        return nowEpochSec > event.getRegistrationCloseEpochSec();
+    }
+
+    private boolean shouldDisablePrimaryButton(Event event) {
+        return hasEventStarted(event) || isRegistrationClosed(event);
+    }
+
+    private int getEventStatusDrawable(Event event) {
+        if (hasEventStarted(event)) {
+            return R.drawable.event_over;
+        }
+        if (isRegistrationClosed(event)) {
+            return R.drawable.event_closed;
+        }
+        return R.drawable.event_open;
     }
 
     /**
