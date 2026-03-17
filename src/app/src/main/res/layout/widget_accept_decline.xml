@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Description: This is the template event widget populated with the edit and leave buttons
+    Description: This is the template event widget populated with the edit and cancel buttons
     Author: Luke Forster
     LastRevAuthor: Luke Forster
     Version: 1
@@ -147,8 +147,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
             android:layout_marginEnd="40dp"
-            android:text="Registered"
-            android:textColor="#636B2F"
+            android:text="Action Required"
+            android:textColor="@color/red"
             android:textSize="12sp"
             android:textStyle="bold"/>
 
@@ -192,53 +192,54 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
-                <TextView
-                    android:id="@+id/event_spots_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="•  10 spots"
-                    android:textColor="@color/moss_green"
-                    android:textSize="12sp" />
-                <TextView
-                    android:id="@+id/event_waitlisted_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="•  5 waitlisted"
-                    android:textColor="@color/moss_green"
-                    android:textSize="12sp" />
-                <TextView
-                    android:id="@+id/event_event_registered_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="•  3 registered"
-                    android:textColor="@color/moss_green"
-                    android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/event_spots_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="•  10 spots"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/event_waitlisted_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="•  5 waitlisted"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/event_event_registered_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="•  3 registered"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
         <LinearLayout
+            android:id="@+id/edit_leave"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-            <Button
-                android:id="@+id/secondary_button"
-                android:layout_width="70dp"
-                android:layout_height="75dp"
-                android:minHeight="72dp"
-                android:layout_margin="5dp"
-                android:text="Edit"
-                android:textSize="18dp"
-                android:textColor="@color/lighter_green"
-                android:backgroundTint="@color/bacon_color"
-                android:padding="5dp"/>
             <Button
                 android:id="@+id/primary_button"
                 android:layout_width="70dp"
                 android:layout_height="75dp"
                 android:minHeight="72dp"
                 android:layout_margin="5dp"
-                android:text="Leave"
-                android:textSize="18dp"
+                android:text="Accept"
+                android:textSize="17dp"
+                android:textColor="@color/lighter_green"
+                android:backgroundTint="@color/bacon_color"
+                android:padding="5dp"/>
+            <Button
+                android:id="@+id/secondary_button"
+                android:layout_width="70dp"
+                android:layout_height="75dp"
+                android:minHeight="72dp"
+                android:layout_margin="5dp"
+                android:text="Decline"
+                android:textSize="17dp"
                 android:textColor="@color/lighter_green"
                 android:backgroundTint="@color/red"
                 android:padding="5dp"/>

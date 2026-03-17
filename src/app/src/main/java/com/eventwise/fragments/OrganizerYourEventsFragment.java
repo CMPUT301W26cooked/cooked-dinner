@@ -72,7 +72,7 @@ public class OrganizerYourEventsFragment extends Fragment {
         });
 
         // Setup RecyclerView
-        eventListView = view.findViewById(R.id.list_view);
+        eventListView = view.findViewById(R.id.events_community_list_view);
         eventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
         eventList = new ArrayList<>();
 

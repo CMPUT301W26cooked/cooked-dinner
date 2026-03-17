@@ -56,7 +56,7 @@ public class AdminEventsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         eventSearcherDBMan = new EventSearcherDatabaseManager();
-        eventListView = view.findViewById(R.id.list_view);
+        eventListView = view.findViewById(R.id.events_community_list_view);
         emptyStateText = view.findViewById(R.id.empty_state_text);
 
         eventListView.setLayoutManager(new LinearLayoutManager(requireContext()));

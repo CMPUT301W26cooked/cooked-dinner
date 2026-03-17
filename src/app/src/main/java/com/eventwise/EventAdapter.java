@@ -33,6 +33,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     public static final int TYPE_WAITLISTED = 2;
     public static final int TYPE_EDIT_LEAVE = 3;
     public static final int TYPE_EDIT_CANCEL = 4;
+    public static final int TYPE_ACCEPT_DECLINE = 5;
 
     private final List<Event> eventList;
     private final int mode;
@@ -128,8 +129,19 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     public int getItemViewType(int position) {
         Event event = eventList.get(position);
 
-        if (mode == TYPE_EDIT_LEAVE || mode == TYPE_EDIT_CANCEL) {
-            return mode;
+        if (mode == TYPE_EDIT_CANCEL) {
+            return TYPE_EDIT_CANCEL;
+        }
+
+        if (mode == TYPE_EDIT_LEAVE) {
+            if (currentEntrantId != null) {
+                if (event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).contains(currentEntrantId)) {
+                    return TYPE_ACCEPT_DECLINE;
+                }
+                if (event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(currentEntrantId)) {
+                    return TYPE_EDIT_LEAVE;
+                }
+            }
         }
 
         if (currentEntrantId != null
@@ -139,7 +151,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         return TYPE_JOIN;
     }
-
 
     /**
      * Holds one event widget row.
@@ -207,6 +218,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         } else if(viewType == TYPE_EDIT_CANCEL) {
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.widget_edit_cancel_event, parent, false);
+        } else if(viewType == TYPE_ACCEPT_DECLINE) {
+            view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.widget_accept_decline, parent, false);
         } else if(viewType == TYPE_WAITLISTED) {
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.widget_waitlisted_event, parent, false);
