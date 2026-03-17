@@ -59,6 +59,10 @@ public class AdminDatabaseManager extends DatabaseManager {
 //    }
 
 
+    public Task<ArrayList<Event>> getAllEvents() {
+        return super.getEvents();
+    }
+
 
     public Task<ArrayList<Entrant>> getAllEntrants() {
         return super.getEntrants();
