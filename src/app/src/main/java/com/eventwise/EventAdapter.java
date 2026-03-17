@@ -1,5 +1,4 @@
 package com.eventwise;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -126,11 +125,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     public int getItemViewType(int position) {
         Event event = eventList.get(position);
 
-        Log.d("EventAdapter", "event=" + event.getName()
-                + " invited=" + event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).contains(currentEntrantId)
-                + " waitlisted=" + event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(currentEntrantId)
-                + " entrantId=" + currentEntrantId);
-
         if (mode == TYPE_EDIT_CANCEL) {
             return TYPE_EDIT_CANCEL;
         }
@@ -140,13 +134,10 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 if (event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).contains(currentEntrantId)) {
                     return TYPE_ACCEPT_DECLINE;
                 }
-
                 if (event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(currentEntrantId)) {
                     return TYPE_EDIT_LEAVE;
                 }
             }
-
-            return TYPE_EDIT_LEAVE;
         }
 
         if (currentEntrantId != null
