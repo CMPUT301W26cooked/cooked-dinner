@@ -133,6 +133,10 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             return TYPE_EDIT_CANCEL;
         }
 
+        if (mode == TYPE_CANCEL) {
+            return TYPE_CANCEL;
+        }
+
         if (mode == TYPE_EDIT_LEAVE) {
             if (currentEntrantId != null) {
                 if (event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).contains(currentEntrantId)) {
