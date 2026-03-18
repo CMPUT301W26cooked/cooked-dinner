@@ -241,6 +241,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             if (file.exists()) {
                 holder.posterView.setImageURI(Uri.fromFile(file));
             }
+            else{
+                holder.posterView.setImageResource(android.R.drawable.ic_menu_gallery);
+            }
+        }
+        else{
+            holder.posterView.setImageResource(android.R.drawable.ic_menu_gallery);
         }
 
         if (holder.primaryButton != null) {
