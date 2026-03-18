@@ -63,7 +63,7 @@ public class AdminImagesFragment extends Fragment {
 
         adminDatabaseManager = new AdminDatabaseManager();
 
-        recyclerView = view.findViewById(R.id.list_view);
+        recyclerView = view.findViewById(R.id.events_community_list_view);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
