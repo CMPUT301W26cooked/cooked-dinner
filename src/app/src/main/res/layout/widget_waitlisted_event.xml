@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: Entrant event widget for a waitlisted event with a leave button.
+    Author: Becca Irving
+    Version: 1
+    Date: 2026-03-16
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/waitlisted_event_widget"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="25dp"
+    android:layout_marginEnd="25dp"
+    android:layout_marginTop="25dp"
+    android:background="@drawable/event_card_shape"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:id="@+id/event_title_and_poster"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/event_title"
+            android:layout_width="183dp"
+            android:layout_height="90dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/event_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="2"
+                android:text="Event Name"
+                android:textColor="@color/forest_green"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/event_description"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:layout_gravity="bottom"
+                android:maxLines="3"
+                android:text="Short event description"
+                android:textColor="@color/moss_green"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/event_poster"
+            android:layout_width="79dp"
+            android:layout_height="94dp"
+            android:layout_marginHorizontal="8dp"
+            android:background="@color/weird_piss"
+            android:contentDescription="Event poster"
+            android:scaleType="centerCrop"
+            android:src="@android:drawable/ic_menu_gallery" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/event_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/event_location_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="Location Icon"
+            android:src="@drawable/location" />
+
+        <TextView
+            android:id="@+id/event_location_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="Edmonton"
+            android:textColor="@color/moss_green"
+            android:textSize="12sp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/event_status_icon"
+            android:layout_width="83dp"
+            android:layout_height="18dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
+            android:src="@drawable/event_open" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/event_start_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/event_start_date_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="2dp"
+            android:contentDescription="Start Date Icon"
+            android:src="@drawable/clock" />
+
+        <TextView
+            android:id="@+id/event_start_date_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:text="March 2 2026, 9:00 am"
+            android:textColor="@color/moss_green"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/event_end_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/event_end_date_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="2dp"
+            android:contentDescription="End Date Icon"
+            android:src="@drawable/clock" />
+
+        <TextView
+            android:id="@+id/event_end_date_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:text="March 2 2026, 8:00 am"
+            android:textColor="#636B2F"
+            android:textSize="12sp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/waitlisted_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            android:text="Waitlisted"
+            android:textColor="@color/moss_green"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="12dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/event_organization"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Organization Name"
+                android:textColor="@color/moss_green"
+                android:textSize="12sp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="top"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/icon_counts"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="15dp"
+                    android:contentDescription="Counts icon"
+                    android:src="@drawable/signed_up_people" />
+
+                <LinearLayout
+                    android:id="@+id/counts"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/event_spots_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="•  10 spots"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/event_waitlisted_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="•  5 waitlisted"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/event_event_registered_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="•  3 registered"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/primary_button"
+            android:layout_width="120dp"
+            android:layout_height="match_parent"
+            android:minHeight="72dp"
+            android:backgroundTint="@color/red"
+            android:text="Leave"
+            android:textColor="@color/lighter_green"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+</LinearLayout>

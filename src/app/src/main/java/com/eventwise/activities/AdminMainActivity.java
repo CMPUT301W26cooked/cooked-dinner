@@ -7,24 +7,30 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.eventwise.R;
 import com.eventwise.fragments.AdminEventsFragment;
-import com.eventwise.fragments.OrganizerYourEventsFragment;
+import com.eventwise.fragments.AdminImagesFragment;
+import com.eventwise.fragments.AdminUsersFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.eventwise.fragments.AdminNotificationsFragment;
 
 /**
  * This is the landing page for the admin profile.
+ *
  * @author Luke Forster
- * @version 1.0
+ * @version 2.0
  * @since 2026-03-09
+ * Updated By Becca Irving on 2026-03-13
  */
 
-//TODO: need to switch the list item type to an admin unique option that allows you to delete events
+// TODO:
+// - Replace the placeholder image page when that view is ready.
+// - Revisit admin event item handling later if a more admin-specific setup is needed.
 
 public class AdminMainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main_admin);
+        setContentView(R.layout.activity_admin);
 
         if (savedInstanceState == null) {
             getSupportFragmentManager()
@@ -47,17 +53,33 @@ public class AdminMainActivity extends AppCompatActivity {
 
             if (item.getItemId() == R.id.notifications_icon) {
                 // TODO: replace with NotificationsFragment later
-                return true;
+
+                if (item.getItemId() == R.id.notifications_icon) {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.admin_fragment_container, new AdminNotificationsFragment())
+                            .commit();
+                    return true;
+                }
             }
 
             if (item.getItemId() == R.id.image_icon) {
-                // TODO: replace with BannersFragment later
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.admin_fragment_container, new AdminImagesFragment())
+                        .commit();
                 return true;
             }
 
             if (item.getItemId() == R.id.users_icon) {
                 // TODO: replace with UsersFragment later
-                return true;
+                if (item.getItemId() == R.id.users_icon) {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.admin_fragment_container, new AdminUsersFragment())
+                            .commit();
+                    return true;
+                }
             }
 
             return false;

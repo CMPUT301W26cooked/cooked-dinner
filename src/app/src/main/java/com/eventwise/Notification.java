@@ -6,107 +6,159 @@ import java.util.UUID;
 
 public class Notification {
 
-
-    //TODO:
+    // TODO:
     // - Add other enum types
     public enum NotificationType {
+        WAITING_LIST,
+        INVITED,
+        CANCELLED,
+        OTHER,
         CHOSEN,
-        NOT_CHOSEN,
-        OTHER
+        NOT_CHOSEN
     }
 
+    private String notificationId;
+    private ArrayList<String> entrantIds;
+    private String organizerId;
+    private String eventId;
+    private String type;
 
+    // Keep both for compatibility with old and incoming code/Firebase docs
+    private String message;
+    private String messageBody;
+    private String messageTitle;
 
-    String notificationID;
-    //List of entrants that were notified
-    ArrayList<String> entrantIDs;
-    //Sent from
-    String OrganizerID;
-    //Relating to which event
-    String EventID;
+    private Long timestamp;
 
-    String Type;
-
-    //Any message to be sent with the Notification
-    String message;
-
-
-
-    Notification(ArrayList<String> entrantIDs, String organizerID, String eventID, NotificationType type, String message){
-        this.notificationID = UUID.randomUUID().toString();
-        this.entrantIDs = entrantIDs;
-        this.OrganizerID = organizerID;
-        this.EventID = eventID;
-        this.Type = type.name();
+    public Notification(ArrayList<String> entrantIds, String organizerId, String eventId,
+                        NotificationType type, String message) {
+        this.notificationId = UUID.randomUUID().toString();
+        this.entrantIds = entrantIds;
+        this.organizerId = organizerId;
+        this.eventId = eventId;
+        this.type = type.name();
         this.message = message;
+        this.messageBody = message;
+        this.timestamp = System.currentTimeMillis() / 1000L;
     }
 
-    Notification(){};
-
-
-    public String getNotificationID() {
-        return notificationID;
+    public Notification() {
     }
 
-    public ArrayList<String> getEntrantIDs() {
-        return entrantIDs;
+    public String getNotificationId() {
+        return notificationId;
     }
 
-
-    public String getOrganizerID() {
-        return OrganizerID;
+    public void setNotificationId(String notificationId) {
+        this.notificationId = notificationId;
     }
 
-    public void setOrganizerID(String organizerID) {
-        OrganizerID = organizerID;
+    public ArrayList<String> getEntrantIds() {
+        return entrantIds;
     }
 
-    public void setEventID(String eventID){
-        EventID = eventID;
+    public void setEntrantIds(ArrayList<String> entrantIds) {
+        this.entrantIds = entrantIds;
     }
 
-    public String getEventID() {
-        return EventID;
+    // Keep typo-version too because other code may already call it
+    public ArrayList<String> getEntrantsIds() {
+        return entrantIds;
     }
 
-    public ArrayList<String> getEntrantsIDs() {
-        return entrantIDs;
+    public String getOrganizerId() {
+        return organizerId;
     }
 
-    public String getMessage() {
-        return message;
+    public void setOrganizerId(String organizerId) {
+        this.organizerId = organizerId;
     }
 
-    public String setMessage(String message) {
-        return this.message = message;
+    public String getEventId() {
+        return eventId;
     }
 
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
 
-    // Getter/setter convert between String and Enum
     public NotificationType getType() {
-        return NotificationType.valueOf(Type);
+        return NotificationType.valueOf(type);
     }
 
     public void setType(NotificationType type) {
-        this.Type = type.name(); // stores "CHOSEN", "CANCELLED" etc.
+        this.type = type.name();
     }
 
-    //Used to check if notifications are equal, notably for Firebase
+    public String getTypeString() {
+        return type;
+    }
+
+    public void setTypeString(String type) {
+        this.type = type;
+    }
+
+    public String getMessage() {
+        return message != null ? message : messageBody;
+    }
+
+    public String setMessage(String message) {
+        this.message = message;
+        this.messageBody = message;
+        return this.message;
+    }
+
+    public String getMessageBody() {
+        return messageBody != null ? messageBody : message;
+    }
+
+    public void setMessageBody(String messageBody) {
+        this.messageBody = messageBody;
+        this.message = messageBody;
+    }
+
+    public String getMessageTitle() {
+        return messageTitle;
+    }
+
+    public void setMessageTitle(String messageTitle) {
+        this.messageTitle = messageTitle;
+    }
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Notification)) return false;
         Notification that = (Notification) o;
-        return Objects.equals(notificationID, that.notificationID)
-                && Objects.equals(OrganizerID, that.OrganizerID)
-                && Objects.equals(entrantIDs, that.entrantIDs)
-                && Objects.equals(EventID, that.EventID)
-                && Objects.equals(Type, that.Type)
-                && Objects.equals(message, that.message);
+        return Objects.equals(notificationId, that.notificationId)
+                && Objects.equals(entrantIds, that.entrantIds)
+                && Objects.equals(organizerId, that.organizerId)
+                && Objects.equals(eventId, that.eventId)
+                && Objects.equals(type, that.type)
+                && Objects.equals(timestamp, that.timestamp)
+                && Objects.equals(getMessage(), that.getMessage())
+                && Objects.equals(messageTitle, that.messageTitle);
     }
 
-
-
-
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                notificationId,
+                entrantIds,
+                organizerId,
+                eventId,
+                type,
+                timestamp,
+                getMessage(),
+                messageTitle
+        );
+    }
 }

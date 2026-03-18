@@ -63,6 +63,7 @@
             android:textStyle="bold" />
     </LinearLayout>
 
+
     <LinearLayout
         android:id="@+id/help_message_layout"
         android:layout_width="match_parent"
@@ -82,7 +83,7 @@
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/list_view"
+        android:id="@+id/events_community_list_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
