@@ -52,15 +52,11 @@ public class AdminMainActivity extends AppCompatActivity {
             }
 
             if (item.getItemId() == R.id.notifications_icon) {
-                // TODO: replace with NotificationsFragment later
-
-                if (item.getItemId() == R.id.notifications_icon) {
-                    getSupportFragmentManager()
-                            .beginTransaction()
-                            .replace(R.id.admin_fragment_container, new AdminNotificationsFragment())
-                            .commit();
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.admin_fragment_container, new AdminNotificationsFragment())
+                        .commit();
                     return true;
-                }
             }
 
             if (item.getItemId() == R.id.image_icon) {

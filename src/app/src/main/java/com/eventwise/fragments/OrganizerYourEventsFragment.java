@@ -18,6 +18,7 @@ import com.eventwise.EventAdapter;
 import com.eventwise.R;
 import com.eventwise.database.EventSearcherDatabaseManager;
 import com.eventwise.database.OrganizerDatabaseManager;
+import com.eventwise.database.SessionStore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +39,7 @@ public class OrganizerYourEventsFragment extends Fragment {
      * - Add tests for organizer-only loading and delete from list/detail.
      */
 
-    private static final String TEST_ORGANIZER_ID = "TEMP_ORGANIZER_ID";
-
+    private String organizerProfileId;
     private RecyclerView eventListView;
     private EventAdapter eventAdapter;
     private List<Event> eventList;
@@ -58,6 +58,9 @@ public class OrganizerYourEventsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        SessionStore sessionStore = new SessionStore(requireContext());
+        organizerProfileId = sessionStore.getOrCreateDeviceId();
         eventSearcherDBMan = new EventSearcherDatabaseManager();
         organizerDatabaseManager = new OrganizerDatabaseManager();
         View createEventButton = view.findViewById(R.id.create_new_event_button);
@@ -120,7 +123,7 @@ public class OrganizerYourEventsFragment extends Fragment {
             return;
         }
 
-        organizerDatabaseManager.getOrganizersCreatedEventsFromOrganizerId(TEST_ORGANIZER_ID)
+        organizerDatabaseManager.getOrganizersCreatedEventsFromOrganizerId(organizerProfileId)
                 .addOnSuccessListener(returnedList -> {
                     eventList.clear();
                     if (returnedList != null) {

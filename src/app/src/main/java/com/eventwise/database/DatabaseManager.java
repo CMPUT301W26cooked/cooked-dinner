@@ -16,6 +16,7 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -488,6 +489,69 @@ public abstract class DatabaseManager {
         return tcs.getTask();
     }
 
+    /**
+     * Asynchronously retrieves a list of all events from the Firestore database.
+     * This method performs a fetch of the "events" collection and converts each document
+     * into an {@link Event} object.
+     *
+     * @return A {@link Task} that, when successful, contains an {@link ArrayList} of
+     *         {@link Event} objects, or a {@link DatabaseException} if the fetch fails.
+     */
+    protected Task<ArrayList<Notification>> getNotifications(){
+        TaskCompletionSource<ArrayList<Notification>> tcs = new TaskCompletionSource<>();
+        ArrayList<Notification> notificationArray = new ArrayList<>();
 
+        notifications.get().addOnSuccessListener( result -> {
+            for (DocumentSnapshot document : result) {
+                Notification notification = document.toObject(Notification.class);
+                if ( notification != null) {
+                    if (notification.getNotificationId() == null || notification.getNotificationId().trim().isEmpty()) {
+                        notification.setNotificationId(document.getId());
+                    }
+                    notificationArray.add(notification);
+                }
+            }
+            tcs.setResult(notificationArray);
+        }).addOnFailureListener(exception -> {
+            tcs.setException(new DatabaseException("Error getting events"));
+        });
+
+        return tcs.getTask();
+    }
+
+    public Task<ArrayList<String>> getAllProfileIds() {
+        TaskCompletionSource<ArrayList<String>> tcs = new TaskCompletionSource<>();
+
+        profiles.get()
+                .addOnSuccessListener(querySnapshot -> {
+                    ArrayList<String> profileIds = new ArrayList<>();
+                    querySnapshot.getDocuments().forEach(doc -> profileIds.add(doc.getId()));
+                    tcs.setResult(profileIds);
+                })
+                .addOnFailureListener(tcs::setException);
+
+        return tcs.getTask();
+    }
+
+    public Task<ArrayList<String>> getAllEntrantProfileIds() {
+        TaskCompletionSource<ArrayList<String>> taskSource = new TaskCompletionSource<>();
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("profiles")
+                .whereEqualTo("profileType", "ENTRANT")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    ArrayList<String> entrantIds = new ArrayList<>();
+
+                    for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
+                        entrantIds.add(doc.getId());
+                    }
+
+                    taskSource.setResult(entrantIds);
+                })
+                .addOnFailureListener(taskSource::setException);
+
+        return taskSource.getTask();
+    }
 
 }

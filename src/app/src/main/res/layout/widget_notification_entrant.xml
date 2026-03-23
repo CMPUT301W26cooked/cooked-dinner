@@ -91,6 +91,17 @@
             android:text="2026-03-13 16:00:00"
             android:textColor="@color/moss_green"
             android:textSize="12sp" />
+        <Button
+            android:id="@+id/primary_button"
+            android:layout_width="70dp"
+            android:layout_height="40dp"
+            android:minHeight="72dp"
+            android:layout_margin="5dp"
+            android:text="Leave"
+            android:textSize="18dp"
+            android:textColor="@color/lighter_green"
+            android:backgroundTint="@color/red"
+            android:padding="5dp"/>
     </LinearLayout>
 
 

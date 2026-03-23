@@ -23,27 +23,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Simple screen for admin notifications.
+ * Page for viewing Entrant Notifications.
  *
- * @author Becca Irving
+ * @author Luke Forster
  * @version 1.0
- * @since 2026-03-09
+ * @since 2026-03-22
  */
-public class AdminNotificationsFragment extends Fragment {
+
+public class EntrantNotificationsFragment extends Fragment {
 
     private RecyclerView notificationListView;
     private TextView emptyListView;
     private NotificationAdapter notificationAdapter;
     private List<Notification> notificationList;
 
-    public AdminNotificationsFragment() {
+    public EntrantNotificationsFragment() {
     }
 
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_admin_notifications, container, false);
+        return inflater.inflate(R.layout.fragment_entrant_notifications, container, false);
     }
 
     @Override
@@ -52,11 +53,10 @@ public class AdminNotificationsFragment extends Fragment {
 
         notificationListView = view.findViewById(R.id.notification_list_view);
         emptyListView = view.findViewById(R.id.empty_list);
-
         notificationListView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         notificationList = new ArrayList<>();
-        notificationAdapter = new NotificationAdapter(notificationList, NotificationAdapter.TYPE_ADMIN, this::primaryButton);
+        notificationAdapter = new NotificationAdapter(notificationList, NotificationAdapter.TYPE_ENTRANT, this::primaryButton);
         notificationListView.setAdapter(notificationAdapter);
         //Get events from Firebase
         refreshNotifications();
@@ -78,15 +78,28 @@ public class AdminNotificationsFragment extends Fragment {
     }
 
     private void refreshNotifications() {
-        NotificationSearcherDataBaseManager notificationSearcherDBMan = new NotificationSearcherDataBaseManager();
+        String entrantId = getCurrentEntrantId();
 
-        notificationSearcherDBMan.getNotifications()
+        if (entrantId == null || entrantId.trim().isEmpty()) {
+            Log.e("Notification", "Entrant ID is null");
+            notificationList.clear();
+            notificationAdapter.notifyDataSetChanged();
+            notificationListView.setVisibility(View.GONE);
+            emptyListView.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        NotificationSearcherDataBaseManager notificationSearcherDBMan =
+                new NotificationSearcherDataBaseManager();
+
+        notificationSearcherDBMan.getEntrantNotifications(entrantId)
                 .addOnSuccessListener(returnedList -> {
                     notificationList.clear();
                     if (returnedList != null) {
                         notificationList.addAll(returnedList);
                     }
                     notificationAdapter.notifyDataSetChanged();
+
                     if (notificationList.isEmpty()) {
                         notificationListView.setVisibility(View.GONE);
                         emptyListView.setVisibility(View.VISIBLE);
@@ -97,7 +110,8 @@ public class AdminNotificationsFragment extends Fragment {
                 })
                 .addOnFailureListener(e -> {
                     Log.e("Notification", "Failed to refresh Notification", e);
+                    notificationListView.setVisibility(View.GONE);
+                    emptyListView.setVisibility(View.VISIBLE);
                 });
     }
 }
-
