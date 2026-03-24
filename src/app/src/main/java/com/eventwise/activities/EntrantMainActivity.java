@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.eventwise.R;
 import com.eventwise.fragments.EntrantEventsCommunityFragment;
 import com.eventwise.fragments.EntrantEventsFragment;
+import com.eventwise.fragments.EntrantNotificationsFragment;
 import com.eventwise.fragments.EntrantProfileEmptyFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.fragment.app.Fragment;
@@ -63,7 +64,10 @@ public class EntrantMainActivity extends AppCompatActivity {
             }
 
             if (item.getItemId() == R.id.notifications_icon) {
-                // TODO: replace with NotificationsFragment later
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.entrant_fragment_container, new EntrantNotificationsFragment())
+                        .commit();
                 return true;
             }
 

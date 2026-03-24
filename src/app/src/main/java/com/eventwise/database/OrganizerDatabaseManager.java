@@ -243,4 +243,51 @@ public class OrganizerDatabaseManager extends DatabaseManager{
         return uploadEventPoster(eventId, imageData, context);
     }
 
+    public Task<Void> updateEntrantStatusInEvent(String entrantId,
+                                                 String eventId,
+                                                 EventEntrantStatus status,
+                                                 long timestamp) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (entrantId == null || entrantId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("Entrant Id is null"));
+            return tcs.getTask();
+        }
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("Event Id is null"));
+            return tcs.getTask();
+        }
+
+        if (status == null) {
+            tcs.setException(new DatabaseException("Status is null"));
+            return tcs.getTask();
+        }
+
+        events.document(eventId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    Event event = documentSnapshot.toObject(Event.class);
+
+                    if (event == null) {
+                        tcs.setException(new DatabaseException("Event not found"));
+                        return;
+                    }
+
+                    if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+                        event.setEventId(documentSnapshot.getId());
+                    }
+
+                    event.addOrUpdateEntrantStatus(entrantId, status, timestamp);
+
+                    events.document(eventId)
+                            .set(event)
+                            .addOnSuccessListener(unused -> tcs.setResult(null))
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Failed to update entrant status")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Failed to load event")));
+
+        return tcs.getTask();
+    }
 }

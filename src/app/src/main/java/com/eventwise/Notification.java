@@ -30,6 +30,8 @@ public class Notification {
 
     private Long timestamp;
 
+    private String recipientRole;
+
     public Notification(ArrayList<String> entrantIds, String organizerId, String eventId,
                         NotificationType type, String message) {
         this.notificationId = UUID.randomUUID().toString();
@@ -43,8 +45,8 @@ public class Notification {
     }
 
     public Notification() {
+        this.notificationId = UUID.randomUUID().toString();
     }
-
     public String getNotificationId() {
         return notificationId;
     }
@@ -133,6 +135,30 @@ public class Notification {
         this.timestamp = timestamp;
     }
 
+    public RecipientRole getRecipientRole() {
+        if (recipientRole == null) {
+            return null;
+        }
+
+        try {
+            return RecipientRole.valueOf(recipientRole.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    public void setRecipientRole(RecipientRole recipientRole) {
+        this.recipientRole = recipientRole != null ? recipientRole.name() : null;
+    }
+
+    public String getRecipientRoleString() {
+        return recipientRole;
+    }
+
+    public void setRecipientRoleString(String recipientRole) {
+        this.recipientRole = recipientRole;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -160,5 +186,10 @@ public class Notification {
                 getMessage(),
                 messageTitle
         );
+    }
+    public enum RecipientRole {
+        ENTRANT,
+        ORGANIZER,
+        ADMIN
     }
 }

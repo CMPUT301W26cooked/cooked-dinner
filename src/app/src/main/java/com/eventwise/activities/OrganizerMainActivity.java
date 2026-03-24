@@ -6,6 +6,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.eventwise.R;
+import com.eventwise.fragments.OrganizerNotificationsFragment;
 import com.eventwise.fragments.OrganizerYourEventsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -43,7 +44,10 @@ public class OrganizerMainActivity extends AppCompatActivity {
             }
 
             if (item.getItemId() == R.id.notifications_icon) {
-                // TODO: replace with NotificationsFragment later
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.organizer_fragment_container, new OrganizerNotificationsFragment())
+                        .commit();
                 return true;
             }
 

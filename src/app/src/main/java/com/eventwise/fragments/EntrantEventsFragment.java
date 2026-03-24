@@ -43,7 +43,7 @@ public class EntrantEventsFragment extends Fragment {
         eventsCommunityTab.setOnClickListener(v -> showEventsCommunityTab());
 
         if (savedInstanceState == null) {
-            showMyEventsTab();
+            showEventsCommunityTab();
         }
     }
 

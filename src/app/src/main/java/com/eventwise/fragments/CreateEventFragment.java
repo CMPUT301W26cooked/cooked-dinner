@@ -1,7 +1,6 @@
 package com.eventwise.fragments;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -20,10 +19,19 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.eventwise.EventEntrantStatus;
+import com.eventwise.Notification;
 import com.eventwise.R;
 import com.eventwise.Tag;
+import com.eventwise.database.EntrantDatabaseManager;
+import com.eventwise.database.NotificationDatabaseManager;
 import com.eventwise.database.OrganizerDatabaseManager;
 import com.eventwise.Event;
+import com.eventwise.database.SessionStore;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.io.ByteArrayOutputStream;
@@ -135,155 +143,222 @@ public class CreateEventFragment extends Fragment {
                         .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
                         .build()));
 
-        buttonCreateEvent.setOnClickListener(v -> uploadEventToFirebase());
+        buttonCreateEvent.setOnClickListener(v ->
+                uploadEventToFirebase());
     }
 
-        private void uploadEventToFirebase() {
-            String name = inputEventName.getText().toString().trim();
-            String description = inputEventDescription.getText().toString().trim();
-            String criteria = inputCriteria.getText().toString().trim();
-            String location = inputEventLocation.getText().toString().trim();
-            String eventStartString = inputEventStart.getText().toString().trim();
-            String eventEndString = inputEventEnd.getText().toString().trim();
-            String registrationEndString = inputRegistrationEnd.getText().toString().trim();
-            String attendanceLimitString = inputAttendanceLimit.getText().toString().trim();
-            String waitListLimitString = limitWaitlist.getText().toString().trim();
+    private void uploadEventToFirebase() {
+        String name = inputEventName.getText().toString().trim();
+        String description = inputEventDescription.getText().toString().trim();
+        String criteria = inputCriteria.getText().toString().trim();
+        String location = inputEventLocation.getText().toString().trim();
+        String eventStartString = inputEventStart.getText().toString().trim();
+        String eventEndString = inputEventEnd.getText().toString().trim();
+        String registrationEndString = inputRegistrationEnd.getText().toString().trim();
+        String attendanceLimitString = inputAttendanceLimit.getText().toString().trim();
+        String waitListLimitString = limitWaitlist.getText().toString().trim();
 
-            boolean geolocationRequired = checkGeoRequired.isChecked();
-            boolean limitWaitListChecked = checkLimitWaitlist.isChecked();
+        boolean geolocationRequired = checkGeoRequired.isChecked();
+        boolean limitWaitListChecked = checkLimitWaitlist.isChecked();
 
-            if (TextUtils.isEmpty(name)) {
-                inputEventName.setError("Required");
+        if (TextUtils.isEmpty(name)) {
+            inputEventName.setError("Required");
+            return;
+        }
+
+        if (TextUtils.isEmpty(description)) {
+            inputEventDescription.setError("Required");
+            return;
+        }
+
+        if (TextUtils.isEmpty(location)) {
+            inputEventLocation.setError("Required");
+            return;
+        }
+
+        if (TextUtils.isEmpty(eventStartString)) {
+            inputEventStart.setError("Required");
+            return;
+        }
+
+        if (TextUtils.isEmpty(eventEndString)) {
+            inputEventEnd.setError("Required");
+            return;
+        }
+
+        if (TextUtils.isEmpty(registrationEndString)) {
+            inputRegistrationEnd.setError("Required");
+            return;
+        }
+
+        if (TextUtils.isEmpty(attendanceLimitString)) {
+            inputAttendanceLimit.setError("Required");
+            return;
+        }
+
+        long eventStartEpochSec;
+        long eventEndEpochSec;
+        long registrationCloseEpochSec;
+
+        try {
+            eventStartEpochSec = Long.parseLong(eventStartString);
+            eventEndEpochSec = Long.parseLong(eventEndString);
+            registrationCloseEpochSec = Long.parseLong(registrationEndString);
+        } catch (NumberFormatException e) {
+            Log.d("CreateEvent", "Date fields must be epoch seconds");
+            inputEventStart.setError("Use epoch seconds");
+            inputEventEnd.setError("Use epoch seconds");
+            inputRegistrationEnd.setError("Use epoch seconds");
+            return;
+        }
+
+        int maxWinnersToSample;
+        try {
+            maxWinnersToSample = Integer.parseInt(attendanceLimitString);
+        } catch (NumberFormatException e) {
+            inputAttendanceLimit.setError("Enter a number");
+            return;
+        }
+
+        Integer maxWaitingListSize = null;
+        if (limitWaitListChecked) {
+            if (TextUtils.isEmpty(waitListLimitString)) {
+                limitWaitlist.setError("Required if wait list is limited");
                 return;
             }
-
-            if (TextUtils.isEmpty(description)) {
-                inputEventDescription.setError("Required");
-                return;
-            }
-
-            if (TextUtils.isEmpty(location)) {
-                inputEventLocation.setError("Required");
-                return;
-            }
-
-            if (TextUtils.isEmpty(eventStartString)) {
-                inputEventStart.setError("Required");
-                return;
-            }
-
-            if (TextUtils.isEmpty(eventEndString)) {
-                inputEventEnd.setError("Required");
-                return;
-            }
-
-            if (TextUtils.isEmpty(registrationEndString)) {
-                inputRegistrationEnd.setError("Required");
-                return;
-            }
-
-            if (TextUtils.isEmpty(attendanceLimitString)) {
-                inputAttendanceLimit.setError("Required");
-                return;
-            }
-
-            long eventStartEpochSec;
-            long eventEndEpochSec;
-            long registrationCloseEpochSec;
 
             try {
-                eventStartEpochSec = Long.parseLong(eventStartString);
-                eventEndEpochSec = Long.parseLong(eventEndString);
-                registrationCloseEpochSec = Long.parseLong(registrationEndString);
+                maxWaitingListSize = Integer.parseInt(waitListLimitString);
             } catch (NumberFormatException e) {
-                Log.d("CreateEvent", "Date fields must be epoch seconds");
-                inputEventStart.setError("Use epoch seconds");
-                inputEventEnd.setError("Use epoch seconds");
-                inputRegistrationEnd.setError("Use epoch seconds");
+                limitWaitlist.setError("Enter a number");
                 return;
             }
+        }
 
-            int maxWinnersToSample;
-            try {
-                maxWinnersToSample = Integer.parseInt(attendanceLimitString);
-            } catch (NumberFormatException e) {
-                inputAttendanceLimit.setError("Enter a number");
-                return;
-            }
+        // Placeholder values for fields not yet wired from UI/user profile
+        SessionStore sessionStore = new SessionStore(requireContext());
+        String organizerProfileId = sessionStore.getOrCreateDeviceId();
+        double price = 0.00;
+        long registrationOpenEpochSec = System.currentTimeMillis() / 1000L;
+        String posterPath = null;
+        String qrCodeId = null;
 
-            Integer maxWaitingListSize = null;
-            if (limitWaitListChecked) {
-                if (TextUtils.isEmpty(waitListLimitString)) {
-                    limitWaitlist.setError("Required if wait list is limited");
-                    return;
-                }
+        ArrayList<Tag> tags = new ArrayList<>();
+        if (criteria.isEmpty()) {
+            tags.add(new Tag("General", "General"));
+        } else {
+            tags.add(new Tag("General", criteria));
+        }
 
-                try {
-                    maxWaitingListSize = Integer.parseInt(waitListLimitString);
-                } catch (NumberFormatException e) {
-                    limitWaitlist.setError("Enter a number");
-                    return;
-                }
-            }
+        Event event = new Event(
+                organizerProfileId,
+                name,
+                description,
+                price,
+                location,
+                tags,
+                eventStartEpochSec,
+                eventEndEpochSec,
+                registrationOpenEpochSec,
+                registrationCloseEpochSec,
+                geolocationRequired,
+                maxWaitingListSize,
+                maxWinnersToSample,
+                posterPath,
+                qrCodeId
+        );
+        OrganizerDatabaseManager organizerDBMan = new OrganizerDatabaseManager();
+        organizerDBMan.addEvent(event)
+                .addOnSuccessListener(param -> {
+                    Log.d("CreateEvent", "Event added successfully to Firebase");
+                    sendInviteNotifications(event);
+                    sendInvite(event);
+                    // ====== New code start ======
+                    Log.d("ProfileLinking", "Event created with organizer Id: " +
+                            event.getOrganizerProfileId());
+                    Log.d("ProfileLinking", "Event Id: " + event.getEventId());
+                    Log.d("ProfileLinking", "Successfully linked profile to created event");
+                    // ====== New code end ======
 
-            // Placeholder values for fields not yet wired from UI/user profile
-            String organizerProfileId = "TEMP_ORGANIZER_ID";
-            double price = 0.00;
-            long registrationOpenEpochSec = System.currentTimeMillis() / 1000L;
-            String posterPath = null;
-            String qrCodeId = null;
+                    if (selectedImageBytes != null) {
+                        organizerDBMan.uploadEventPoster(event.getEventId(), selectedImageBytes, requireContext())
+                                .addOnSuccessListener(path -> {
+                                    Log.d("CreateEvent", "Poster uploaded: " + path);
+                                    getParentFragmentManager().popBackStack();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.d("CreateEvent", "Poster upload failed", e);
+                                    getParentFragmentManager().popBackStack();
+                                });
+                    } else {
+                        getParentFragmentManager().popBackStack();
+                    }
+                })
+                .addOnFailureListener(param -> {
+                    Log.d("CreateEvent", "Event failed to add to Firebase");
+                });
+    }
 
-            ArrayList<Tag> tags = new ArrayList<>();
-            if (criteria.isEmpty()) {
-                tags.add(new Tag("General", "General"));
-            } else {
-                tags.add(new Tag("General", criteria));
-            }
+    private void sendInviteNotifications(Event event) {
+        NotificationDatabaseManager notificationDB = new NotificationDatabaseManager();
+        long now = System.currentTimeMillis() / 1000L;
 
-            Event event = new Event(
-                    organizerProfileId,
-                    name,
-                    description,
-                    price,
-                    location,
-                    tags,
-                    eventStartEpochSec,
-                    eventEndEpochSec,
-                    registrationOpenEpochSec,
-                    registrationCloseEpochSec,
-                    geolocationRequired,
-                    maxWaitingListSize,
-                    maxWinnersToSample,
-                    posterPath,
-                    qrCodeId
-            );
-            OrganizerDatabaseManager organizerDBMan = new OrganizerDatabaseManager();
-            organizerDBMan.addEvent(event)
-                    .addOnSuccessListener(param -> {
-                        Log.d("CreateEvent", "Event added successfully to Firebase");
-                        // ====== New code start ======
-                        Log.d("ProfileLinking", "Event created with organizer Id: " +
-                                event.getOrganizerProfileId());
-                        Log.d("ProfileLinking", "Event Id: " + event.getEventId());
-                        Log.d("ProfileLinking", "Successfully linked profile to created event");
-                        // ====== New code end ======
+        notificationDB.getAllEntrantProfileIds()
+                .addOnSuccessListener(entrantIds -> {
+                    if (entrantIds == null || entrantIds.isEmpty()) {
+                        Log.d("Notification", "No entrant profiles found to notify");
+                        return;
+                    }
 
-                        if (selectedImageBytes != null) {
-                            organizerDBMan.uploadEventPoster(event.getEventId(), selectedImageBytes, requireContext())
-                                    .addOnSuccessListener(path -> {
-                                        Log.d("CreateEvent", "Poster uploaded: " + path);
-                                        getParentFragmentManager().popBackStack();
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        Log.d("CreateEvent", "Poster upload failed", e);
-                                        getParentFragmentManager().popBackStack();
-                                    });
-                        } else {
-                            getParentFragmentManager().popBackStack();
+                    Notification entrantNotification = new Notification();
+                    entrantNotification.setNotificationId(java.util.UUID.randomUUID().toString());
+                    entrantNotification.setRecipientRole(Notification.RecipientRole.ENTRANT);
+                    entrantNotification.setEntrantIds(entrantIds);
+                    entrantNotification.setMessageTitle("Event Invite");
+                    entrantNotification.setMessageBody("You've been invited to " + event.getName());
+                    entrantNotification.setType(Notification.NotificationType.OTHER);
+                    entrantNotification.setTimestamp(now);
+
+                    notificationDB.createNotification(entrantNotification)
+                            .addOnSuccessListener(unused ->
+                                    Log.d("Notification", "Entrant invite notification created"))
+                            .addOnFailureListener(e ->
+                                    Log.e("Notification", "Bulk entrant notification failed", e));
+                })
+                .addOnFailureListener(e ->
+                        Log.e("Notification", "Failed to fetch entrant profile IDs", e));
+    }
+
+    private void sendInvite(Event event) {
+        NotificationDatabaseManager notificationDB = new NotificationDatabaseManager();
+        OrganizerDatabaseManager organizerDBMan = new OrganizerDatabaseManager();
+        long now = System.currentTimeMillis() / 1000L;
+
+        notificationDB.getAllEntrantProfileIds()
+                .addOnSuccessListener(entrantIds -> {
+                    if (entrantIds == null || entrantIds.isEmpty()) {
+                        Log.d("Notification", "No entrant profiles found to notify");
+                        return;
+                    }
+
+                    for (String entrantId : entrantIds) {
+                        boolean alreadyInvited =
+                                event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).contains(entrantId);
+
+                        if (!alreadyInvited) {
+                            organizerDBMan.updateEntrantStatusInEvent(
+                                            entrantId,
+                                            event.getEventId(),
+                                            EventEntrantStatus.INVITED,
+                                            now
+                                    ).addOnSuccessListener(unused ->
+                                            Log.d("Invite", "Invited entrant: " + entrantId))
+                                    .addOnFailureListener(e ->
+                                            Log.e("Invite", "Failed to invite entrant: " + entrantId, e));
                         }
-                    })
-                    .addOnFailureListener(param -> {
-                        Log.d("CreateEvent", "Event failed to add to Firebase");
-                    });
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Log.e("Invite", "Failed to fetch entrant profile IDs", e));
     }
 }
