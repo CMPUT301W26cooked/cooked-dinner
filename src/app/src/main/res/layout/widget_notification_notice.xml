@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: Notification Notice Card Widget - For NOTICE type notifications
+    Author: Hao
+    LastRevAuthor: Hao
+    Version: 1
+    Date: 2026-03-25
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/notification_notice_widget"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="25dp"
+    android:layout_marginEnd="25dp"
+    android:layout_marginTop="12dp"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/event_card_shape"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Notification Title (Top) -->
+    <TextView
+        android:id="@+id/notification_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Registration Canceled. No Response."
+        android:textColor="@color/forest_green"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Event Name -->
+    <TextView
+        android:id="@+id/event_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Super Rad Event Name"
+        android:textColor="@color/moss_green"
+        android:textSize="14sp"
+        android:layout_marginBottom="4dp" />
+
+    <!-- NOTICE Badge (Left-aligned, Gray-white background, Black text) -->
+    <TextView
+        android:id="@+id/notification_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/notice"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:background="@color/bacon_color"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Date -->
+    <TextView
+        android:id="@+id/notification_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="March 2 2026, 9:00 am"
+        android:textColor="@color/moss_green"
+        android:textSize="12sp" />
+
+</LinearLayout>
