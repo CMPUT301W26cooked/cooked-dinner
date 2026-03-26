@@ -1,4 +1,6 @@
 package com.eventwise.fragments;
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.os.Build;
@@ -33,9 +35,12 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.ArrayList;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
 
 /**
  * This is the Fragment for organizers to create events.
@@ -44,8 +49,6 @@ import java.io.IOException;
  * @since 2026-03-09
  */
 
-/*TODO: Need to fix the date format so its more usable has to be EPOCH or whatever.
- */
 public class CreateEventFragment extends Fragment {
 
     private EditText inputEventName;
@@ -67,6 +70,13 @@ public class CreateEventFragment extends Fragment {
 
     private byte[] selectedImageBytes = null;
     private ActivityResultLauncher<PickVisualMediaRequest> pickMedia;
+
+    private long eventStartEpochSec = 0;
+    private long eventEndEpochSec = 0;
+    private long registrationCloseEpochSec = 0;
+
+    private final SimpleDateFormat displayDateFormat =
+            new SimpleDateFormat("MMM d yyyy, h:mm a", Locale.getDefault());
 
     public CreateEventFragment() {
     }
@@ -136,6 +146,18 @@ public class CreateEventFragment extends Fragment {
             }
         });
 
+        inputEventStart.setOnClickListener(v -> showDateTimePicker(inputEventStart, calendar -> {
+            eventStartEpochSec = calendar.getTimeInMillis() / 1000L;
+        }));
+
+        inputEventEnd.setOnClickListener(v -> showDateTimePicker(inputEventEnd, calendar -> {
+            eventEndEpochSec = calendar.getTimeInMillis() / 1000L;
+        }));
+
+        inputRegistrationEnd.setOnClickListener(v -> showDateTimePicker(inputRegistrationEnd, calendar -> {
+            registrationCloseEpochSec = calendar.getTimeInMillis() / 1000L;
+        }));
+
         returnArrow.setOnClickListener(v -> getParentFragmentManager().popBackStack());
 
         inputEventPoster.setOnClickListener(v ->
@@ -152,9 +174,6 @@ public class CreateEventFragment extends Fragment {
         String description = inputEventDescription.getText().toString().trim();
         String criteria = inputCriteria.getText().toString().trim();
         String location = inputEventLocation.getText().toString().trim();
-        String eventStartString = inputEventStart.getText().toString().trim();
-        String eventEndString = inputEventEnd.getText().toString().trim();
-        String registrationEndString = inputRegistrationEnd.getText().toString().trim();
         String attendanceLimitString = inputAttendanceLimit.getText().toString().trim();
         String waitListLimitString = limitWaitlist.getText().toString().trim();
 
@@ -176,39 +195,23 @@ public class CreateEventFragment extends Fragment {
             return;
         }
 
-        if (TextUtils.isEmpty(eventStartString)) {
+        if (eventStartEpochSec == 0) {
             inputEventStart.setError("Required");
             return;
         }
 
-        if (TextUtils.isEmpty(eventEndString)) {
+        if (eventEndEpochSec == 0) {
             inputEventEnd.setError("Required");
             return;
         }
 
-        if (TextUtils.isEmpty(registrationEndString)) {
+        if (registrationCloseEpochSec == 0) {
             inputRegistrationEnd.setError("Required");
             return;
         }
 
         if (TextUtils.isEmpty(attendanceLimitString)) {
             inputAttendanceLimit.setError("Required");
-            return;
-        }
-
-        long eventStartEpochSec;
-        long eventEndEpochSec;
-        long registrationCloseEpochSec;
-
-        try {
-            eventStartEpochSec = Long.parseLong(eventStartString);
-            eventEndEpochSec = Long.parseLong(eventEndString);
-            registrationCloseEpochSec = Long.parseLong(registrationEndString);
-        } catch (NumberFormatException e) {
-            Log.d("CreateEvent", "Date fields must be epoch seconds");
-            inputEventStart.setError("Use epoch seconds");
-            inputEventEnd.setError("Use epoch seconds");
-            inputRegistrationEnd.setError("Use epoch seconds");
             return;
         }
 
@@ -297,6 +300,41 @@ public class CreateEventFragment extends Fragment {
                 .addOnFailureListener(param -> {
                     Log.d("CreateEvent", "Event failed to add to Firebase");
                 });
+    }
+
+    private interface OnDateTimeSelectedListener {
+        void onDateTimeSelected(Calendar calendar);
+    }
+
+    // reference: https://github.com/Pritish-git/date-and-time-picker-dialog
+    private void showDateTimePicker(EditText dateField, OnDateTimeSelectedListener listener) {
+        Calendar now = Calendar.getInstance();
+        DatePickerDialog datePicker = new DatePickerDialog(requireContext(),
+                (view, year, month, dayOfMonth) -> {
+                    Calendar selected = Calendar.getInstance();
+                    selected.set(Calendar.YEAR, year);
+                    selected.set(Calendar.MONTH, month);
+                    selected.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+                    TimePickerDialog timePicker = new TimePickerDialog(requireContext(),
+                            (timeView, hourOfDay, minute) -> {
+                                selected.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                                selected.set(Calendar.MINUTE, minute);
+                                selected.set(Calendar.SECOND, 0);
+
+                                dateField.setText(displayDateFormat.format(selected.getTime()));
+                                dateField.setError(null);
+                                listener.onDateTimeSelected(selected);
+                            },
+                            now.get(Calendar.HOUR_OF_DAY),
+                            now.get(Calendar.MINUTE),
+                            false);
+                    timePicker.show();
+                },
+                now.get(Calendar.YEAR),
+                now.get(Calendar.MONTH),
+                now.get(Calendar.DAY_OF_MONTH));
+        datePicker.show();
     }
 
     private void sendInviteNotifications(Event event) {
