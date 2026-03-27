@@ -1,5 +1,7 @@
 package com.eventwise;
 
+import android.util.Log;
+
 import com.google.firebase.firestore.Exclude;
 
 import java.util.ArrayList;
@@ -39,6 +41,8 @@ public class Event {
     private long registrationCloseEpochSec;
     private boolean geolocationRequired;
     private Integer maxWaitingListSize;
+
+    private Integer waitingListEmptySpots;
     private int maxWinnersToSample;
     private String qrCodeId;
     private ArrayList<EntrantStatusEntry> entrantStatuses = new ArrayList<>();
@@ -79,6 +83,7 @@ public class Event {
         this.maxWinnersToSample = maxWinnersToSample;
         this.posterPath = posterPath;
         this.qrCodeId = qrCodeId;
+        this.waitingListEmptySpots = maxWaitingListSize;
     }
 
     public String getEventId() { return eventId; }
@@ -145,6 +150,25 @@ public class Event {
     public void addOrUpdateEntrantStatus(String entrantProfileId, EventEntrantStatus status, long timestamp) {
         if (entrantStatuses == null) {
             entrantStatuses = new ArrayList<>();
+        }
+
+        if (status == EventEntrantStatus.WAITLISTED){
+            if (waitingListEmptySpots > 0){
+                waitingListEmptySpots--;
+            }
+            else {
+                Log.e("Event", "Got added to a waiting list when full!");
+                throw new RuntimeException("RACE CONDITION PROBABLY!");
+            }
+        }
+        else if (status == EventEntrantStatus.LEFT_WAITLIST){
+            if (waitingListEmptySpots < maxWaitingListSize){
+                waitingListEmptySpots++;
+            }
+            else {
+                Log.e("Event", "Got removed from a waiting list when empty!");
+                throw new RuntimeException("RACE CONDITION PROBABLY!");
+            }
         }
 
 //        long nowEpochSec = System.currentTimeMillis() / 1000L;
@@ -228,6 +252,14 @@ public class Event {
             return false;
         }
         return getWaitingListCount() >= maxWaitingListSize;
+    }
+
+    public Integer getWaitingListEmptySpots() {
+        return waitingListEmptySpots;
+    }
+
+    public void setWaitingListEmptySpots(Integer waitingListEmptySpots) {
+        this.waitingListEmptySpots = waitingListEmptySpots;
     }
 
     public static class EntrantStatusEntry {

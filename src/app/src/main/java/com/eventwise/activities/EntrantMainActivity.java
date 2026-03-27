@@ -137,7 +137,9 @@ public class EntrantMainActivity extends AppCompatActivity {
 
         db.getEntrantFromId(deviceId)
                 .addOnSuccessListener(entrant -> {
-                    Log.d("EntrantMainActivity", "Entrant already exists: " + deviceId);
+                    if (entrant != null){
+                        Log.d("EntrantMainActivity", "Entrant already exists: " + deviceId);
+                    }
                 })
                 .addOnFailureListener(e -> {
                     Log.d("EntrantMainActivity", "Entrant not found, creating new entrant: " + deviceId);
