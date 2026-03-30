@@ -5,6 +5,9 @@ import com.eventwise.Tag;
 import java.util.ArrayList;
 import java.util.EnumSet;
 
+//TODO
+// Documentation and Tests
+
 // Any field can be null! Be careful!
     public class EventFilter{
         private Long startTimestamp = null;

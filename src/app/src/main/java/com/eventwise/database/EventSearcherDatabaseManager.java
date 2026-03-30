@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 
 //TODO:
-// Add actual search and filter capabilities
+// Documentation and Tests
 
 /**
  * Database manager class specifically designed for searching and managing event data.

@@ -43,6 +43,7 @@ import com.google.api.Distribution;
  * @version 1.0
  * @since 2026-03-03
  * Updated By Becca Irving on 2026-03-16
+ * Updated By Pablo Osorio on 2026-03-29
  */
 
 public class EntrantEventsCommunityFragment extends Fragment {
