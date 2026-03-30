@@ -3,10 +3,13 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,11 +18,13 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.eventwise.EventEntrantStatus;
@@ -36,6 +41,7 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -50,6 +56,8 @@ import java.util.Locale;
  */
 
 public class CreateEventFragment extends Fragment {
+
+    private static final String ARG_EDIT_EVENT_ID = "arg_edit_event_id";
 
     private EditText inputEventName;
     private EditText inputEventDescription;
@@ -67,6 +75,7 @@ public class CreateEventFragment extends Fragment {
     private ImageView returnArrow;
     private ImageView inputEventPoster;
     private Button buttonCreateEvent;
+    private TextView headerTitle;
 
     private byte[] selectedImageBytes = null;
     private ActivityResultLauncher<PickVisualMediaRequest> pickMedia;
@@ -75,10 +84,28 @@ public class CreateEventFragment extends Fragment {
     private long eventEndEpochSec = 0;
     private long registrationCloseEpochSec = 0;
 
+    private boolean isEditMode = false;
+    private String editEventId = "";
+    private Event editingEvent;
+
     private final SimpleDateFormat displayDateFormat =
             new SimpleDateFormat("MMM d yyyy, h:mm a", Locale.getDefault());
 
     public CreateEventFragment() {
+    }
+
+    /**
+     * Makes a create event fragment in edit mode for one existing event.
+     *
+     * @param eventId event id to edit
+     * @return configured fragment
+     */
+    public static CreateEventFragment newEditInstance(@NonNull String eventId) {
+        CreateEventFragment fragment = new CreateEventFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_EDIT_EVENT_ID, eventId);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     // reference: https://developer.android.com/training/data-storage/shared/photo-picker
@@ -86,6 +113,13 @@ public class CreateEventFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Bundle args = getArguments();
+        if (args != null) {
+            editEventId = args.getString(ARG_EDIT_EVENT_ID, "");
+            isEditMode = editEventId != null && !editEventId.trim().isEmpty();
+        }
+
         pickMedia = registerForActivityResult(
                 new ActivityResultContracts.PickVisualMedia(), uri -> {
                     if (uri != null) {
@@ -138,24 +172,29 @@ public class CreateEventFragment extends Fragment {
         returnArrow = view.findViewById(R.id.return_arrow);
         inputEventPoster = view.findViewById(R.id.input_event_poster);
         buttonCreateEvent = view.findViewById(R.id.button_create_event);
+        headerTitle = view.findViewById(R.id.header_title);
 
         checkLimitWaitlist.setOnCheckedChangeListener((buttonView, isChecked) -> {
             limitWaitlist.setEnabled(isChecked);
             if (!isChecked) {
                 limitWaitlist.setText("");
             }
+            updateSubmitButtonState();
         });
 
         inputEventStart.setOnClickListener(v -> showDateTimePicker(inputEventStart, calendar -> {
             eventStartEpochSec = calendar.getTimeInMillis() / 1000L;
+            updateSubmitButtonState();
         }));
 
         inputEventEnd.setOnClickListener(v -> showDateTimePicker(inputEventEnd, calendar -> {
             eventEndEpochSec = calendar.getTimeInMillis() / 1000L;
+            updateSubmitButtonState();
         }));
 
         inputRegistrationEnd.setOnClickListener(v -> showDateTimePicker(inputRegistrationEnd, calendar -> {
             registrationCloseEpochSec = calendar.getTimeInMillis() / 1000L;
+            updateSubmitButtonState();
         }));
 
         returnArrow.setOnClickListener(v -> getParentFragmentManager().popBackStack());
@@ -165,8 +204,83 @@ public class CreateEventFragment extends Fragment {
                         .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
                         .build()));
 
+        if (isEditMode) {
+            headerTitle.setText("Edit Event");
+            buttonCreateEvent.setText("Update Event");
+            loadEventForEdit();
+        } else {
+            headerTitle.setText("Create Event");
+            buttonCreateEvent.setText("Create Event");
+        }
+
+        setupFormStateTracking();
+        updateSubmitButtonState();
+
         buttonCreateEvent.setOnClickListener(v ->
                 uploadEventToFirebase());
+    }
+
+    private void loadEventForEdit() {
+        if (editEventId == null || editEventId.trim().isEmpty()) {
+            Log.d("CreateEvent", "Missing event Id for edit mode");
+            return;
+        }
+
+        OrganizerDatabaseManager organizerDBMan = new OrganizerDatabaseManager();
+        organizerDBMan.getEventById(editEventId)
+                .addOnSuccessListener(event -> {
+                    editingEvent = event;
+                    populateFieldsForEdit(event);
+                })
+                .addOnFailureListener(e ->
+                        Log.d("CreateEvent", "Failed to load event for edit", e));
+    }
+
+    private void populateFieldsForEdit(@NonNull Event event) {
+        inputEventName.setText(event.getName());
+        inputEventDescription.setText(event.getDescription());
+        inputEventLocation.setText(event.getLocationName());
+
+        eventStartEpochSec = event.getEventStartEpochSec();
+        eventEndEpochSec = event.getEventEndEpochSec();
+        registrationCloseEpochSec = event.getRegistrationCloseEpochSec();
+
+        inputEventStart.setText(displayDateFormat.format(eventStartEpochSec * 1000L));
+        inputEventEnd.setText(displayDateFormat.format(eventEndEpochSec * 1000L));
+        inputRegistrationEnd.setText(displayDateFormat.format(registrationCloseEpochSec * 1000L));
+
+        inputAttendanceLimit.setText(String.valueOf(event.getMaxWinnersToSample()));
+
+        Integer maxWaitingListSize = event.getMaxWaitingListSize();
+        if (maxWaitingListSize != null) {
+            checkLimitWaitlist.setChecked(true);
+            limitWaitlist.setEnabled(true);
+            limitWaitlist.setText(String.valueOf(maxWaitingListSize));
+        } else {
+            checkLimitWaitlist.setChecked(false);
+            limitWaitlist.setEnabled(false);
+            limitWaitlist.setText("");
+        }
+
+        checkGeoRequired.setChecked(event.isGeolocationRequired());
+
+        if (event.getTags() != null && !event.getTags().isEmpty() && event.getTags().get(0) != null) {
+            String criteriaText = event.getTags().get(0).getKeyword();
+            if ("General".equals(criteriaText)) {
+                criteriaText = "";
+            }
+            inputCriteria.setText(criteriaText);
+        }
+
+        if (event.getPosterPath() != null && !event.getPosterPath().trim().isEmpty()) {
+            File file = new File(requireContext().getFilesDir(), event.getPosterPath());
+            if (file.exists()) {
+                inputEventPoster.setImageURI(Uri.fromFile(file));
+                inputEventPoster.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            }
+        }
+
+        updateSubmitButtonState();
     }
 
     private void uploadEventToFirebase() {
@@ -238,7 +352,6 @@ public class CreateEventFragment extends Fragment {
             }
         }
 
-        // Placeholder values for fields not yet wired from UI/user profile
         SessionStore sessionStore = new SessionStore(requireContext());
         String organizerProfileId = sessionStore.getOrCreateDeviceId();
         double price = 0.00;
@@ -251,6 +364,49 @@ public class CreateEventFragment extends Fragment {
             tags.add(new Tag("General", "General"));
         } else {
             tags.add(new Tag("General", criteria));
+        }
+
+        OrganizerDatabaseManager organizerDBMan = new OrganizerDatabaseManager();
+
+        if (isEditMode) {
+            if (editingEvent == null) {
+                Log.d("CreateEvent", "Cannot update because editing event was not loaded");
+                return;
+            }
+
+            editingEvent.setName(name);
+            editingEvent.setDescription(description);
+            editingEvent.setLocationName(location);
+            editingEvent.setTags(tags);
+            editingEvent.setEventStartEpochSec(eventStartEpochSec);
+            editingEvent.setEventEndEpochSec(eventEndEpochSec);
+            editingEvent.setRegistrationCloseEpochSec(registrationCloseEpochSec);
+            editingEvent.setGeolocationRequired(geolocationRequired);
+            editingEvent.setMaxWaitingListSize(maxWaitingListSize);
+            editingEvent.setMaxWinnersToSample(maxWinnersToSample);
+
+            organizerDBMan.updateEvent(editingEvent)
+                    .addOnSuccessListener(unused -> {
+                        Log.d("CreateEvent", "Event updated successfully");
+
+                        if (selectedImageBytes != null) {
+                            organizerDBMan.updateEventPoster(editingEvent.getEventId(), selectedImageBytes, requireContext())
+                                    .addOnSuccessListener(path -> {
+                                        Log.d("CreateEvent", "Updated poster uploaded: " + path);
+                                        getParentFragmentManager().popBackStack();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.d("CreateEvent", "Updated poster upload failed", e);
+                                        getParentFragmentManager().popBackStack();
+                                    });
+                        } else {
+                            getParentFragmentManager().popBackStack();
+                        }
+                    })
+                    .addOnFailureListener(e ->
+                            Log.d("CreateEvent", "Event failed to update", e));
+
+            return;
         }
 
         Event event = new Event(
@@ -270,7 +426,6 @@ public class CreateEventFragment extends Fragment {
                 posterPath,
                 qrCodeId
         );
-        OrganizerDatabaseManager organizerDBMan = new OrganizerDatabaseManager();
         organizerDBMan.addEvent(event)
                 .addOnSuccessListener(param -> {
                     Log.d("CreateEvent", "Event added successfully to Firebase");
@@ -300,6 +455,181 @@ public class CreateEventFragment extends Fragment {
                 .addOnFailureListener(param -> {
                     Log.d("CreateEvent", "Event failed to add to Firebase");
                 });
+    }
+
+    private void setupFormStateTracking() {
+        TextWatcher watcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                updateSubmitButtonState();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        };
+
+        inputEventName.addTextChangedListener(watcher);
+        inputEventDescription.addTextChangedListener(watcher);
+        inputCriteria.addTextChangedListener(watcher);
+        inputEventLocation.addTextChangedListener(watcher);
+        inputAttendanceLimit.addTextChangedListener(watcher);
+        limitWaitlist.addTextChangedListener(watcher);
+    }
+
+    private void updateSubmitButtonState() {
+        boolean enabled = isFormReadyForSubmit() && (!isEditMode || hasFormChangedFromOriginal());
+        buttonCreateEvent.setEnabled(enabled);
+        buttonCreateEvent.setAlpha(enabled ? 1.0f : 0.5f);
+        buttonCreateEvent.setTextColor(ContextCompat.getColor(requireContext(), R.color.lighter_green));
+    }
+
+    private boolean isFormReadyForSubmit() {
+        String name = inputEventName.getText().toString().trim();
+        String description = inputEventDescription.getText().toString().trim();
+        String location = inputEventLocation.getText().toString().trim();
+        String attendanceLimitString = inputAttendanceLimit.getText().toString().trim();
+        String waitListLimitString = limitWaitlist.getText().toString().trim();
+
+        if (TextUtils.isEmpty(name)) {
+            return false;
+        }
+
+        if (TextUtils.isEmpty(description)) {
+            return false;
+        }
+
+        if (TextUtils.isEmpty(location)) {
+            return false;
+        }
+
+        if (eventStartEpochSec == 0) {
+            return false;
+        }
+
+        if (eventEndEpochSec == 0) {
+            return false;
+        }
+
+        if (registrationCloseEpochSec == 0) {
+            return false;
+        }
+
+        if (TextUtils.isEmpty(attendanceLimitString)) {
+            return false;
+        }
+
+        try {
+            int attendanceLimit = Integer.parseInt(attendanceLimitString);
+            if (attendanceLimit <= 0) {
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            return false;
+        }
+
+        if (checkLimitWaitlist.isChecked()) {
+            if (TextUtils.isEmpty(waitListLimitString)) {
+                return false;
+            }
+
+            try {
+                int waitListLimit = Integer.parseInt(waitListLimitString);
+                if (waitListLimit < 0) {
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean hasFormChangedFromOriginal() {
+        if (!isEditMode || editingEvent == null) {
+            return false;
+        }
+
+        String currentName = inputEventName.getText().toString().trim();
+        String currentDescription = inputEventDescription.getText().toString().trim();
+        String currentCriteria = inputCriteria.getText().toString().trim();
+        String currentLocation = inputEventLocation.getText().toString().trim();
+        String currentAttendanceLimit = inputAttendanceLimit.getText().toString().trim();
+        String currentWaitlistLimit = limitWaitlist.getText().toString().trim();
+
+        String originalCriteria = "";
+        if (editingEvent.getTags() != null
+                && !editingEvent.getTags().isEmpty()
+                && editingEvent.getTags().get(0) != null
+                && editingEvent.getTags().get(0).getKeyword() != null) {
+            originalCriteria = editingEvent.getTags().get(0).getKeyword().trim();
+            if ("General".equals(originalCriteria)) {
+                originalCriteria = "";
+            }
+        }
+
+        String originalAttendanceLimit = String.valueOf(editingEvent.getMaxWinnersToSample());
+
+        Integer originalMaxWaitingListSize = editingEvent.getMaxWaitingListSize();
+        boolean originalWaitlistLimited = originalMaxWaitingListSize != null;
+        String originalWaitlistLimit = originalWaitlistLimited
+                ? String.valueOf(originalMaxWaitingListSize)
+                : "";
+
+        if (!currentName.equals(editingEvent.getName() == null ? "" : editingEvent.getName().trim())) {
+            return true;
+        }
+
+        if (!currentDescription.equals(editingEvent.getDescription() == null ? "" : editingEvent.getDescription().trim())) {
+            return true;
+        }
+
+        if (!currentLocation.equals(editingEvent.getLocationName() == null ? "" : editingEvent.getLocationName().trim())) {
+            return true;
+        }
+
+        if (!currentCriteria.equals(originalCriteria)) {
+            return true;
+        }
+
+        if (eventStartEpochSec != editingEvent.getEventStartEpochSec()) {
+            return true;
+        }
+
+        if (eventEndEpochSec != editingEvent.getEventEndEpochSec()) {
+            return true;
+        }
+
+        if (registrationCloseEpochSec != editingEvent.getRegistrationCloseEpochSec()) {
+            return true;
+        }
+
+        if (!currentAttendanceLimit.equals(originalAttendanceLimit)) {
+            return true;
+        }
+
+        if (checkGeoRequired.isChecked() != editingEvent.isGeolocationRequired()) {
+            return true;
+        }
+
+        if (checkLimitWaitlist.isChecked() != originalWaitlistLimited) {
+            return true;
+        }
+
+        if (checkLimitWaitlist.isChecked() && !currentWaitlistLimit.equals(originalWaitlistLimit)) {
+            return true;
+        }
+
+        if (selectedImageBytes != null) {
+            return true;
+        }
+
+        return false;
     }
 
     private interface OnDateTimeSelectedListener {

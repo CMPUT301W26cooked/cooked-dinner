@@ -157,6 +157,8 @@ public class OrganizerEventDetailFragment extends Fragment {
         Button editEventButton = view.findViewById(R.id.edit_event_button);
         Button cancelEventButton = view.findViewById(R.id.cancel_event_button);
 
+        boolean eventOver = hasEventStarted();
+
         detailTitle.setText("Event Details");
         eventNameText.setText(eventName);
         eventOrganization.setText("Organization Name");
@@ -188,8 +190,25 @@ public class OrganizerEventDetailFragment extends Fragment {
                     .commit();
         });
 
+        editEventButton.setEnabled(!eventOver);
+        editEventButton.setAlpha(eventOver ? 0.5f : 1.0f);
+
+        cancelEventButton.setEnabled(!eventOver);
+        cancelEventButton.setAlpha(eventOver ? 0.5f : 1.0f);
+
         editEventButton.setOnClickListener(v -> {
-            // TODO: replace with organizer edit event screen later
+            if (eventId == null || eventId.trim().isEmpty()) {
+                return;
+            }
+
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .replace(
+                            R.id.organizer_fragment_container,
+                            CreateEventFragment.newEditInstance(eventId)
+                    )
+                    .addToBackStack(null)
+                    .commit();
         });
 
         cancelEventButton.setOnClickListener(v -> cancelEvent());
@@ -216,6 +235,16 @@ public class OrganizerEventDetailFragment extends Fragment {
                     getParentFragmentManager().popBackStack();
                 })
                 .addOnFailureListener(e -> getParentFragmentManager().popBackStack());
+    }
+
+    /**
+     * Returns true when this event should be treated as over should be same as module behavior
+     *
+     * @return true if the event has started
+     */
+    private boolean hasEventStarted() {
+        long nowEpochSec = System.currentTimeMillis() / 1000L;
+        return nowEpochSec >= eventStart;
     }
 
     /**

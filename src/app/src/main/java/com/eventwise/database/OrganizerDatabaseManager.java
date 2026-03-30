@@ -60,6 +60,28 @@ public class OrganizerDatabaseManager extends DatabaseManager{
         return super.addEvent(event);
     }
 
+    /**
+     * Updates an existing event in the database.
+     *
+     * @param event The {@link Event} object containing the updated details.
+     * @return A {@link Task} that completes when the event is updated.
+     */
+    public Task<Void> updateEvent(@NonNull Event event) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+            tcs.setException(new DatabaseException("Event Id is null"));
+            return tcs.getTask();
+        }
+
+        events.document(event.getEventId()).set(event)
+                .addOnSuccessListener(unused -> tcs.setResult(null))
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Failed to update event")));
+
+        return tcs.getTask();
+    }
+
     //**************************************************************************************************
     // *                                            Lists
     // *************************************************************************************************/

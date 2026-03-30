@@ -20,6 +20,7 @@ import com.eventwise.database.NotificationSearcherDataBaseManager;
 import com.eventwise.database.SessionStore;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -97,6 +98,11 @@ public class OrganizerNotificationsFragment extends Fragment {
                     notificationList.clear();
                     if (returnedList != null) {
                         notificationList.addAll(returnedList);
+                        Collections.sort(notificationList, (first, second) -> {
+                            long firstTimestamp = first != null && first.getTimestamp() != null ? first.getTimestamp() : Long.MIN_VALUE;
+                            long secondTimestamp = second != null && second.getTimestamp() != null ? second.getTimestamp() : Long.MIN_VALUE;
+                            return Long.compare(secondTimestamp, firstTimestamp);
+                        });
                     }
                     notificationAdapter.notifyDataSetChanged();
 
