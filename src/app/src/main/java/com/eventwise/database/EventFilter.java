@@ -43,6 +43,9 @@ import java.util.EnumSet;
             }
         }
 
+        public EventFilter(){
+            filterTypes = EnumSet.noneOf(FilterType.class);
+        }
         public Long getStartTimestamp() {
             return startTimestamp;
         }
@@ -62,4 +65,85 @@ import java.util.EnumSet;
         }
 
         public Tag getTag() { return tag; }
+
+        public void resetFilter(){
+            filterTypes.clear();
+            startTimestamp = null;
+            endTimestamp = null;
+            eventCapacity = null;
+            tag = null;
+            keywords = null;
+        }
+
+        public void resetStartTimestamp(){
+            filterTypes.remove(FilterType.START_TIMESTAMP);
+            startTimestamp = null;
+        }
+        public void resetEndTimestamp(){
+            filterTypes.remove(FilterType.END_TIMESTAMP);
+            endTimestamp = null;
+        }
+        public void resetEventCapacity(){
+            filterTypes.remove(FilterType.EVENT_CAPACITY);
+            eventCapacity = null;
+        }
+        public void resetKeywords(){
+            filterTypes.remove(FilterType.KEYWORDS);
+            keywords = null;
+        }
+        public void resetTag(){
+            filterTypes.remove(FilterType.TAG);
+            tag = null;
+        }
+
+
+
+        public void setStartTimestamp(Long startTimestamp) {
+            if (startTimestamp != null){
+                this.startTimestamp = startTimestamp;
+                filterTypes.add(FilterType.START_TIMESTAMP);
+            }
+            else{
+                resetStartTimestamp();
+            }
+
+        }
+        public void setEndTimestamp(Long endTimestamp) {
+            if (endTimestamp != null){
+                this.endTimestamp = endTimestamp;
+                filterTypes.add(FilterType.END_TIMESTAMP);
+            }
+            else {
+                resetEndTimestamp();
+            }
+        }
+        public void setEventCapacity(Integer eventCapacity) {
+            if (eventCapacity != null){
+                this.eventCapacity = eventCapacity;
+                filterTypes.add(FilterType.EVENT_CAPACITY);
+            }
+            else {
+                resetEventCapacity();
+            }
+        }
+
+        public void setKeywords(ArrayList<String> keywords) {
+            if (keywords != null){
+                this.keywords = keywords;
+                filterTypes.add(FilterType.KEYWORDS);
+            }
+            else {
+                resetKeywords();
+            }
+        }
+
+        public void setTag(Tag tag) {
+            if (tag != null){
+                this.tag = tag;
+                filterTypes.add(FilterType.TAG);
+            }
+            else {
+                resetTag();
+            }
+        }
     }

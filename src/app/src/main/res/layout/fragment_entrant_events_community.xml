@@ -9,24 +9,91 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/bacon_color">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/events_community_list_view"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="@dimen/spacing_lg" />
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/empty_events_community_list"
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="#FFF3F6E5"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp">
+
+            <EditText
+                android:id="@+id/search_bar"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:background="@drawable/create_new_shape"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:hint="Search events..."
+                android:textSize="14sp"
+                android:textColor="#FF333333"
+                android:textColorHint="#FF999999"
+                android:inputType="text"
+                android:imeOptions="actionSearch"
+                android:singleLine="true" />
+
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/events_community_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="@dimen/spacing_lg" />
+
+        <LinearLayout
+            android:id="@+id/empty_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No events match your filters"
+                android:textSize="16sp"
+                android:textColor="#FF999999" />
+
+        </LinearLayout>
+
+
+
+        <TextView
+            android:id="@+id/empty_events_community_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/empty_list_message"
+            android:textColor="@color/forest_green"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- Floating Filter Button -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_filter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/empty_list_message"
-        android:textColor="@color/forest_green"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:visibility="gone" />
-
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@drawable/outline_filter"
+        android:contentDescription="Filter"
+        app:backgroundTint="@color/moss_green"
+        app:tint="@color/weird_piss" />
 </FrameLayout>

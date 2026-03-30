@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#FFF3F6E5"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="32dp">
+
+    <!-- Handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:background="#FFCCCCCC"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="20dp" />
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Filter Events"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#FF333333"
+        android:layout_marginBottom="24dp" />
+
+    <!-- Date Section -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Date Range"
+        android:textSize="14sp"
+        android:textColor="#FF666666"
+        android:layout_marginBottom="10dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <!-- Start Date -->
+        <LinearLayout
+            android:id="@+id/start_date_picker"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="@drawable/create_new_shape"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp">
+
+            <TextView
+                android:id="@+id/start_date_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Start Date"
+                android:textSize="13sp"
+                android:textColor="#FF333333" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="→"
+            android:textSize="16sp"
+            android:textColor="#FF666666"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp" />
+
+        <!-- End Date -->
+        <LinearLayout
+            android:id="@+id/end_date_picker"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="@drawable/create_new_shape"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp">
+
+            <TextView
+                android:id="@+id/end_date_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="End Date"
+                android:textSize="13sp"
+                android:textColor="#FF333333" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Spots Section -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Minimum Free Spots"
+        android:textSize="14sp"
+        android:textColor="#FF666666"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/spots_value_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Any"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#FF333333"
+        android:layout_marginBottom="8dp" />
+
+    <SeekBar
+        android:id="@+id/spots_slider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="50"
+        android:progress="0" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Any"
+            android:textSize="12sp"
+            android:textColor="#FF999999" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="50+"
+            android:textSize="12sp"
+            android:textColor="#FF999999" />
+
+    </LinearLayout>
+
+    <!-- Apply Button -->
+    <LinearLayout
+        android:id="@+id/apply_button"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="@drawable/create_new_shape"
+        android:layout_marginTop="32dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Apply Filters"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="#FFF3F6E5" />
+
+    </LinearLayout>
+
+</LinearLayout>
