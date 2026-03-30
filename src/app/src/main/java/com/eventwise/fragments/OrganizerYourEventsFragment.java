@@ -21,6 +21,7 @@ import com.eventwise.database.OrganizerDatabaseManager;
 import com.eventwise.database.SessionStore;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -128,6 +129,7 @@ public class OrganizerYourEventsFragment extends Fragment {
                     eventList.clear();
                     if (returnedList != null) {
                         eventList.addAll(returnedList);
+                        Collections.sort(eventList, (first, second) -> Long.compare(second.getEventStartEpochSec(), first.getEventStartEpochSec()));
                     }
                     eventAdapter.notifyDataSetChanged();
                 })
@@ -161,7 +163,16 @@ public class OrganizerYourEventsFragment extends Fragment {
      * @param event event to open
      */
     private void openEditEvent(Event event) {
-        openEventDetail(event);
+        if (event == null || event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+            Log.e("OrganizerEvents", "Cannot open edit because eventId is null or empty");
+            return;
+        }
+
+        getParentFragmentManager()
+                .beginTransaction()
+                .replace(R.id.organizer_fragment_container, CreateEventFragment.newEditInstance(event.getEventId()))
+                .addToBackStack(null)
+                .commit();
     }
 
     // ====== New method start ======

@@ -358,7 +358,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/view_entrants"
+                android:text="Entrant Actions"
                 android:textSize="14sp"
                 android:textColor="@color/lighter_green"
                 android:backgroundTint="@color/moss_green"

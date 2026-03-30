@@ -8,22 +8,28 @@ import androidx.annotation.NonNull;
 import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.EventEntrantStatus;
+import com.eventwise.Notification;
 import com.eventwise.Profile;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
+import com.google.android.gms.tasks.Tasks;
 import com.google.common.collect.Lists;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
+
 /**
  * Manages database operations specific to Organizers, including event creation,
  * and getting Organizers in lists. This class extends {@link DatabaseManager}
@@ -52,6 +58,28 @@ public class OrganizerDatabaseManager extends DatabaseManager{
      */
     public Task<Void> addEvent(Event event) throws DatabaseException {
         return super.addEvent(event);
+    }
+
+    /**
+     * Updates an existing event in the database.
+     *
+     * @param event The {@link Event} object containing the updated details.
+     * @return A {@link Task} that completes when the event is updated.
+     */
+    public Task<Void> updateEvent(@NonNull Event event) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+            tcs.setException(new DatabaseException("Event Id is null"));
+            return tcs.getTask();
+        }
+
+        events.document(event.getEventId()).set(event)
+                .addOnSuccessListener(unused -> tcs.setResult(null))
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Failed to update event")));
+
+        return tcs.getTask();
     }
 
     //**************************************************************************************************
@@ -247,10 +275,30 @@ public class OrganizerDatabaseManager extends DatabaseManager{
                                                  String eventId,
                                                  EventEntrantStatus status,
                                                  long timestamp) {
+        ArrayList<String> entrantIds = new ArrayList<>();
+        entrantIds.add(entrantId);
+        return setEntrantsStatusForEvent(entrantIds, eventId, status, timestamp);
+    }
+
+    /**
+     * Sets many entrants to one status for one event in one shared batch flow.
+     *
+     * This keeps the event document and entrant profile documents in sync.
+     *
+     * @param entrantIds entrant ids to update
+     * @param eventId event id
+     * @param status new status
+     * @param timestamp epoch seconds
+     * @return task that completes when updates are saved
+     */
+    public Task<Void> setEntrantsStatusForEvent(ArrayList<String> entrantIds,
+                                                String eventId,
+                                                EventEntrantStatus status,
+                                                long timestamp) {
         TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
-        if (entrantId == null || entrantId.trim().isEmpty()) {
-            tcs.setException(new DatabaseException("Entrant Id is null"));
+        if (entrantIds == null || entrantIds.isEmpty()) {
+            tcs.setResult(null);
             return tcs.getTask();
         }
 
@@ -265,8 +313,8 @@ public class OrganizerDatabaseManager extends DatabaseManager{
         }
 
         events.document(eventId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    Event event = documentSnapshot.toObject(Event.class);
+                .addOnSuccessListener(eventSnapshot -> {
+                    Event event = eventSnapshot.toObject(Event.class);
 
                     if (event == null) {
                         tcs.setException(new DatabaseException("Event not found"));
@@ -274,20 +322,473 @@ public class OrganizerDatabaseManager extends DatabaseManager{
                     }
 
                     if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
-                        event.setEventId(documentSnapshot.getId());
+                        event.setEventId(eventSnapshot.getId());
                     }
 
-                    event.addOrUpdateEntrantStatus(entrantId, status, timestamp);
+                    ArrayList<Task<DocumentSnapshot>> profileTasks = new ArrayList<>();
 
-                    events.document(eventId)
-                            .set(event)
-                            .addOnSuccessListener(unused -> tcs.setResult(null))
+                    for (String entrantId : entrantIds) {
+                        if (entrantId != null && !entrantId.trim().isEmpty()) {
+                            profileTasks.add(profiles.document(entrantId).get());
+                        }
+                    }
+
+                    if (profileTasks.isEmpty()) {
+                        tcs.setResult(null);
+                        return;
+                    }
+
+                    Tasks.whenAllComplete(profileTasks)
+                            .addOnSuccessListener(profileResults -> {
+                                WriteBatch batch = db.batch();
+                                boolean hasAnyUpdates = false;
+
+                                for (Task<?> profileTask : profileResults) {
+                                    if (!profileTask.isSuccessful()) {
+                                        tcs.setException(new DatabaseException("Error getting Entrant"));
+                                        return;
+                                    }
+
+                                    DocumentSnapshot profileSnapshot =
+                                            (DocumentSnapshot) profileTask.getResult();
+
+                                    if (profileSnapshot == null || !profileSnapshot.exists()) {
+                                        continue;
+                                    }
+
+                                    Entrant entrant = profileSnapshot.toObject(Entrant.class);
+                                    if (entrant == null) {
+                                        continue;
+                                    }
+
+                                    String entrantId = profileSnapshot.getId();
+
+                                    event.addOrUpdateEntrantStatus(entrantId, status, timestamp);
+                                    entrant.addOrUpdateEventState(eventId, status, timestamp);
+
+                                    batch.set(profileSnapshot.getReference(), entrant);
+                                    hasAnyUpdates = true;
+                                }
+
+                                if (!hasAnyUpdates) {
+                                    tcs.setResult(null);
+                                    return;
+                                }
+
+                                batch.set(events.document(eventId), event);
+
+                                batch.commit()
+                                        .addOnSuccessListener(unused -> tcs.setResult(null))
+                                        .addOnFailureListener(e ->
+                                                tcs.setException(new DatabaseException("Failed to update entrant statuses")));
+                            })
                             .addOnFailureListener(e ->
-                                    tcs.setException(new DatabaseException("Failed to update entrant status")));
+                                    tcs.setException(new DatabaseException("Failed to load entrant profiles")));
                 })
                 .addOnFailureListener(e ->
                         tcs.setException(new DatabaseException("Failed to load event")));
 
         return tcs.getTask();
+    }
+
+    /**
+     * Returns one event by id and restores the Firestore document id if needed.
+     *
+     * @param eventId event id
+     * @return matching event
+     */
+    public Task<Event> getEventById(String eventId) {
+        TaskCompletionSource<Event> tcs = new TaskCompletionSource<>();
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("Event Id is null"));
+            return tcs.getTask();
+        }
+
+        events.document(eventId).get()
+                .addOnSuccessListener(eventSnapshot -> {
+                    Event event = eventSnapshot.toObject(Event.class);
+
+                    if (event == null) {
+                        tcs.setException(new DatabaseException("Event not found"));
+                        return;
+                    }
+
+                    if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+                        event.setEventId(eventSnapshot.getId());
+                    }
+
+                    tcs.setResult(event);
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Failed to load event")));
+
+        return tcs.getTask();
+    }
+
+    /**
+     * Manually puts entrants onto the waitlist for one event.
+     */
+    public Task<Void> waitlistEntrants(String eventId, ArrayList<String> entrantIds) {
+        long timestamp = System.currentTimeMillis() / 1000L;
+        return setEntrantsStatusForEvent(entrantIds, eventId, EventEntrantStatus.WAITLISTED, timestamp);
+    }
+
+    /**
+     * Manually removes entrants from the waitlist for one event.
+     */
+    public Task<Void> removeWaitlistEntrants(String eventId, ArrayList<String> entrantIds) {
+        long timestamp = System.currentTimeMillis() / 1000L;
+        return setEntrantsStatusForEvent(entrantIds, eventId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
+    }
+
+    /**
+     * Manually invites entrants for one event and sends the selected notification.
+     */
+    public Task<Void> inviteEntrants(String eventId, ArrayList<String> entrantIds) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        getEventById(eventId)
+                .addOnSuccessListener(event -> {
+                    long timestamp = System.currentTimeMillis() / 1000L;
+
+                    setEntrantsStatusForEvent(entrantIds, eventId, EventEntrantStatus.INVITED, timestamp)
+                            .addOnSuccessListener(unused ->
+                                    sendEntrantNotification(
+                                            entrantIds,
+                                            event,
+                                            Notification.NotificationType.INVITED,
+                                            "You Were Selected",
+                                            "You were selected for " + event.getName() + ". Please accept or decline your invitation."
+                                    ).addOnSuccessListener(unused2 -> tcs.setResult(null))
+                                            .addOnFailureListener(e -> {
+                                                Log.e("OrganizerDB", "Failed to send invite notifications", e);
+                                                tcs.setResult(null);
+                                            })
+                            )
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Failed to invite entrants")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Failed to load event")));
+
+        return tcs.getTask();
+    }
+
+    /**
+     * Manually removes invited entrants and sends an invitation cancelled notification.
+     */
+    public Task<Void> removeInviteEntrants(String eventId, ArrayList<String> entrantIds) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        getEventById(eventId)
+                .addOnSuccessListener(event -> {
+                    long timestamp = System.currentTimeMillis() / 1000L;
+
+                    setEntrantsStatusForEvent(entrantIds, eventId, EventEntrantStatus.CANCELLED, timestamp)
+                            .addOnSuccessListener(unused ->
+                                    sendEntrantNotification(
+                                            entrantIds,
+                                            event,
+                                            Notification.NotificationType.CANCELLED,
+                                            "Invitation Cancelled",
+                                            "Your invitation for " + event.getName() + " was cancelled."
+                                    ).addOnSuccessListener(unused2 -> tcs.setResult(null))
+                                            .addOnFailureListener(e -> {
+                                                Log.e("OrganizerDB", "Failed to send invitation cancelled notifications", e);
+                                                tcs.setResult(null);
+                                            })
+                            )
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Failed to remove invited entrants")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Failed to load event")));
+
+        return tcs.getTask();
+    }
+
+    /**
+     * Manually enrolls entrants and sends a notification.
+     */
+    public Task<Void> enrollEntrants(String eventId, ArrayList<String> entrantIds) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        getEventById(eventId)
+                .addOnSuccessListener(event -> {
+                    long timestamp = System.currentTimeMillis() / 1000L;
+
+                    setEntrantsStatusForEvent(entrantIds, eventId, EventEntrantStatus.ENROLLED, timestamp)
+                            .addOnSuccessListener(unused ->
+                                    sendEntrantNotification(
+                                            entrantIds,
+                                            event,
+                                            Notification.NotificationType.OTHER,
+                                            "You Are Enrolled",
+                                            "You are enrolled in " + event.getName() + "."
+                                    ).addOnSuccessListener(unused2 -> tcs.setResult(null))
+                                            .addOnFailureListener(e -> {
+                                                Log.e("OrganizerDB", "Failed to send enrolled notifications", e);
+                                                tcs.setResult(null);
+                                            })
+                            )
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Failed to enroll entrants")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Failed to load event")));
+
+        return tcs.getTask();
+    }
+
+    /**
+     * Manually removes enrolled entrants and sends a cancellation notification.
+     */
+    public Task<Void> removeEnrollEntrants(String eventId, ArrayList<String> entrantIds) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        getEventById(eventId)
+                .addOnSuccessListener(event -> {
+                    long timestamp = System.currentTimeMillis() / 1000L;
+
+                    setEntrantsStatusForEvent(entrantIds, eventId, EventEntrantStatus.CANCELLED, timestamp)
+                            .addOnSuccessListener(unused ->
+                                    sendEntrantNotification(
+                                            entrantIds,
+                                            event,
+                                            Notification.NotificationType.CANCELLED,
+                                            "Enrollment Cancelled",
+                                            "Your enrollment for " + event.getName() + " was cancelled."
+                                    ).addOnSuccessListener(unused2 -> tcs.setResult(null))
+                                            .addOnFailureListener(e -> {
+                                                Log.e("OrganizerDB", "Failed to send enrollment cancelled notifications", e);
+                                                tcs.setResult(null);
+                                            })
+                            )
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Failed to remove enrolled entrants")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Failed to load event")));
+
+        return tcs.getTask();
+    }
+
+    /**
+     * Draws from the current waitlist and moves selected entrants to invited.
+     *
+     * This fills as many open spots as possible. Entrants not selected remain
+     * waitlisted, but can still receive a "not selected this draw" notification.
+     *
+     * @param eventId event id
+     * @return task that completes when the draw is done
+     */
+    public Task<Void> drawEntrants(String eventId) {
+        return drawFromWaitlist(eventId, true);
+    }
+
+    /**
+     * Re-draws from the current waitlist to fill remaining open spots.
+     *
+     * @param eventId event id
+     * @return task that completes when the re-draw is done
+     */
+    public Task<Void> redrawEntrants(String eventId) {
+        return drawFromWaitlist(eventId, false);
+    }
+
+    /**
+     * Cancels all currently invited entrants for one event.
+     *
+     * @param eventId event id
+     * @return task that completes when invitees are cancelled
+     */
+    public Task<Void> cancelInvitees(String eventId) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("Event Id is null"));
+            return tcs.getTask();
+        }
+
+        events.document(eventId).get()
+                .addOnSuccessListener(eventSnapshot -> {
+                    Event event = eventSnapshot.toObject(Event.class);
+
+                    if (event == null) {
+                        tcs.setException(new DatabaseException("Event not found"));
+                        return;
+                    }
+
+                    if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+                        event.setEventId(eventSnapshot.getId());
+                    }
+
+                    ArrayList<String> invitedIds = event.getEntrantIdsByStatus(EventEntrantStatus.INVITED);
+
+                    if (invitedIds.isEmpty()) {
+                        tcs.setResult(null);
+                        return;
+                    }
+
+                    long timestamp = System.currentTimeMillis() / 1000L;
+
+                    setEntrantsStatusForEvent(invitedIds, eventId, EventEntrantStatus.CANCELLED, timestamp)
+                            .addOnSuccessListener(unused -> {
+                                sendEntrantNotification(
+                                        invitedIds,
+                                        event,
+                                        Notification.NotificationType.CANCELLED,
+                                        "Invitation Cancelled",
+                                        "Your invitation for " + event.getName() + " was cancelled."
+                                ).addOnSuccessListener(unused2 -> tcs.setResult(null))
+                                        .addOnFailureListener(e -> {
+                                            Log.e("OrganizerDB", "Failed to send invitation cancelled notifications", e);
+                                            tcs.setResult(null);
+                                        });
+                            })
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Failed to cancel invitees")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Failed to load event")));
+
+        return tcs.getTask();
+    }
+
+    /**
+     * Shared draw helper used by draw and re-draw.
+     *
+     * @param eventId event id
+     * @param notifyNonSelected true for initial draw, false for re-draw
+     * @return task that completes when draw work is done
+     */
+    private Task<Void> drawFromWaitlist(String eventId, boolean notifyNonSelected) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("Event Id is null"));
+            return tcs.getTask();
+        }
+
+        events.document(eventId).get()
+                .addOnSuccessListener(eventSnapshot -> {
+                    Event event = eventSnapshot.toObject(Event.class);
+
+                    if (event == null) {
+                        tcs.setException(new DatabaseException("Event not found"));
+                        return;
+                    }
+
+                    if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+                        event.setEventId(eventSnapshot.getId());
+                    }
+
+                    ArrayList<String> waitlistedIds = event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED);
+
+                    int currentlyInvitedCount = event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).size();
+                    int currentlyEnrolledCount = event.getEnrolledCount();
+                    int openSpots = event.getMaxWinnersToSample() - currentlyInvitedCount - currentlyEnrolledCount;
+
+                    if (openSpots <= 0 || waitlistedIds.isEmpty()) {
+                        tcs.setResult(null);
+                        return;
+                    }
+
+                    Collections.shuffle(waitlistedIds);
+
+                    int selectedCount = Math.min(openSpots, waitlistedIds.size());
+
+                    ArrayList<String> selectedIds = new ArrayList<>(waitlistedIds.subList(0, selectedCount));
+                    ArrayList<String> notSelectedIds = new ArrayList<>();
+
+                    if (selectedCount < waitlistedIds.size()) {
+                        notSelectedIds.addAll(waitlistedIds.subList(selectedCount, waitlistedIds.size()));
+                    }
+
+                    long timestamp = System.currentTimeMillis() / 1000L;
+
+                    setEntrantsStatusForEvent(selectedIds, eventId, EventEntrantStatus.INVITED, timestamp)
+                            .addOnSuccessListener(unused -> {
+                                ArrayList<Task<Void>> notificationTasks = new ArrayList<>();
+
+                                notificationTasks.add(sendEntrantNotification(
+                                        selectedIds,
+                                        event,
+                                        Notification.NotificationType.INVITED,
+                                        "You Were Selected",
+                                        "You were selected for " + event.getName() + ". Please accept or decline your invitation."
+                                ));
+
+                                if (notifyNonSelected && !notSelectedIds.isEmpty()) {
+                                    notificationTasks.add(sendEntrantNotification(
+                                            notSelectedIds,
+                                            event,
+                                            Notification.NotificationType.NOT_CHOSEN,
+                                            "Not Selected This Draw",
+                                            "You were not selected in this draw for " + event.getName() + ". You are still on the waitlist."
+                                    ));
+                                }
+
+                                Tasks.whenAllComplete(notificationTasks)
+                                        .addOnSuccessListener(tasks -> {
+                                            for (Task<?> task : tasks) {
+                                                if (!task.isSuccessful()) {
+                                                    Log.e("OrganizerDB", "A draw notification failed", task.getException());
+                                                }
+                                            }
+                                            tcs.setResult(null);
+                                        })
+                                        .addOnFailureListener(e -> tcs.setResult(null));
+                            })
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Failed to draw entrants")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Failed to load event")));
+
+        return tcs.getTask();
+    }
+
+    /**
+     * Sends one notification to many entrant profiles.
+     *
+     * Notification delivery still respects notificationsEnabled because that filtering
+     * happens inside NotificationDatabaseManager.createNotification().
+     *
+     * @param recipientIds recipient profile ids
+     * @param event event context
+     * @param type notification type
+     * @param title notification title
+     * @param message notification message
+     * @return task that completes when notification work is attempted
+     */
+    private Task<Void> sendEntrantNotification(ArrayList<String> recipientIds,
+                                               Event event,
+                                               Notification.NotificationType type,
+                                               String title,
+                                               String message) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (recipientIds == null || recipientIds.isEmpty()) {
+            tcs.setResult(null);
+            return tcs.getTask();
+        }
+
+        Notification notification = new Notification();
+        notification.setNotificationId(UUID.randomUUID().toString());
+        notification.setRecipientRole(Notification.RecipientRole.ENTRANT);
+        notification.setEntrantIds(recipientIds);
+        notification.setOrganizerId(event.getOrganizerProfileId());
+        notification.setEventId(event.getEventId());
+        notification.setMessageTitle(title);
+        notification.setMessageBody(message);
+        notification.setType(type);
+        notification.setTimestamp(System.currentTimeMillis() / 1000L);
+
+        NotificationDatabaseManager notificationDatabaseManager =
+                new NotificationDatabaseManager(super.db);
+
+        return notificationDatabaseManager.createNotification(notification);
     }
 }

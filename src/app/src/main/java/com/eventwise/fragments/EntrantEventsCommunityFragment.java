@@ -21,6 +21,7 @@ import com.eventwise.database.EventSearcherDatabaseManager;
 import com.eventwise.database.SessionStore;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import com.eventwise.Notification;
 import com.eventwise.database.NotificationDatabaseManager;
@@ -152,6 +153,11 @@ public class EntrantEventsCommunityFragment extends Fragment {
                 .addOnSuccessListener(returnedList -> {
                     eventList.clear();
                     eventList.addAll(returnedList);
+
+                    Collections.sort(eventList, (eventOne, eventTwo) ->
+                            Long.compare(eventTwo.getEventStartEpochSec(), eventOne.getEventStartEpochSec())
+                    );
+
                     eventAdapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {

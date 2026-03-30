@@ -21,6 +21,7 @@ import com.eventwise.database.EventSearcherDatabaseManager;
 import com.eventwise.database.SessionStore;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -152,10 +153,15 @@ public class EntrantMyEventsFragment extends Fragment {
                                 && (
                                 event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(entrantId)
                                         || event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).contains(entrantId)
+                                        || event.getEntrantIdsByStatus(EventEntrantStatus.ENROLLED).contains(entrantId)
                         )) {
                             eventList.add(event);
                         }
                     }
+
+                    Collections.sort(eventList, (eventOne, eventTwo) ->
+                            Long.compare(eventTwo.getEventStartEpochSec(), eventOne.getEventStartEpochSec())
+                    );
 
                     eventAdapter.notifyDataSetChanged();
                 })
@@ -177,10 +183,10 @@ public class EntrantMyEventsFragment extends Fragment {
 
         EntrantDatabaseManager db = new EntrantDatabaseManager();
 
-        event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.ACCEPTED, timestamp);
+        event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.ENROLLED, timestamp);
         eventAdapter.notifyDataSetChanged();
 
-        db.registerEntrantInEvent(entrantId, event.getEventId(), timestamp)
+        db.setEntrantStatusForEvent(entrantId, event.getEventId(), EventEntrantStatus.ENROLLED, timestamp)
                 .addOnSuccessListener(unused -> {
                     Log.d("Event", "Successfully accepted: " + event.getName());
                     refreshEvents();
@@ -204,10 +210,10 @@ public class EntrantMyEventsFragment extends Fragment {
 
         EntrantDatabaseManager db = new EntrantDatabaseManager();
 
-        event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
+        event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.DECLINED, timestamp);
         eventAdapter.notifyDataSetChanged();
 
-        db.unregisterEntrantInEvent(entrantId, event.getEventId(), timestamp)
+        db.setEntrantStatusForEvent(entrantId, event.getEventId(), EventEntrantStatus.DECLINED, timestamp)
                 .addOnSuccessListener(unused -> {
                     Log.d("Event", "Successfully declined: " + event.getName());
                     refreshEvents();
@@ -220,6 +226,33 @@ public class EntrantMyEventsFragment extends Fragment {
                 });
     }
 
+    private void leaveEnrolledEvent(Event event) {
+        String entrantId = getCurrentEntrantId();
+        long timestamp = System.currentTimeMillis() / 1000L;
+
+        if (entrantId == null || entrantId.trim().isEmpty()) {
+            Log.e("Event", "Leave enrolled failed: entrant Id is null");
+            return;
+        }
+
+        EntrantDatabaseManager db = new EntrantDatabaseManager();
+
+        event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.CANCELLED, timestamp);
+        eventAdapter.notifyDataSetChanged();
+
+        db.setEntrantStatusForEvent(entrantId, event.getEventId(), EventEntrantStatus.CANCELLED, timestamp)
+                .addOnSuccessListener(unused -> {
+                    Log.d("Event", "Successfully left enrolled event: " + event.getName());
+                    refreshEvents();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Event", "Leave enrolled failed", e);
+
+                    event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.ENROLLED, timestamp);
+                    eventAdapter.notifyDataSetChanged();
+                });
+    }
+
     private void primaryButton(Event event) {
         String entrantId = getCurrentEntrantId();
 
@@ -227,6 +260,8 @@ public class EntrantMyEventsFragment extends Fragment {
             acceptEvent(event);
         } else if (event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(entrantId)) {
             leaveEvent(event);
+        } else if (event.getEntrantIdsByStatus(EventEntrantStatus.ENROLLED).contains(entrantId)) {
+            leaveEnrolledEvent(event);
         }
     }
 

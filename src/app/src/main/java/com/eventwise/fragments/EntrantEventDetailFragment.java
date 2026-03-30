@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -27,7 +28,7 @@ import java.util.Locale;
 /**
  * Shows the entrant event detail page.
  *
- * This page lets an entrant view event details and join or leave the waitlist.
+ * This page lets an entrant view event details and act on the event in their current state.
  *
  * @author Becca Irving
  * @since Mar 16 2026
@@ -61,15 +62,14 @@ public class EntrantEventDetailFragment extends Fragment {
     private TextView eventLocationName;
     private TextView eventLocationCity;
     private TextView eventGuidelines;
-    private TextView waitlistedStatusText;
+    private TextView detailStatusText;
 
-    private Button eventActionButton;
+    private LinearLayout eventActionRow;
+    private Button eventPrimaryButton;
+    private Button eventSecondaryButton;
 
     /**
      * Makes the entrant event detail fragment.
-     *
-     * @author Becca Irving
-     * @since Mar 16 2026
      */
     public EntrantEventDetailFragment() {
         super(R.layout.fragment_entrant_event_detail);
@@ -81,9 +81,6 @@ public class EntrantEventDetailFragment extends Fragment {
      * @param eventId event Id to open
      * @param entrantId entrant Id using the page
      * @return configured detail fragment
-     *
-     * @author Becca Irving
-     * @since Mar 16 2026
      */
     public static EntrantEventDetailFragment newInstance(@NonNull String eventId, @NonNull String entrantId) {
         EntrantEventDetailFragment fragment = new EntrantEventDetailFragment();
@@ -98,9 +95,6 @@ public class EntrantEventDetailFragment extends Fragment {
      * Reads the passed event Id and entrant Id from arguments.
      *
      * @param savedInstanceState saved state bundle
-     *
-     * @author Becca Irving
-     * @since Mar 16 2026
      */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -118,19 +112,12 @@ public class EntrantEventDetailFragment extends Fragment {
      *
      * @param view fragment root view
      * @param savedInstanceState saved state bundle
-     *
-     * @author Becca Irving
-     * @since Mar 16 2026
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         bindViews(view);
-
-        eventActionButton.setEnabled(false);
-        eventActionButton.setAlpha(0.5f);
-
         wireStaticActions();
         loadEvent();
     }
@@ -139,9 +126,6 @@ public class EntrantEventDetailFragment extends Fragment {
      * Finds and stores all view references on the page.
      *
      * @param view fragment root view
-     *
-     * @author Becca Irving
-     * @since Mar 16 2026
      */
     private void bindViews(@NonNull View view) {
         backButton = view.findViewById(R.id.back_button);
@@ -164,75 +148,102 @@ public class EntrantEventDetailFragment extends Fragment {
         eventLocationName = view.findViewById(R.id.event_location_name);
         eventLocationCity = view.findViewById(R.id.event_location_city);
         eventGuidelines = view.findViewById(R.id.event_guidelines);
-        waitlistedStatusText = view.findViewById(R.id.waitlisted_status_text);
+        detailStatusText = view.findViewById(R.id.detail_status_text);
 
-        eventActionButton = view.findViewById(R.id.event_action_button);
+        eventActionRow = view.findViewById(R.id.event_action_row);
+        eventPrimaryButton = view.findViewById(R.id.event_primary_button);
+        eventSecondaryButton = view.findViewById(R.id.event_secondary_button);
     }
 
     /**
-     * Wires the back button and join or leave button.
-     *
-     * @author Becca Irving
-     * @since Mar 16 2026
+     * Wires the back button and detail action buttons.
      */
     private void wireStaticActions() {
         backButton.setOnClickListener(v ->
                 requireActivity().getSupportFragmentManager().popBackStack()
         );
 
-        eventActionButton.setOnClickListener(v -> {
-            if (currentEvent == null || entrantId == null || entrantId.trim().isEmpty()) {
-                Log.e("EntrantEventDetail", "Cannot act on event: missing event or entrant Id");
-                return;
-            }
+        eventPrimaryButton.setOnClickListener(v -> handlePrimaryAction());
+        eventSecondaryButton.setOnClickListener(v -> handleSecondaryAction());
+    }
 
-            if (!eventActionButton.isEnabled()) {
-                return;
-            }
+    /**
+     * Handles the main bottom button action for the entrant's current state.
+     */
+    private void handlePrimaryAction() {
+        if (currentEvent == null || entrantId == null || entrantId.trim().isEmpty()) {
+            Log.e("EntrantEventDetail", "Cannot act on event: missing event or entrant Id");
+            return;
+        }
 
-            long timestamp = System.currentTimeMillis() / 1000L;
-            EntrantDatabaseManager db = new EntrantDatabaseManager();
+        if (!eventPrimaryButton.isEnabled()) {
+            return;
+        }
 
-            boolean isWaitlisted = currentEvent.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED)
-                    .contains(entrantId);
+        EventEntrantStatus currentState = getCurrentEntrantState(currentEvent);
 
-            if (isWaitlisted) {
-                currentEvent.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
-                bindEvent(currentEvent);
+        if (currentState == EventEntrantStatus.INVITED) {
+            updateEntrantState(EventEntrantStatus.ENROLLED, EventEntrantStatus.INVITED);
+        } else if (currentState == EventEntrantStatus.WAITLISTED) {
+            updateEntrantState(EventEntrantStatus.LEFT_WAITLIST, EventEntrantStatus.WAITLISTED);
+        } else if (currentState == EventEntrantStatus.ENROLLED) {
+            updateEntrantState(EventEntrantStatus.CANCELLED, EventEntrantStatus.ENROLLED);
+        } else {
+            updateEntrantState(EventEntrantStatus.WAITLISTED, currentState);
+        }
+    }
 
-                db.unregisterEntrantInEvent(entrantId, currentEvent.getEventId(), timestamp)
-                        .addOnSuccessListener(unused -> {
-                            Log.d("EntrantEventDetail", "Successfully left waitlist");
-                            loadEvent();
-                        })
-                        .addOnFailureListener(e -> {
-                            Log.e("EntrantEventDetail", "Failed to leave waitlist", e);
-                            currentEvent.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.WAITLISTED, timestamp);
-                            bindEvent(currentEvent);
-                        });
-            } else {
-                currentEvent.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.WAITLISTED, timestamp);
-                bindEvent(currentEvent);
+    /**
+     * Handles the secondary action, currently decline for invited entrants.
+     */
+    private void handleSecondaryAction() {
+        if (currentEvent == null || entrantId == null || entrantId.trim().isEmpty()) {
+            Log.e("EntrantEventDetail", "Cannot run secondary action: missing event or entrant Id");
+            return;
+        }
 
-                db.registerEntrantInEvent(entrantId, currentEvent.getEventId(), timestamp)
-                        .addOnSuccessListener(unused -> {
-                            Log.d("EntrantEventDetail", "Successfully joined waitlist");
-                            loadEvent();
-                        })
-                        .addOnFailureListener(e -> {
-                            Log.e("EntrantEventDetail", "Failed to join waitlist", e);
-                            currentEvent.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
-                            bindEvent(currentEvent);
-                        });
-            }
-        });
+        if (!eventSecondaryButton.isEnabled()) {
+            return;
+        }
+
+        EventEntrantStatus currentState = getCurrentEntrantState(currentEvent);
+
+        if (currentState == EventEntrantStatus.INVITED) {
+            updateEntrantState(EventEntrantStatus.DECLINED, EventEntrantStatus.INVITED);
+        }
+    }
+
+    /**
+     * Optimistically updates the local event, saves the new state, and reloads on success.
+     *
+     * @param newState new state to save
+     * @param revertState state to restore on failure
+     */
+    private void updateEntrantState(@NonNull EventEntrantStatus newState,
+                                    @Nullable EventEntrantStatus revertState) {
+        long timestamp = System.currentTimeMillis() / 1000L;
+        EntrantDatabaseManager db = new EntrantDatabaseManager();
+
+        currentEvent.addOrUpdateEntrantStatus(entrantId, newState, timestamp);
+        bindEvent(currentEvent);
+
+        db.setEntrantStatusForEvent(entrantId, currentEvent.getEventId(), newState, timestamp)
+                .addOnSuccessListener(unused -> {
+                    Log.d("EntrantEventDetail", "Successfully updated entrant state to " + newState);
+                    loadEvent();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("EntrantEventDetail", "Failed to update entrant state", e);
+
+                    if (revertState != null) {
+                        currentEvent.addOrUpdateEntrantStatus(entrantId, revertState, timestamp);
+                    }
+                    bindEvent(currentEvent);
+                });
     }
 
     /**
      * Loads the event from the database using the stored event Id.
-     *
-     * @author Becca Irving
-     * @since Mar 16 2026
      */
     private void loadEvent() {
         if (eventId == null || eventId.trim().isEmpty()) {
@@ -262,9 +273,6 @@ public class EntrantEventDetailFragment extends Fragment {
      * @param events list of events
      * @param eventId event Id to match
      * @return matching event or null
-     *
-     * @author Becca Irving
-     * @since Mar 16 2026
      */
     @Nullable
     private Event findEventById(@NonNull List<Event> events, @NonNull String eventId) {
@@ -277,12 +285,36 @@ public class EntrantEventDetailFragment extends Fragment {
     }
 
     /**
-     * Fills the page with event data and updates the button state.
+     * Returns the entrant's current state for this event.
+     *
+     * @param event event to inspect
+     * @return entrant state or null if not present
+     */
+    @Nullable
+    private EventEntrantStatus getCurrentEntrantState(@NonNull Event event) {
+        if (entrantId == null || entrantId.trim().isEmpty() || event.getEntrantStatuses() == null) {
+            return null;
+        }
+
+        for (Event.EntrantStatusEntry entry : event.getEntrantStatuses()) {
+            if (entry != null
+                    && entry.getEntrantProfileId() != null
+                    && entrantId.equals(entry.getEntrantProfileId())) {
+                return entry.getStatus();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Fills the page with event data and updates the action area for the entrant state.
+     *
+     * This keeps the same detail page but changes the bottom action area so it can
+     * support join, waitlisted, invited, and enrolled states.
      *
      * @param event event to show
      *
-     * @author Becca Irving
-     * @since Mar 16 2026
      */
     private void bindEvent(@NonNull Event event) {
         if (!isAdded()) {
@@ -311,27 +343,91 @@ public class EntrantEventDetailFragment extends Fragment {
 
         eventStatusIcon.setImageResource(getEventStatusDrawable(event));
 
-        boolean isWaitlisted = entrantId != null
-                && event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(entrantId);
+        EventEntrantStatus currentState = getCurrentEntrantState(event);
 
-        boolean disableButton = shouldDisablePrimaryButton(event);
+        boolean eventOver = hasEventStarted(event);
+        boolean eventClosed = isRegistrationClosed(event);
 
-        if (isWaitlisted) {
-            waitlistedStatusText.setVisibility(View.VISIBLE);
-            eventActionButton.setText("Leave");
-            eventActionButton.setBackgroundTintList(
-                    ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.red))
-            );
-        } else {
-            waitlistedStatusText.setVisibility(View.GONE);
-            eventActionButton.setText("Join");
-            eventActionButton.setBackgroundTintList(
+        detailStatusText.setVisibility(View.GONE);
+        eventActionRow.setVisibility(View.VISIBLE);
+        eventSecondaryButton.setVisibility(View.GONE);
+
+        if (currentState == EventEntrantStatus.INVITED) {
+            detailStatusText.setVisibility(View.VISIBLE);
+            detailStatusText.setText("Action Required");
+            detailStatusText.setTextColor(ContextCompat.getColor(requireContext(), R.color.red));
+
+            eventPrimaryButton.setText("Accept");
+            eventPrimaryButton.setBackgroundTintList(
                     ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.moss_green))
             );
+
+            eventSecondaryButton.setVisibility(View.VISIBLE);
+            eventSecondaryButton.setText("Decline");
+            eventSecondaryButton.setBackgroundTintList(
+                    ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.red))
+            );
+
+            boolean acceptEnabled = !eventOver && !eventClosed;
+            boolean declineEnabled = !eventOver;
+
+            eventPrimaryButton.setEnabled(acceptEnabled);
+            eventPrimaryButton.setAlpha(acceptEnabled ? 1.0f : 0.5f);
+
+            eventSecondaryButton.setEnabled(declineEnabled);
+            eventSecondaryButton.setAlpha(declineEnabled ? 1.0f : 0.5f);
+
+            return;
         }
 
-        eventActionButton.setEnabled(!disableButton);
-        eventActionButton.setAlpha(eventActionButton.isEnabled() ? 1.0f : 0.5f);
+        if (currentState == EventEntrantStatus.WAITLISTED) {
+            detailStatusText.setVisibility(View.VISIBLE);
+            detailStatusText.setText("Waitlisted");
+            detailStatusText.setTextColor(ContextCompat.getColor(requireContext(), R.color.moss_green));
+
+            eventPrimaryButton.setText("Leave");
+            eventPrimaryButton.setBackgroundTintList(
+                    ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.red))
+            );
+
+            boolean leaveEnabled = !eventOver;
+            eventPrimaryButton.setEnabled(leaveEnabled);
+            eventPrimaryButton.setAlpha(leaveEnabled ? 1.0f : 0.5f);
+
+            return;
+        }
+
+        if (currentState == EventEntrantStatus.ENROLLED) {
+            detailStatusText.setVisibility(View.VISIBLE);
+            detailStatusText.setText("Registered");
+            detailStatusText.setTextColor(ContextCompat.getColor(requireContext(), R.color.moss_green));
+
+            eventPrimaryButton.setText("Leave");
+            eventPrimaryButton.setBackgroundTintList(
+                    ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.red))
+            );
+
+            boolean leaveEnabled = !eventOver;
+            eventPrimaryButton.setEnabled(leaveEnabled);
+            eventPrimaryButton.setAlpha(leaveEnabled ? 1.0f : 0.5f);
+
+            return;
+        }
+
+        if (currentState == EventEntrantStatus.LOST_LOTTERY) {
+            detailStatusText.setVisibility(View.VISIBLE);
+            detailStatusText.setText("Not Selected");
+            detailStatusText.setTextColor(ContextCompat.getColor(requireContext(), R.color.red));
+        }
+
+        eventPrimaryButton.setText("Join");
+        eventPrimaryButton.setBackgroundTintList(
+                ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.moss_green))
+        );
+
+        boolean joinEnabled = !eventOver && !eventClosed && event.isRegistrationOpenNow() && !event.isWaitingListFull();
+        eventPrimaryButton.setEnabled(joinEnabled);
+        eventPrimaryButton.setAlpha(joinEnabled ? 1.0f : 0.5f);
     }
 
     /**
@@ -339,9 +435,6 @@ public class EntrantEventDetailFragment extends Fragment {
      *
      * @param event event to check
      * @return true if the event has started
-     *
-     * @author Becca Irving
-     * @since Mar 16 2026
      */
     private boolean hasEventStarted(@NonNull Event event) {
         long nowEpochSec = System.currentTimeMillis() / 1000L;
@@ -353,9 +446,6 @@ public class EntrantEventDetailFragment extends Fragment {
      *
      * @param event event to check
      * @return true if registration is closed
-     *
-     * @author Becca Irving
-     * @since Mar 16 2026
      */
     private boolean isRegistrationClosed(@NonNull Event event) {
         long nowEpochSec = System.currentTimeMillis() / 1000L;
@@ -363,26 +453,10 @@ public class EntrantEventDetailFragment extends Fragment {
     }
 
     /**
-     * Checks whether the action button should be disabled.
-     *
-     * @param event event to check
-     * @return true if the button should be disabled
-     *
-     * @author Becca Irving
-     * @since Mar 16 2026
-     */
-    private boolean shouldDisablePrimaryButton(@NonNull Event event) {
-        return hasEventStarted(event) || isRegistrationClosed(event);
-    }
-
-    /**
      * Returns the correct status icon for the event state.
      *
      * @param event event to check
      * @return drawable resource id for the status icon
-     *
-     * @author Becca Irving
-     * @since Mar 16 2026
      */
     private int getEventStatusDrawable(@NonNull Event event) {
         if (hasEventStarted(event)) {
@@ -400,8 +474,6 @@ public class EntrantEventDetailFragment extends Fragment {
      * @param epochSeconds epoch time in seconds
      * @return formatted date string
      *
-     * @author Becca Irving
-     * @since Mar 16 2026
      */
     private String formatDate(long epochSeconds) {
         Date date = new Date(epochSeconds * 1000L);
@@ -415,8 +487,6 @@ public class EntrantEventDetailFragment extends Fragment {
      * @param epochSeconds epoch time in seconds
      * @return formatted time string
      *
-     * @author Becca Irving
-     * @since Mar 16 2026
      */
     private String formatTime(long epochSeconds) {
         Date date = new Date(epochSeconds * 1000L);
@@ -431,8 +501,6 @@ public class EntrantEventDetailFragment extends Fragment {
      * @param endEpochSeconds end time in epoch seconds
      * @return formatted time range
      *
-     * @author Becca Irving
-     * @since Mar 16 2026
      */
     private String formatTimeRange(long startEpochSeconds, long endEpochSeconds) {
         return formatTime(startEpochSeconds) + " – " + formatTime(endEpochSeconds);
