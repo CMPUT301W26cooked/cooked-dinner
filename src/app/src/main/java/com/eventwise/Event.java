@@ -42,7 +42,6 @@ public class Event {
     private boolean geolocationRequired;
     private Integer maxWaitingListSize;
 
-    private Integer waitingListEmptySpots;
     private int maxWinnersToSample;
     private String qrCodeId;
     private ArrayList<EntrantStatusEntry> entrantStatuses = new ArrayList<>();
@@ -83,7 +82,6 @@ public class Event {
         this.maxWinnersToSample = maxWinnersToSample;
         this.posterPath = posterPath;
         this.qrCodeId = qrCodeId;
-        this.waitingListEmptySpots = maxWaitingListSize;
     }
 
     public String getEventId() { return eventId; }
@@ -152,24 +150,6 @@ public class Event {
             entrantStatuses = new ArrayList<>();
         }
 
-        if (status == EventEntrantStatus.WAITLISTED){
-            if (waitingListEmptySpots > 0){
-                waitingListEmptySpots--;
-            }
-            else {
-                Log.e("Event", "Got added to a waiting list when full!");
-                throw new RuntimeException("RACE CONDITION PROBABLY!");
-            }
-        }
-        else if (status == EventEntrantStatus.LEFT_WAITLIST){
-            if (waitingListEmptySpots < maxWaitingListSize){
-                waitingListEmptySpots++;
-            }
-            else {
-                Log.e("Event", "Got removed from a waiting list when empty!");
-                throw new RuntimeException("RACE CONDITION PROBABLY!");
-            }
-        }
 
 //        long nowEpochSec = System.currentTimeMillis() / 1000L;
 
@@ -254,13 +234,6 @@ public class Event {
         return getWaitingListCount() >= maxWaitingListSize;
     }
 
-    public Integer getWaitingListEmptySpots() {
-        return waitingListEmptySpots;
-    }
-
-    public void setWaitingListEmptySpots(Integer waitingListEmptySpots) {
-        this.waitingListEmptySpots = waitingListEmptySpots;
-    }
 
     public static class EntrantStatusEntry {
         private String entrantProfileId;

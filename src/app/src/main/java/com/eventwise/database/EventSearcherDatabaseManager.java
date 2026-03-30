@@ -86,11 +86,11 @@ public class EventSearcherDatabaseManager extends DatabaseManager{
                  Iterator<Event> iterator = eventsArray.iterator();
                  while (iterator.hasNext()) {
                      Event event = iterator.next();
-                     if (event.getWaitingListEmptySpots() != null && event.getWaitingListEmptySpots() < filter.getEventCapacity()) {
+                     if (event.getMaxWinnersToSample() < filter.getEventCapacity()) {
                          iterator.remove();
                      }
                  }
-//                eventsArray.removeIf(event -> (event.getWaitingListEmptySpots() < filter.getEventCapacity()) || event.getWaitingListEmptySpots() != null);
+//                eventsArray.removeIf(event -> (event.getMaxWinnersToSample() < filter.getEventCapacity()) || event.getMaxWinnersToSample() != null);
             }
 
             //Take out events based on keywords
