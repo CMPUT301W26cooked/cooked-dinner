@@ -84,7 +84,7 @@ public class InvitationDetailFragment extends Fragment {
             return;
         }
 
-        long timestamp = System.currentTimeMillis();
+        long timestamp = System.currentTimeMillis() / 1000L;
 
         setBusy(true);
         EntrantDatabaseManager mgr = new EntrantDatabaseManager();

@@ -6,11 +6,13 @@ import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -49,31 +51,105 @@ public class NotificationDatabaseManager extends DatabaseManager {
     }
 
     /**
-     * Creates a new notification in the database and updates all associated entrants' profiles
-     * to include this notification's Id. This operation is performed atomically for the entrant updates.
+     * Creates a new notification in the database and updates all associated profiles
+     * to include this notification's Id.
      *
-     * @param notification The {@link Notification} object to be created and linked to entrants.
+     * This respects the profile notificationsEnabled setting.
+     *
+     * @param notification The {@link Notification} object to be created and linked to profiles.
      * @return A {@link Task} that resolves when the notification has been successfully created
-     * and all entrant profiles have been updated.
+     * and all enabled recipient profiles have been updated.
      */
     public Task<Void> createNotification(Notification notification) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
-        //Make a batch of writes that complete atomically
-        WriteBatch batch = super.db.batch();
-
-        for (String entrantId : notification.getEntrantIds()) {
-            DocumentReference docRef = profiles.document(entrantId);
-            batch.update(docRef, "notificationIds", FieldValue.arrayUnion(notification.getNotificationId()));
+        if (notification == null || notification.getEntrantIds() == null || notification.getEntrantIds().isEmpty()) {
+            tcs.setResult(null);
+            return tcs.getTask();
         }
-        // Commit the batch, then chain the addNotification operation
-        return batch.commit()
-                .continueWithTask(task -> {
-                    if (!task.isSuccessful()) {
-                        throw new DatabaseException("Error committing notification batch: "
-                                + Objects.requireNonNull(task.getException()).getMessage());
+
+        ArrayList<String> requestedRecipientIds = notification.getEntrantIds();
+
+        profiles.get()
+                .addOnSuccessListener(querySnapshot -> {
+                    ArrayList<String> enabledRecipientIds = new ArrayList<>();
+
+                    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+                        if (!requestedRecipientIds.contains(document.getId())) {
+                            continue;
+                        }
+
+                        Boolean notificationsEnabled = document.getBoolean("notificationsEnabled");
+                        if (notificationsEnabled == null || notificationsEnabled) {
+                            enabledRecipientIds.add(document.getId());
+                        }
                     }
-                    return super.addNotification(notification);
-                });
+
+                    if (enabledRecipientIds.isEmpty()) {
+                        tcs.setResult(null);
+                        return;
+                    }
+
+                    notification.setEntrantIds(enabledRecipientIds);
+
+                    WriteBatch batch = super.db.batch();
+
+                    for (String profileId : enabledRecipientIds) {
+                        DocumentReference docRef = profiles.document(profileId);
+                        batch.update(docRef, "notificationIds", FieldValue.arrayUnion(notification.getNotificationId()));
+                    }
+
+                    batch.commit()
+                            .addOnSuccessListener(unused ->
+                                    super.addNotification(notification)
+                                            .addOnSuccessListener(unused2 -> tcs.setResult(null))
+                                            .addOnFailureListener(tcs::setException))
+                            .addOnFailureListener(tcs::setException);
+                })
+                .addOnFailureListener(tcs::setException);
+
+        return tcs.getTask();
+    }
+
+    /**
+     * Retrieves notification Ids from a profile document by profile Id.
+     *
+     * This works for entrant, organizer, or admin profile docs w the Firestore document notificationIds
+     *
+     * @param profileId The profile Id.
+     * @return A {@link Task} that resolves to the list of notification Ids
+     */
+    public Task<ArrayList<String>> getNotificationsIdsByProfileId(String profileId) {
+        TaskCompletionSource<ArrayList<String>> tcs = new TaskCompletionSource<>();
+
+        if (profileId == null || profileId.trim().isEmpty()) {
+            tcs.setResult(new ArrayList<>());
+            return tcs.getTask();
+        }
+
+        profiles.document(profileId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (!documentSnapshot.exists()) {
+                        tcs.setResult(new ArrayList<>());
+                        return;
+                    }
+
+                    ArrayList<String> notificationIds = new ArrayList<>();
+                    Object rawNotificationIds = documentSnapshot.get("notificationIds");
+
+                    if (rawNotificationIds instanceof List<?>) {
+                        for (Object item : (List<?>) rawNotificationIds) {
+                            if (item instanceof String) {
+                                notificationIds.add((String) item);
+                            }
+                        }
+                    }
+
+                    tcs.setResult(notificationIds);
+                })
+                .addOnFailureListener(tcs::setException);
+
+        return tcs.getTask();
     }
 
     /**
@@ -82,28 +158,9 @@ public class NotificationDatabaseManager extends DatabaseManager {
      * its associated notification identifiers.
      *
      * @param entrantId The unique identifier of the entrant whose notifications are being retrieved.
-     * @return A {@link Task} that resolves to an {@link ArrayList} of strings containing the notification Ids.
-     * The task will fail with a {@link DatabaseException} if the profile is not an instance of {@link Entrant}
-     * or if the database retrieval fails.
      */
     public Task<ArrayList<String>> getNotificationsIdsByEntrantId(String entrantId) {
-        TaskCompletionSource<ArrayList<String>> tcs = new TaskCompletionSource<>();
-
-        //Get the entrant
-        super.getProfileFromId(entrantId)
-                .addOnSuccessListener(profile -> {
-                    if (profile instanceof Entrant) {
-                        Entrant entrant = (Entrant) profile;
-                        //Set return to Notifications of Entrant
-                        tcs.setResult(entrant.getNotificationIds());
-                    } else {
-                        tcs.setException(new DatabaseException("Error getting NotificationsIds"));
-                    }
-                })
-                .addOnFailureListener(notUsed ->
-                        tcs.setException(new DatabaseException("Error getting NotificationsIds")));
-
-        return tcs.getTask();
+        return getNotificationsIdsByProfileId(entrantId);
     }
 
 

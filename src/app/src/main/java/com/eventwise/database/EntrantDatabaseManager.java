@@ -280,6 +280,74 @@ public class EntrantDatabaseManager extends DatabaseManager {
         return tcs.getTask();
     }
 
+    /**
+     * Sets one entrant to one specific state for one event.
+     *
+     * This keeps the event document and entrant profile in sync.
+     *
+     * @param entrantId entrant id
+     * @param eventId event id
+     * @param status new event status
+     * @param timestamp epoch seconds
+     * @return task that completes when both docs are updated
+     */
+    public Task<Void> setEntrantStatusForEvent(String entrantId, String eventId, EventEntrantStatus status, long timestamp) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (entrantId == null || entrantId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("EntrantId cannot be null or empty"));
+            return tcs.getTask();
+        }
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("EventId cannot be null or empty"));
+            return tcs.getTask();
+        }
+
+        if (status == null) {
+            tcs.setException(new DatabaseException("Status cannot be null"));
+            return tcs.getTask();
+        }
+
+        events.document(eventId).get()
+                .addOnSuccessListener(eventSnapshot -> {
+                    Event event = eventSnapshot.toObject(Event.class);
+                    if (event == null) {
+                        tcs.setException(new DatabaseException("Error getting Event"));
+                        return;
+                    }
+
+                    if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+                        event.setEventId(eventSnapshot.getId());
+                    }
+
+                    profiles.document(entrantId).get()
+                            .addOnSuccessListener(profileSnapshot -> {
+                                Entrant entrant = profileSnapshot.toObject(Entrant.class);
+                                if (entrant == null) {
+                                    tcs.setException(new DatabaseException("Error getting Entrant"));
+                                    return;
+                                }
+
+                                event.addOrUpdateEntrantStatus(entrantId, status, timestamp);
+                                entrant.addOrUpdateEventState(eventId, status, timestamp);
+
+                                WriteBatch batch = super.db.batch();
+                                batch.set(events.document(eventId), event);
+                                batch.set(profiles.document(entrantId), entrant);
+
+                                batch.commit().addOnSuccessListener(unused -> tcs.setResult(null))
+                                        .addOnFailureListener(e ->
+                                                tcs.setException(new DatabaseException("Error updating entrant event status")));
+                            })
+                            .addOnFailureListener(e -> tcs.setException(new DatabaseException("Error getting Entrant")));
+                })
+                .addOnFailureListener(e -> tcs.setException(new DatabaseException("Error getting Event")));
+
+        return tcs.getTask();
+    }
+
+
     public Task<ArrayList<Event>> getEventsWhereEntrantIsInWaitingList(String entrantId) {
         TaskCompletionSource<ArrayList<Event>> tcs = new TaskCompletionSource<>();
         ArrayList<Event> eventsArray = new ArrayList<>();

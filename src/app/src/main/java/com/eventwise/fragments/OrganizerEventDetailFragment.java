@@ -183,7 +183,7 @@ public class OrganizerEventDetailFragment extends Fragment {
         viewEntrantsButton.setOnClickListener(v -> {
             getParentFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.organizer_fragment_container, ViewEntrantsFragment.newInstance(eventId))
+                    .replace(R.id.organizer_fragment_container, OrganizerEntrantActionsFragment.newInstance(eventId))
                     .addToBackStack(null)
                     .commit();
         });

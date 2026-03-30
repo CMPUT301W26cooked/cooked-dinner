@@ -57,7 +57,7 @@ public class NotificationSearcherDataBaseManager extends DatabaseManager{
         NotificationDatabaseManager notificationDatabaseManager =
                 new NotificationDatabaseManager(super.db);
 
-        notificationDatabaseManager.getNotificationsIdsByEntrantId(entrantId)
+        notificationDatabaseManager.getNotificationsIdsByProfileId(entrantId)
                 .addOnSuccessListener(notificationIds -> {
                     if (notificationIds == null || notificationIds.isEmpty()) {
                         tcs.setResult(new ArrayList<>());
@@ -115,7 +115,7 @@ public class NotificationSearcherDataBaseManager extends DatabaseManager{
         NotificationDatabaseManager notificationDatabaseManager =
                 new NotificationDatabaseManager(super.db);
 
-        notificationDatabaseManager.getNotificationsIdsByEntrantId(entrantId)
+        notificationDatabaseManager.getNotificationsIdsByProfileId(entrantId)
                 .addOnSuccessListener(notificationIds -> {
                     if (notificationIds == null || notificationIds.isEmpty()) {
                         tcs.setResult(new ArrayList<>());

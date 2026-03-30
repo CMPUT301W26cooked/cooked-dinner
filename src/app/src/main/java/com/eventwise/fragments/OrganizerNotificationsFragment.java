@@ -56,7 +56,7 @@ public class OrganizerNotificationsFragment extends Fragment {
         notificationListView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         notificationList = new ArrayList<>();
-        notificationAdapter = new NotificationAdapter(notificationList, NotificationAdapter.TYPE_ENTRANT, this::primaryButton);
+        notificationAdapter = new NotificationAdapter(notificationList, NotificationAdapter.TYPE_ORGANIZER, this::primaryButton);
         notificationListView.setAdapter(notificationAdapter);
         //Get events from Firebase
         refreshNotifications();
