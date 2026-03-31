@@ -1,4 +1,4 @@
-package com.eventwise;
+package com.eventwise.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,8 +7,10 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.eventwise.Notification;
+import com.eventwise.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

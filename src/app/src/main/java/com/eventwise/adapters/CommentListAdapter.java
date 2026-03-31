@@ -1,4 +1,4 @@
-package com.eventwise.fragments;
+package com.eventwise.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;

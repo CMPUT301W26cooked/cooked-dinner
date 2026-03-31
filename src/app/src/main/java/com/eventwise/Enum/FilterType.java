@@ -1,4 +1,4 @@
-package com.eventwise.database;
+package com.eventwise.Enum;
 
 public enum FilterType {
     START_TIMESTAMP,

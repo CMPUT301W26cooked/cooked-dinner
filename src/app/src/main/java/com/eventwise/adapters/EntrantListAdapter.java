@@ -1,4 +1,4 @@
-package com.eventwise.fragments;
+package com.eventwise.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.R;
+import com.eventwise.items.EntrantListItem;
 
 import java.util.List;
 

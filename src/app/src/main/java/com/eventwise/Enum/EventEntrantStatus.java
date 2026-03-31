@@ -1,4 +1,4 @@
-package com.eventwise;
+package com.eventwise.Enum;
 
 /**
  * Stores shared entrant status values for events.

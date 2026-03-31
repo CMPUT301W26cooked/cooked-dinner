@@ -14,13 +14,12 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.navigationevent.NavigationEventInfo;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Event;
-import com.eventwise.EventAdapter;
-import com.eventwise.EventEntrantStatus;
+import com.eventwise.adapters.EventAdapter;
+import com.eventwise.Enum.EventEntrantStatus;
 import com.eventwise.FilterBottomSheet;
 import com.eventwise.R;
 import com.eventwise.database.EntrantDatabaseManager;
@@ -30,13 +29,11 @@ import com.eventwise.database.SessionStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.InputMismatchException;
 import java.util.Collections;
 import java.util.List;
 import com.eventwise.Notification;
 import com.eventwise.database.NotificationDatabaseManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.api.Distribution;
 
 /**
  * This class is responsible for the Entrant Events Community Fragment.
