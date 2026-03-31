@@ -1,4 +1,4 @@
-package com.eventwise.fragments;
+package com.eventwise.adapters;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,12 +11,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Comment;
-import com.eventwise.Entrant;
 import com.eventwise.ProfileType;
 import com.eventwise.R;
 import com.eventwise.database.EntrantDatabaseManager;
-
-import org.w3c.dom.Text;
 
 import java.util.List;
 

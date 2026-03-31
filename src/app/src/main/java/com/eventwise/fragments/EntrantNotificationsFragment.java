@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Event;
-import com.eventwise.EventEntrantStatus;
+import com.eventwise.Enum.EventEntrantStatus;
 import com.eventwise.Notification;
-import com.eventwise.NotificationAdapter;
+import com.eventwise.adapters.NotificationAdapter;
 import com.eventwise.R;
 import com.eventwise.database.EventSearcherDatabaseManager;
 import com.eventwise.database.NotificationSearcherDataBaseManager;

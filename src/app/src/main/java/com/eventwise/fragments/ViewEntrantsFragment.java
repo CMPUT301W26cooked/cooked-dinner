@@ -17,8 +17,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Entrant;
 import com.eventwise.R;
+import com.eventwise.adapters.EntrantListAdapter;
 import com.eventwise.database.EntrantDatabaseManager;
 import com.eventwise.database.OrganizerDatabaseManager;
+import com.eventwise.items.EntrantListItem;
 
 import java.util.ArrayList;
 import java.util.List;

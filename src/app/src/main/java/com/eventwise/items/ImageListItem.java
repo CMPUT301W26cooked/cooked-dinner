@@ -1,4 +1,4 @@
-package com.eventwise;
+package com.eventwise.items;
 
 import android.graphics.Bitmap;
 

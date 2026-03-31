@@ -1,20 +1,15 @@
 package com.eventwise.database;
 
-import android.util.Log;
-
 import com.eventwise.Comment;
 import com.eventwise.Entrant;
 import com.eventwise.Event;
-import com.eventwise.EventEntrantStatus;
+import com.eventwise.Enum.EventEntrantStatus;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
 

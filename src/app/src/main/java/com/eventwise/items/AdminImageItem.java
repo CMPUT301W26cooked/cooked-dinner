@@ -1,4 +1,4 @@
-package com.eventwise.fragments;
+package com.eventwise.items;
 
 import java.io.File;
 
