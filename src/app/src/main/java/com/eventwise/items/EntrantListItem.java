@@ -1,4 +1,4 @@
-package com.eventwise.fragments;
+package com.eventwise.items;
 
 /**
  * Simple frontend model for one entrant row in the entrants list.

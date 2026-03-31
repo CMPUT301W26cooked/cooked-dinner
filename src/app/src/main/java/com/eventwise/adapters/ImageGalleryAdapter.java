@@ -1,4 +1,4 @@
-package com.eventwise;
+package com.eventwise.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,6 +8,9 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.eventwise.items.ImageListItem;
+import com.eventwise.R;
 
 import java.util.ArrayList;
 

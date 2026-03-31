@@ -4,6 +4,8 @@ package com.eventwise;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.eventwise.Enum.EventEntrantStatus;
+
 import java.util.Objects;
 
 /**

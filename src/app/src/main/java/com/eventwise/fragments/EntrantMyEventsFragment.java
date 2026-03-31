@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Event;
-import com.eventwise.EventAdapter;
-import com.eventwise.EventEntrantStatus;
+import com.eventwise.adapters.EventAdapter;
+import com.eventwise.Enum.EventEntrantStatus;
 import com.eventwise.R;
 import com.eventwise.database.EntrantDatabaseManager;
 import com.eventwise.database.EventSearcherDatabaseManager;

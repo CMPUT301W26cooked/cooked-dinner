@@ -15,7 +15,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.eventwise.Event;
-import com.eventwise.EventEntrantStatus;
+import com.eventwise.Enum.EventEntrantStatus;
 import com.eventwise.R;
 import com.eventwise.database.EntrantDatabaseManager;
 import com.eventwise.database.EventSearcherDatabaseManager;

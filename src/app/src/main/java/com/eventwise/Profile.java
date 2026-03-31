@@ -1,6 +1,7 @@
 package com.eventwise;
 
-import java.util.ArrayList;
+import com.eventwise.Enum.ProfileType;
+
 import java.util.Objects;
 import java.util.UUID;
 /**

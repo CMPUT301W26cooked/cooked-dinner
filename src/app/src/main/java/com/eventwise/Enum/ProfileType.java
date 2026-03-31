@@ -1,4 +1,4 @@
-package com.eventwise;
+package com.eventwise.Enum;
 
 public enum ProfileType {
     ENTRANT,

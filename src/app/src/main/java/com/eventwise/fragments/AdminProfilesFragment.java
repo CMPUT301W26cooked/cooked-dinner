@@ -15,7 +15,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Entrant;
 import com.eventwise.R;
+import com.eventwise.adapters.AdminProfilesAdapter;
 import com.eventwise.database.AdminDatabaseManager;
+import com.eventwise.items.AdminProfileItem;
 
 import java.util.ArrayList;
 import java.util.List;

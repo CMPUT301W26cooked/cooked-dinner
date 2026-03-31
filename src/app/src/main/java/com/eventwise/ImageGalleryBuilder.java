@@ -5,6 +5,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.eventwise.adapters.ImageGalleryAdapter;
+import com.eventwise.items.ImageListItem;
+
 import java.io.File;
 import java.util.ArrayList;
 

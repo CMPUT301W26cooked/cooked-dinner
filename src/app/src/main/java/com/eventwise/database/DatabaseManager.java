@@ -7,7 +7,7 @@ import com.eventwise.Location;
 import com.eventwise.Notification;
 import com.eventwise.Organizer;
 import com.eventwise.Profile;
-import com.eventwise.ProfileType;
+import com.eventwise.Enum.ProfileType;
 import com.eventwise.Tag;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.Task;
@@ -16,7 +16,6 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;

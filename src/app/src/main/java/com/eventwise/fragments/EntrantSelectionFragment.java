@@ -18,8 +18,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Event;
-import com.eventwise.EventEntrantStatus;
+import com.eventwise.Enum.EventEntrantStatus;
 import com.eventwise.R;
+import com.eventwise.adapters.EntrantSelectionAdapter;
 import com.eventwise.database.OrganizerDatabaseManager;
 import com.google.android.gms.tasks.Task;
 

@@ -1,7 +1,6 @@
 package com.eventwise;
 
-import android.util.Log;
-
+import com.eventwise.Enum.EventEntrantStatus;
 import com.google.firebase.firestore.Exclude;
 
 import java.util.ArrayList;

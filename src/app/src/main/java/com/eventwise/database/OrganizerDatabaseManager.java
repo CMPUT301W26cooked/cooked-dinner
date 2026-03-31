@@ -7,27 +7,20 @@ import androidx.annotation.NonNull;
 
 import com.eventwise.Entrant;
 import com.eventwise.Event;
-import com.eventwise.EventEntrantStatus;
+import com.eventwise.Enum.EventEntrantStatus;
 import com.eventwise.Notification;
-import com.eventwise.Profile;
 import com.eventwise.database.exceptions.DatabaseException;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
-import com.google.common.collect.Lists;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 
 /**

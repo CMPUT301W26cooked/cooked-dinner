@@ -1,5 +1,7 @@
 package com.eventwise;
 
+import com.eventwise.Enum.ProfileType;
+
 import java.util.ArrayList;
 
 /**

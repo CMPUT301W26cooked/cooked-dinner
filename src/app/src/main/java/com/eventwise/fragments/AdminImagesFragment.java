@@ -27,7 +27,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Event;
 import com.eventwise.R;
+import com.eventwise.adapters.AdminImagesAdapter;
 import com.eventwise.database.AdminDatabaseManager;
+import com.eventwise.items.AdminImageItem;
 
 import java.io.File;
 import java.util.ArrayList;

@@ -15,7 +15,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Organizer;
 import com.eventwise.R;
+import com.eventwise.adapters.AdminOrganizationsAdapter;
 import com.eventwise.database.AdminDatabaseManager;
+import com.eventwise.items.AdminOrganizationItem;
 
 import java.util.ArrayList;
 import java.util.List;

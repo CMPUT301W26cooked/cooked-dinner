@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Notification;
-import com.eventwise.NotificationAdapter;
+import com.eventwise.adapters.NotificationAdapter;
 import com.eventwise.R;
 import com.eventwise.database.NotificationSearcherDataBaseManager;
 import com.eventwise.database.SessionStore;
