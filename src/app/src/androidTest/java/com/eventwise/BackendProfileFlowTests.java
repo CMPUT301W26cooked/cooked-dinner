@@ -2,6 +2,7 @@ package com.eventwise;
 
 import androidx.test.core.app.ApplicationProvider;
 
+import com.eventwise.Enum.EventEntrantStatus;
 import com.eventwise.database.EntrantDatabaseManager;
 import com.eventwise.database.OrganizerDatabaseManager;
 import com.google.android.gms.tasks.Tasks;

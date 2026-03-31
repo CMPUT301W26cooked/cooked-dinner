@@ -2,8 +2,8 @@ package com.eventwise.database;
 
 import android.util.Log;
 
+import com.eventwise.Enum.FilterType;
 import com.eventwise.Event;
-import com.eventwise.EventEntrantStatus;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -12,7 +12,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;

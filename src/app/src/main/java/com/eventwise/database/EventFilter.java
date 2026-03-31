@@ -1,5 +1,6 @@
 package com.eventwise.database;
 
+import com.eventwise.Enum.FilterType;
 import com.eventwise.Tag;
 
 import java.util.ArrayList;

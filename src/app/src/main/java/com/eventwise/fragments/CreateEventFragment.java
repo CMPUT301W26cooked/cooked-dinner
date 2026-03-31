@@ -27,18 +27,14 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.eventwise.EventEntrantStatus;
+import com.eventwise.Enum.EventEntrantStatus;
 import com.eventwise.Notification;
 import com.eventwise.R;
 import com.eventwise.Tag;
-import com.eventwise.database.EntrantDatabaseManager;
 import com.eventwise.database.NotificationDatabaseManager;
 import com.eventwise.database.OrganizerDatabaseManager;
 import com.eventwise.Event;
 import com.eventwise.database.SessionStore;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
