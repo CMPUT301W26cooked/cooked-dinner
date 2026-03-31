@@ -6,16 +6,18 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.eventwise.CommentBottomSheet;
 import com.eventwise.Event;
 import com.eventwise.EventEntrantStatus;
+import com.eventwise.ProfileType;
 import com.eventwise.R;
 import com.eventwise.database.EntrantDatabaseManager;
 import com.eventwise.database.EventSearcherDatabaseManager;
@@ -67,6 +69,8 @@ public class EntrantEventDetailFragment extends Fragment {
     private LinearLayout eventActionRow;
     private Button eventPrimaryButton;
     private Button eventSecondaryButton;
+
+    private Button eventCommentButton;
 
     /**
      * Makes the entrant event detail fragment.
@@ -153,6 +157,19 @@ public class EntrantEventDetailFragment extends Fragment {
         eventActionRow = view.findViewById(R.id.event_action_row);
         eventPrimaryButton = view.findViewById(R.id.event_primary_button);
         eventSecondaryButton = view.findViewById(R.id.event_secondary_button);
+        eventCommentButton = view.findViewById(R.id.event_comment_button);
+        eventCommentButton.setOnClickListener(v -> {
+
+            if (getParentFragmentManager().findFragmentByTag("CommentBottomSheet") == null) {
+                CommentBottomSheet sheet = new CommentBottomSheet();
+                Bundle args = new Bundle();
+                args.putString("eventId", eventId);
+                args.putString("profileType", ProfileType.ENTRANT.name());
+                sheet.setArguments(args);
+                sheet.show(getParentFragmentManager(), "CommentBottomSheet");
+            }
+
+        });
     }
 
     /**

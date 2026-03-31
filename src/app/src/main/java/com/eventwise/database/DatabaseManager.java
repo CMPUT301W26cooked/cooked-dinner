@@ -1,6 +1,9 @@
 package com.eventwise.database;
 
+import android.media.MediaCommunicationManager;
+
 import com.eventwise.Admin;
+import com.eventwise.Comment;
 import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.Location;
@@ -19,6 +22,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -319,6 +323,36 @@ public abstract class DatabaseManager {
 //        event.setEventId(event.getEventId()); // Event class expects Id is already existing
 //
 //        return newEventRef.set(event);
+    }
+
+//**************************************************************************************************
+// *                                            Comments
+// *************************************************************************************************/
+    protected Task<ArrayList<Comment>> getCommentsFromEventId(String eventId) {
+        TaskCompletionSource<ArrayList<Comment>> tcs = new TaskCompletionSource<>();
+        ArrayList<Comment> commentsArray = new ArrayList<>();
+        events.document(eventId).get()
+                .addOnSuccessListener(result -> {
+                    if (result.exists() && result.contains("comments")){
+                        tcs.setResult(result.toObject(Event.class).getComments());
+                    }
+                   else {
+                        tcs.setException(new DatabaseException("Error getting comments"));
+                    }
+
+                })
+                .addOnFailureListener(exception -> {
+                    tcs.setException(new DatabaseException("Error getting comments", exception));
+                });
+        return tcs.getTask();
+    }
+
+    protected Task<Void> addCommentToEvent(Comment comment, String eventId) {
+        return events.document(eventId).update("comments", FieldValue.arrayUnion(comment));
+    }
+
+    protected Task<Void> removeCommentFromEvent(Comment comment, String eventId) {
+        return events.document(eventId).update("comments", FieldValue.arrayRemove(comment));
     }
 //**************************************************************************************************
 //*                                            Location

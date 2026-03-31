@@ -344,17 +344,36 @@
 
             </LinearLayout>
         </ScrollView>
-
-        <Button
-            android:id="@+id/cancel_event_button"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/cancel"
-            android:textSize="14sp"
-            android:textColor="@color/lighter_green"
-            android:backgroundTint="@color/red"
-            android:padding="8dp"
-            android:layout_marginTop="12dp" />
-
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            style="?android:attr/buttonBarButtonStyle" >
+            <Button
+                android:id="@+id/event_comment_button"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:backgroundTint="@color/moss_green"
+                android:padding="8dp"
+                android:text="@string/comments"
+                android:textColor="@color/lighter_green"
+                android:textSize="14sp" />
+            <Button
+                android:id="@+id/cancel_event_button"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/cancel"
+                android:textSize="14sp"
+                android:layout_marginStart="4dp"
+                android:textColor="@color/lighter_green"
+                android:backgroundTint="@color/red"
+                android:padding="8dp"
+                 />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

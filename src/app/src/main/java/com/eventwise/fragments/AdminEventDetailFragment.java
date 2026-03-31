@@ -13,7 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.eventwise.CommentBottomSheet;
 import com.eventwise.Event;
+import com.eventwise.ProfileType;
 import com.eventwise.R;
 import com.eventwise.database.EventSearcherDatabaseManager;
 
@@ -150,6 +152,8 @@ public class AdminEventDetailFragment extends Fragment {
 
         Button cancelEventButton = view.findViewById(R.id.cancel_event_button);
 
+        Button eventCommentButton = view.findViewById(R.id.event_comment_button);
+
         detailTitle.setText("Event Details");
         eventNameText.setText(eventName);
         eventOrganization.setText("Organization Name");
@@ -173,6 +177,19 @@ public class AdminEventDetailFragment extends Fragment {
 
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
         cancelEventButton.setOnClickListener(v -> cancelEvent());
+        eventCommentButton.setOnClickListener(v -> {
+
+            if (getParentFragmentManager().findFragmentByTag("CommentBottomSheet") == null) {
+                CommentBottomSheet sheet = new CommentBottomSheet();
+                Bundle args = new Bundle();
+                args.putString("eventId", eventId);
+                args.putString("profileType", ProfileType.ADMIN.name());
+                sheet.setArguments(args);
+                sheet.show(getParentFragmentManager(), "CommentBottomSheet");
+            }
+
+        });
+
     }
 
 

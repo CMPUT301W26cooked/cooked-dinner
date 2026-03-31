@@ -54,6 +54,10 @@
 
 
     <string name="empty_list_message">Nothing to see here.</string>
+    <string name="comments">Comments</string>
+    <string name="post_comment">Post comment</string>
+    <string name="leave_a_comment">Leave a comment...</string>
+    <string name="dismiss">Dismiss</string>
 
     <string name="notice">NOTICE</string>
     <string name="action_required">ACTION REQUIRED</string>
