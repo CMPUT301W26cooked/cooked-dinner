@@ -31,6 +31,7 @@ import com.eventwise.database.SessionStore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.InputMismatchException;
+import java.util.Collections;
 import java.util.List;
 import com.eventwise.Notification;
 import com.eventwise.database.NotificationDatabaseManager;
@@ -224,6 +225,11 @@ public class EntrantEventsCommunityFragment extends Fragment {
                 .addOnSuccessListener(returnedList -> {
                     eventList.clear();
                     eventList.addAll(returnedList);
+
+                    Collections.sort(eventList, (eventOne, eventTwo) ->
+                            Long.compare(eventTwo.getEventStartEpochSec(), eventOne.getEventStartEpochSec())
+                    );
+
                     eventAdapter.notifyDataSetChanged();
 
                     if (eventList.isEmpty()) {

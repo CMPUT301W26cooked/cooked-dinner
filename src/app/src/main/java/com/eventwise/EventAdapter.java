@@ -1,5 +1,4 @@
 package com.eventwise;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,7 +8,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import android.widget.ImageView;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -34,6 +32,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     public static final int TYPE_EDIT_LEAVE = 3;
     public static final int TYPE_EDIT_CANCEL = 4;
     public static final int TYPE_ACCEPT_DECLINE = 5;
+    public static final int TYPE_ENROLLED = 6;
 
     private final List<Event> eventList;
     private final int mode;
@@ -143,7 +142,10 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                     return TYPE_ACCEPT_DECLINE;
                 }
                 if (event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(currentEntrantId)) {
-                    return TYPE_EDIT_LEAVE;
+                    return TYPE_WAITLISTED;
+                }
+                if (event.getEntrantIdsByStatus(EventEntrantStatus.ENROLLED).contains(currentEntrantId)) {
+                    return TYPE_ENROLLED;
                 }
             }
         }
@@ -231,6 +233,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         } else if(viewType == TYPE_CANCEL) {
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.widget_cancel_event, parent, false);
+        } else if(viewType == TYPE_ENROLLED) {
+            view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.widget_enrolled_event, parent, false);
         } else {
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.widget_join_event, parent, false);
@@ -242,6 +247,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
 
         Event event = eventList.get(position);
+        int viewType = getItemViewType(position);
 
         holder.eventName.setText(event.getName());
         holder.eventDescription.setText(event.getDescription());
@@ -278,21 +284,53 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             holder.posterView.setImageResource(android.R.drawable.ic_menu_gallery);
         }
 
-        if (holder.primaryButton != null) {
-            boolean disableButton = shouldDisablePrimaryButton(event);
+        TextView registeredBadge = holder.itemView.findViewById(R.id.registered);
+        TextView waitlistedBadge = holder.itemView.findViewById(R.id.waitlisted_text);
 
-            if (getItemViewType(position) == TYPE_JOIN) {
-                boolean joinAllowed = event.isRegistrationOpenNow()
-                        && !event.isWaitingListFull()
-                        && !disableButton;
-                holder.primaryButton.setEnabled(joinAllowed);
-            } else if (getItemViewType(position) == TYPE_WAITLISTED) {
-                holder.primaryButton.setEnabled(!disableButton);
+        if (registeredBadge != null) {
+            registeredBadge.setVisibility(View.GONE);
+        }
+
+        if (waitlistedBadge != null) {
+            waitlistedBadge.setVisibility(View.GONE);
+        }
+
+        if (viewType == TYPE_ACCEPT_DECLINE && registeredBadge != null) {
+            registeredBadge.setText("Action Required");
+            registeredBadge.setTextColor(holder.itemView.getResources().getColor(R.color.red, null));
+            registeredBadge.setVisibility(View.VISIBLE);
+        } else if (viewType == TYPE_WAITLISTED) {
+            if (waitlistedBadge != null) {
+                waitlistedBadge.setVisibility(View.VISIBLE);
+            } else if (registeredBadge != null) {
+                registeredBadge.setText("Waitlisted");
+                registeredBadge.setTextColor(holder.itemView.getResources().getColor(R.color.moss_green, null));
+                registeredBadge.setVisibility(View.VISIBLE);
+            }
+        } else if (viewType == TYPE_ENROLLED && registeredBadge != null) {
+            registeredBadge.setText("Registered");
+            registeredBadge.setTextColor(holder.itemView.getResources().getColor(R.color.moss_green, null));
+            registeredBadge.setVisibility(View.VISIBLE);
+        }
+
+        boolean eventStarted = hasEventStarted(event);
+        boolean registrationClosed = isRegistrationClosed(event);
+
+        if (holder.primaryButton != null) {
+            boolean enablePrimary = true;
+
+            if (eventStarted) {
+                enablePrimary = false;
+            } else if (viewType == TYPE_JOIN) {
+                enablePrimary = event.isRegistrationOpenNow() && !event.isWaitingListFull();
+            } else if (viewType == TYPE_ACCEPT_DECLINE) {
+                enablePrimary = !registrationClosed;
             } else {
-                holder.primaryButton.setEnabled(!disableButton);
+                enablePrimary = true;
             }
 
-            holder.primaryButton.setAlpha(holder.primaryButton.isEnabled() ? 1.0f : 0.5f);
+            holder.primaryButton.setEnabled(enablePrimary);
+            holder.primaryButton.setAlpha(enablePrimary ? 1.0f : 0.5f);
 
             holder.primaryButton.setOnClickListener(v -> {
                 if (primaryButtonClickListener != null && holder.primaryButton.isEnabled()) {
@@ -302,8 +340,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         }
 
         if (holder.secondaryButton != null) {
+            boolean enableSecondary = !eventStarted;
+            holder.secondaryButton.setEnabled(enableSecondary);
+            holder.secondaryButton.setAlpha(enableSecondary ? 1.0f : 0.5f);
+
             holder.secondaryButton.setOnClickListener(v -> {
-                if (secondaryButtonClickListener != null) {
+                if (secondaryButtonClickListener != null && holder.secondaryButton.isEnabled()) {
                     secondaryButtonClickListener.onSecondaryButtonClick(event);
                 }
             });
