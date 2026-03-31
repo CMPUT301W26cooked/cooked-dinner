@@ -44,6 +44,7 @@ public class Event {
     private int maxWinnersToSample;
     private String qrCodeId;
     private ArrayList<EntrantStatusEntry> entrantStatuses = new ArrayList<>();
+    private  ArrayList<Comment> comments = new ArrayList<>();
 
     public Event() {}
 
@@ -130,6 +131,11 @@ public class Event {
 
     public String getQrCodeId() { return qrCodeId; }
     public void setQrCodeId(String qrCodeId) { this.qrCodeId = qrCodeId; }
+
+    public ArrayList<Comment> getComments() { return comments; }
+
+    public void setComments(ArrayList<Comment> comments) { this.comments = comments; }
+
 
     public ArrayList<EntrantStatusEntry> getEntrantStatuses() { return entrantStatuses; }
     public void setEntrantStatuses(ArrayList<EntrantStatusEntry> entrantStatuses) {
@@ -232,6 +238,7 @@ public class Event {
         }
         return getWaitingListCount() >= maxWaitingListSize;
     }
+
 
 
     public static class EntrantStatusEntry {

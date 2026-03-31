@@ -348,47 +348,73 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:gravity="center"
-            android:weightSum="3"
             android:layout_marginTop="12dp">
 
-            <Button
-                android:id="@+id/view_entrants_button"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Entrant Actions"
-                android:textSize="14sp"
-                android:textColor="@color/lighter_green"
-                android:backgroundTint="@color/moss_green"
-                android:layout_marginEnd="4dp"
-                android:padding="8dp" />
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="12dp">
+                <Button
+                    android:id="@+id/event_comment_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/comments"
+                    android:textSize="14sp"
+                    android:textColor="@color/lighter_green"
+                    android:backgroundTint="@color/moss_green"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:padding="8dp" />
 
-            <Button
-                android:id="@+id/edit_event_button"
-                android:layout_width="0dp"
+                <Button
+                    android:id="@+id/view_entrants_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/view_entrants"
+                    android:textSize="14sp"
+                    android:textColor="@color/lighter_green"
+                    android:backgroundTint="@color/moss_green"
+                    android:layout_marginStart="4dp"
+                    android:padding="8dp" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/edit"
-                android:textSize="14sp"
-                android:textColor="@color/lighter_green"
-                android:backgroundTint="@color/forest_green"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
-                android:padding="8dp" />
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="12dp">
 
-            <Button
-                android:id="@+id/cancel_event_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/cancel"
-                android:textSize="14sp"
-                android:textColor="@color/lighter_green"
-                android:backgroundTint="@color/red"
-                android:layout_marginStart="4dp"
-                android:padding="8dp" />
+                <Button
+                    android:id="@+id/edit_event_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/edit"
+                    android:textSize="14sp"
+                    android:textColor="@color/lighter_green"
+                    android:backgroundTint="@color/forest_green"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:padding="8dp" />
+
+                <Button
+                    android:id="@+id/cancel_event_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/cancel"
+                    android:textSize="14sp"
+                    android:textColor="@color/lighter_green"
+                    android:backgroundTint="@color/red"
+                    android:layout_marginStart="4dp"
+                    android:padding="8dp" />
+            </LinearLayout>
         </LinearLayout>
 
     </LinearLayout>

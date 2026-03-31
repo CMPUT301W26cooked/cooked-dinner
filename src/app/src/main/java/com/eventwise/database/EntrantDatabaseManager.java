@@ -1,5 +1,8 @@
 package com.eventwise.database;
 
+import android.util.Log;
+
+import com.eventwise.Comment;
 import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.Enum.EventEntrantStatus;
@@ -504,6 +507,19 @@ public class EntrantDatabaseManager extends DatabaseManager {
 
         return tcs.getTask();
     }
+
+    public Task<ArrayList<Comment>> getCommentsFromEventId(String eventId){
+        return super.getCommentsFromEventId(eventId);
+    }
+
+    public Task<Void> addCommentToEvent(Comment comment, String eventId){
+        return super.addCommentToEvent(comment, eventId);
+    }
+
+    public Task<Void> removeCommentFromEvent(Comment comment, String eventId){
+        return super.removeCommentFromEvent(comment, eventId);
+    }
+
 
     /**
      * Iterate all events and remove any entrant status entries for the given entrantId.

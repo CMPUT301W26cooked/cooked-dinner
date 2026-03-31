@@ -13,7 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.eventwise.CommentBottomSheet;
 import com.eventwise.Event;
+import com.eventwise.ProfileType;
 import com.eventwise.R;
 import com.eventwise.database.EventSearcherDatabaseManager;
 
@@ -156,6 +158,7 @@ public class OrganizerEventDetailFragment extends Fragment {
         Button viewEntrantsButton = view.findViewById(R.id.view_entrants_button);
         Button editEventButton = view.findViewById(R.id.edit_event_button);
         Button cancelEventButton = view.findViewById(R.id.cancel_event_button);
+        Button eventCommentButton = view.findViewById(R.id.event_comment_button);
 
         boolean eventOver = hasEventStarted();
 
@@ -211,6 +214,18 @@ public class OrganizerEventDetailFragment extends Fragment {
                     .commit();
         });
 
+        eventCommentButton.setOnClickListener(v -> {
+
+            if (getParentFragmentManager().findFragmentByTag("CommentBottomSheet") == null) {
+                CommentBottomSheet sheet = new CommentBottomSheet();
+                Bundle args = new Bundle();
+                args.putString("eventId", eventId);
+                args.putString("profileType", ProfileType.ORGANIZER.name());
+                sheet.setArguments(args);
+                sheet.show(getParentFragmentManager(), "CommentBottomSheet");
+            }
+
+        });
         cancelEventButton.setOnClickListener(v -> cancelEvent());
     }
 
