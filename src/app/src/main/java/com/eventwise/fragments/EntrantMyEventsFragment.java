@@ -29,6 +29,7 @@ import java.util.List;
  * @author Luke Forster
  * @version 1.0
  * @since 2026-03-16
+ * TODO: Implement geolocation if else logic. if event geolocation enables get geo location else...
  */
 
 public class EntrantMyEventsFragment extends Fragment {
@@ -99,7 +100,7 @@ public class EntrantMyEventsFragment extends Fragment {
             event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.WAITLISTED, timestamp);
             eventAdapter.notifyDataSetChanged();
 
-            db.registerEntrantInEvent(entrantId, event.getEventId(), timestamp)
+            db.registerEntrantInEvent(entrantId, event.getEventId(), timestamp, null)
                     .addOnSuccessListener(unused -> {
                         Log.d("Event", "Successfully joined: " + event.getName());
                         refreshEvents();
