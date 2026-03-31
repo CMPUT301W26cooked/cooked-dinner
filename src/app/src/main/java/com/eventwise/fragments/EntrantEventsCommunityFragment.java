@@ -1,30 +1,42 @@
 package com.eventwise.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigationevent.NavigationEventInfo;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Event;
 import com.eventwise.EventAdapter;
 import com.eventwise.EventEntrantStatus;
+import com.eventwise.FilterBottomSheet;
 import com.eventwise.R;
 import com.eventwise.database.EntrantDatabaseManager;
+import com.eventwise.database.EventFilter;
 import com.eventwise.database.EventSearcherDatabaseManager;
 import com.eventwise.database.SessionStore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.InputMismatchException;
 import java.util.Collections;
 import java.util.List;
 import com.eventwise.Notification;
 import com.eventwise.database.NotificationDatabaseManager;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.api.Distribution;
 
 /**
  * This class is responsible for the Entrant Events Community Fragment.
@@ -32,6 +44,7 @@ import com.eventwise.database.NotificationDatabaseManager;
  * @version 1.0
  * @since 2026-03-03
  * Updated By Becca Irving on 2026-03-16
+ * Updated By Pablo Osorio on 2026-03-29
  */
 
 public class EntrantEventsCommunityFragment extends Fragment {
@@ -39,6 +52,16 @@ public class EntrantEventsCommunityFragment extends Fragment {
     private RecyclerView eventListView;
     private EventAdapter eventAdapter;
     private List<Event> eventList;
+
+    private EditText searchBar;
+
+    FloatingActionButton filterButton;
+
+    private EventFilter currentFilter = new EventFilter();
+
+    private LinearLayout emptyState;
+
+
 
     public EntrantEventsCommunityFragment() {
     }
@@ -56,12 +79,61 @@ public class EntrantEventsCommunityFragment extends Fragment {
         eventListView = view.findViewById(R.id.events_community_list_view);
         eventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
+        //Empty state stuff
+        emptyState = view.findViewById(R.id.empty_state);
+
+
+        //Searchbar stuff
+        searchBar = view.findViewById(R.id.search_bar);
+        searchBar.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH){
+                String keyword = searchBar.getText().toString().trim();
+                //If no keywords, clear the filter
+                if (keyword.isEmpty()){
+                    currentFilter.resetKeywords();
+                    refreshEvents();
+                    return true;
+                }
+                //Set filter to keywords
+                currentFilter.setKeywords(new ArrayList<>(Arrays.asList(keyword.trim().split("\\s+"))));
+                InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
+                refreshEvents();
+                return true;
+            }
+            return false;
+        });
+
+        //Filter button stuff
+        filterButton = view.findViewById(R.id.fab_filter);
+        filterButton.setOnClickListener(v -> {
+            FilterBottomSheet sheet = new FilterBottomSheet();
+            sheet.setFilterListener((startDate, endDate, minSpots) -> {
+                EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();
+                currentFilter.setStartTimestamp(startDate);
+                currentFilter.setEndTimestamp(endDate);
+                currentFilter.setEventCapacity(minSpots);
+                eventSearcherDBMan.getFilteredEvents(currentFilter)
+                        .addOnSuccessListener(returnedList -> {
+                            refreshEvents();
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("Event", "Failed to refresh events", e);
+                        });
+            });
+            sheet.show(getParentFragmentManager(), "filter_sheet");
+        });
+
+
         eventList = new ArrayList<>();
         //eventAdapter = new EventAdapter(eventList, EventAdapter.TYPE_JOIN, getCurrentEntrantId(), this::joinEvent);
         eventAdapter = new EventAdapter(eventList, EventAdapter.TYPE_JOIN, getCurrentEntrantId(), this::joinEvent, this::openEventDetail);
         eventListView.setAdapter(eventAdapter);
         //Get events from Firebase
         refreshEvents();
+
+
+
     }
 
     @Override
@@ -149,7 +221,7 @@ public class EntrantEventsCommunityFragment extends Fragment {
     private void refreshEvents() {
         EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();
 
-        eventSearcherDBMan.getEvents()
+        eventSearcherDBMan.getFilteredEvents(currentFilter)
                 .addOnSuccessListener(returnedList -> {
                     eventList.clear();
                     eventList.addAll(returnedList);
@@ -159,10 +231,20 @@ public class EntrantEventsCommunityFragment extends Fragment {
                     );
 
                     eventAdapter.notifyDataSetChanged();
+
+                    if (eventList.isEmpty()) {
+                        eventListView.setVisibility(View.GONE);
+                        emptyState.setVisibility(View.VISIBLE);
+                    } else {
+                        eventListView.setVisibility(View.VISIBLE);
+                        emptyState.setVisibility(View.GONE);
+                    }
                 })
                 .addOnFailureListener(e -> {
                     Log.e("Event", "Failed to refresh events", e);
                 });
+
+
     }
 
     private void sendJoinNotifications(Event event, String entrantId) {

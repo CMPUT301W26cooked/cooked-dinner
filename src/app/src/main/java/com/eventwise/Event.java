@@ -1,5 +1,7 @@
 package com.eventwise;
 
+import android.util.Log;
+
 import com.google.firebase.firestore.Exclude;
 
 import java.util.ArrayList;
@@ -39,6 +41,7 @@ public class Event {
     private long registrationCloseEpochSec;
     private boolean geolocationRequired;
     private Integer maxWaitingListSize;
+
     private int maxWinnersToSample;
     private String qrCodeId;
     private ArrayList<EntrantStatusEntry> entrantStatuses = new ArrayList<>();
@@ -147,6 +150,7 @@ public class Event {
             entrantStatuses = new ArrayList<>();
         }
 
+
 //        long nowEpochSec = System.currentTimeMillis() / 1000L;
 
         for (EntrantStatusEntry entry : entrantStatuses) {
@@ -229,6 +233,7 @@ public class Event {
         }
         return getWaitingListCount() >= maxWaitingListSize;
     }
+
 
     public static class EntrantStatusEntry {
         private String entrantProfileId;
