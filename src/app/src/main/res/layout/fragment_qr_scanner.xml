@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: QR Scanner Fragment Layout
+    Author: Hao
+    Version: 1.0
+    Date: 2026-04-01
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <!-- Camera Preview -->
+    <com.google.mlkit.vision.camera.CameraSourcePreview
+        android:id="@+id/preview_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Overlay with scanning frame -->
+    <View
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_gravity="center"
+        android:background="@drawable/qr_scanner_overlay" />
+
+    <!-- Instructions -->
+    <TextView
+        android:id="@+id/scanner_instructions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="48dp"
+        android:text="Align QR code within the frame"
+        android:textColor="@color/white"
+        android:textSize="14sp" />
+
+</FrameLayout>
