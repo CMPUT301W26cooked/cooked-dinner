@@ -6,6 +6,12 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
 
+/**
+ * This serves as the basic class for the location object.
+ * @author Luke Forster
+ * @version 1.0
+ * @since 2026-04-01
+ */
 public class Location {
 
     private double latitude;

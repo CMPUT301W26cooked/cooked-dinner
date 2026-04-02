@@ -116,7 +116,7 @@ public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
         event.addOrUpdateEntrantStatus(randomEntrantId, EventEntrantStatus.WAITLISTED, localTimestamp);
         entrant.addOrUpdateEventState(randomEventId, EventEntrantStatus.WAITLISTED, localTimestamp);
 
-        Tasks.await(dbManager.registerEntrantInEvent(randomEntrantId, randomEventId, localTimestamp));
+        Tasks.await(dbManager.registerEntrantInEvent(randomEntrantId, randomEventId, localTimestamp, null));
 
         snapshot = Tasks.await(testDb.collection("events").document(randomEventId).get());
         event = snapshot.toObject(Event.class);
@@ -138,7 +138,7 @@ public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
 
         long localTimestamp = System.currentTimeMillis() / 1000L;
         //Register the entrant
-        Tasks.await(dbManager.registerEntrantInEvent(randomEntrantId, randomEventId, localTimestamp));
+        Tasks.await(dbManager.registerEntrantInEvent(randomEntrantId, randomEventId, localTimestamp, null));
         snapshot = Tasks.await(testDb.collection("events").document(randomEventId).get());
         Event event = snapshot.toObject(Event.class);
         ArrayList<String> waitingListEntrantIds = event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED);
@@ -167,7 +167,7 @@ public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
         long localTimestamp = System.currentTimeMillis() / 1000L;
 
         //Register the entrant on Firebase
-        Tasks.await(dbManager.registerEntrantInEvent(randomEntrantId, randomEventId, localTimestamp));
+        Tasks.await(dbManager.registerEntrantInEvent(randomEntrantId, randomEventId, localTimestamp, null));
         snapshot = Tasks.await(testDb.collection("events").document(randomEventId).get());
         Event event = snapshot.toObject(Event.class);
         ArrayList<String> waitingListEntrantIds = event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED);
