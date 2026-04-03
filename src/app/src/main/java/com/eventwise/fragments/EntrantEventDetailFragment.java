@@ -206,7 +206,7 @@ public class EntrantEventDetailFragment extends Fragment {
         } else if (currentState == EventEntrantStatus.ENROLLED) {
             updateEntrantState(EventEntrantStatus.CANCELLED, EventEntrantStatus.ENROLLED);
         } else {
-            updateEntrantState(EventEntrantStatus.WAITLISTED, currentState);
+            joinEvent(currentState);
         }
     }
 
@@ -521,5 +521,69 @@ public class EntrantEventDetailFragment extends Fragment {
      */
     private String formatTimeRange(long startEpochSeconds, long endEpochSeconds) {
         return formatTime(startEpochSeconds) + " – " + formatTime(endEpochSeconds);
+    }
+
+    /**
+     * Registers the current entrant in an event waitlist, optionally capturing
+     * their geolocation if the event requires it.
+     *
+     * @param revertState the entrant's previous status used to restore their state if the join operation fails
+     * @return none
+     */
+    private void joinEvent(@Nullable EventEntrantStatus revertState) {
+        if (currentEvent == null || entrantId == null || entrantId.trim().isEmpty()) {
+            Log.e("EntrantEventDetail", "Join failed: missing event or entrant Id");
+            return;
+        }
+
+        long timestamp = System.currentTimeMillis() / 1000L;
+        EntrantDatabaseManager db = new EntrantDatabaseManager();
+
+        if (currentEvent.isGeolocationRequired()) {
+            com.eventwise.Location.getCurrentLocation(requireContext(), location -> {
+                currentEvent.addOrUpdateEntrantStatus(
+                        entrantId,
+                        EventEntrantStatus.WAITLISTED,
+                        timestamp,
+                        location
+                );
+                bindEvent(currentEvent);
+
+                db.registerEntrantInEvent(entrantId, currentEvent.getEventId(), timestamp, location)
+                        .addOnSuccessListener(unused -> {
+                            Log.d("EntrantEventDetail", "Successfully joined event with location");
+                            loadEvent();
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("EntrantEventDetail", "Join failed", e);
+
+                            if (revertState != null) {
+                                currentEvent.addOrUpdateEntrantStatus(entrantId, revertState, timestamp);
+                            }
+                            bindEvent(currentEvent);
+                        });
+            });
+        } else {
+            currentEvent.addOrUpdateEntrantStatus(
+                    entrantId,
+                    EventEntrantStatus.WAITLISTED,
+                    timestamp
+            );
+            bindEvent(currentEvent);
+
+            db.registerEntrantInEvent(entrantId, currentEvent.getEventId(), timestamp, null)
+                    .addOnSuccessListener(unused -> {
+                        Log.d("EntrantEventDetail", "Successfully joined event");
+                        loadEvent();
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("EntrantEventDetail", "Join failed", e);
+
+                        if (revertState != null) {
+                            currentEvent.addOrUpdateEntrantStatus(entrantId, revertState, timestamp);
+                        }
+                        bindEvent(currentEvent);
+                    });
+        }
     }
 }

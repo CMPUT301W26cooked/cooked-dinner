@@ -150,7 +150,13 @@ public class Event {
      * @param entrantProfileId entrant profile id
      * @param status entrant status
      */
-    public void addOrUpdateEntrantStatus(String entrantProfileId, EventEntrantStatus status, long timestamp) {
+
+    public void addOrUpdateEntrantStatus(String entrantProfileId,
+                                         EventEntrantStatus status,
+                                         long timestamp) {
+        addOrUpdateEntrantStatus(entrantProfileId, status, timestamp, null);
+    }
+    public void addOrUpdateEntrantStatus(String entrantProfileId, EventEntrantStatus status, long timestamp, Location joinLocation) {
         if (entrantStatuses == null) {
             entrantStatuses = new ArrayList<>();
         }
@@ -164,11 +170,12 @@ public class Event {
                     && entrantProfileId.equals(entry.getEntrantProfileId())) {
                 entry.setStatus(status);
                 entry.setTimestampEpochSec(timestamp);
+                entry.setJoinLocation(joinLocation);
                 return;
             }
         }
 
-        entrantStatuses.add(new EntrantStatusEntry(entrantProfileId, status, timestamp));
+        entrantStatuses.add(new EntrantStatusEntry(entrantProfileId, status, timestamp, joinLocation));
     }
 
     /**
@@ -245,6 +252,7 @@ public class Event {
         private String entrantProfileId;
         private EventEntrantStatus status;
         private long timestampEpochSec;
+        private Location joinLocation;
 
         public EntrantStatusEntry() {}
 
@@ -252,6 +260,13 @@ public class Event {
             this.entrantProfileId = entrantProfileId;
             this.status = status;
             this.timestampEpochSec = timestampEpochSec;
+        }
+
+        public EntrantStatusEntry(String entrantProfileId, EventEntrantStatus status, long timestampEpochSec, Location joinLocation) {
+            this.entrantProfileId = entrantProfileId;
+            this.status = status;
+            this.timestampEpochSec = timestampEpochSec;
+            this.joinLocation = joinLocation;
         }
 
         public String getEntrantProfileId() { return entrantProfileId; }
@@ -262,5 +277,7 @@ public class Event {
 
         public long getTimestampEpochSec() { return timestampEpochSec; }
         public void setTimestampEpochSec(long timestampEpochSec) { this.timestampEpochSec = timestampEpochSec; }
+        public Location getJoinLocation() { return joinLocation; }
+        public void setJoinLocation(Location joinLocation) { this.joinLocation = joinLocation; }
     }
 }

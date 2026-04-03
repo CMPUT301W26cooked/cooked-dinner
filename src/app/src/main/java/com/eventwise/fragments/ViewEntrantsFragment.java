@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Entrant;
+import com.eventwise.Event;
 import com.eventwise.R;
 import com.eventwise.adapters.EntrantListAdapter;
 import com.eventwise.database.EntrantDatabaseManager;
@@ -63,6 +64,8 @@ public class ViewEntrantsFragment extends Fragment {
 
     private String selectedFilter = "";
     private String eventId = "";
+    private Event currentEvent;
+    private View mapContainer;
 
     public ViewEntrantsFragment() {
     }
@@ -98,6 +101,8 @@ public class ViewEntrantsFragment extends Fragment {
         if (args != null) {
             eventId = args.getString(ARG_EVENT_ID, "");
         }
+        organizerDatabaseManager.getEventById(eventId)
+                .addOnSuccessListener(event -> currentEvent = event);
 
         waitlistedButton = view.findViewById(R.id.button_waitlisted);
         inviteesButton = view.findViewById(R.id.button_invitees);
@@ -106,6 +111,7 @@ public class ViewEntrantsFragment extends Fragment {
         backButton = view.findViewById(R.id.button_back);
         recyclerView = view.findViewById(R.id.recycler_view_entrants);
         emptyText = view.findViewById(R.id.text_empty_entrants);
+        mapContainer = view.findViewById(R.id.map_container);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         adapter = new EntrantListAdapter(displayedEntrants);
@@ -132,6 +138,23 @@ public class ViewEntrantsFragment extends Fragment {
     private void selectFilter(String filter) {
         selectedFilter = filter;
         updateButtonColors();
+        if (FILTER_WAITLISTED.equals(filter)) {
+
+            mapContainer.setVisibility(View.VISIBLE);
+
+            if (currentEvent != null) {
+                getChildFragmentManager()
+                        .beginTransaction()
+                        .replace(
+                                R.id.map_container,
+                                OrganizerEventMapFragment.newInstance(currentEvent)
+                        )
+                        .commit();
+            }
+
+        } else {
+            mapContainer.setVisibility(View.GONE);
+        }
         loadSelectedFilterFromBackend();
     }
 

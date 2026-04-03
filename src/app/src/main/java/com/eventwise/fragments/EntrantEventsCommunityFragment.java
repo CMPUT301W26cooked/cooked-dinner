@@ -1,6 +1,8 @@
 package com.eventwise.fragments;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +15,7 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,6 +37,7 @@ import java.util.List;
 import com.eventwise.Notification;
 import com.eventwise.database.NotificationDatabaseManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.eventwise.Location;
 
 /**
  * This class is responsible for the Entrant Events Community Fragment.
@@ -57,6 +61,8 @@ public class EntrantEventsCommunityFragment extends Fragment {
     private EventFilter currentFilter = new EventFilter();
 
     private LinearLayout emptyState;
+
+
 
 
 
@@ -170,10 +176,47 @@ public class EntrantEventsCommunityFragment extends Fragment {
                         eventAdapter.notifyDataSetChanged();
                     });
         } else {
-            event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.WAITLISTED, timestamp);
+            if (event.isGeolocationRequired()) {
+                Location.getCurrentLocation(requireContext(), location -> {
+                    event.addOrUpdateEntrantStatus(
+                            entrantId,
+                            EventEntrantStatus.WAITLISTED,
+                            timestamp,
+                            location
+                    );
+
+                    db.registerEntrantInEvent(entrantId, event.getEventId(), timestamp, location)
+                            .addOnSuccessListener(unused -> {
+                                Log.d("Event", "Successfully joined: " + event.getName());
+                                sendJoinNotifications(event, entrantId);
+                                refreshEvents();
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("Event", "Join failed", e);
+
+                                event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
+                                eventAdapter.notifyDataSetChanged();
+                            });
+                });
+            } else {
+                event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.WAITLISTED, timestamp);
+                db.registerEntrantInEvent(entrantId, event.getEventId(), timestamp, null)
+                        .addOnSuccessListener(unused -> {
+                            Log.d("Event", "Successfully joined: " + event.getName());
+                            sendJoinNotifications(event, entrantId);
+                            refreshEvents();
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("Event", "Join failed", e);
+
+                            event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
+                            eventAdapter.notifyDataSetChanged();
+                        });
+            }
+
             eventAdapter.notifyDataSetChanged();
 
-            db.registerEntrantInEvent(entrantId, event.getEventId(), timestamp)
+            db.registerEntrantInEvent(entrantId, event.getEventId(), timestamp, null)
                     .addOnSuccessListener(unused -> {
                         Log.d("Event", "Successfully joined: " + event.getName());
                         sendJoinNotifications(event, entrantId);
@@ -282,9 +325,9 @@ public class EntrantEventsCommunityFragment extends Fragment {
 
         notificationDB.createNotification(organizerNotification)
                 .addOnSuccessListener(unused ->
-                    Log.d("Notification", "Organizer notification created"))
+                        Log.d("Notification", "Organizer notification created"))
                 .addOnFailureListener(e ->
-                    Log.e("Notification", "Organizer notification failed", e));
+                        Log.e("Notification", "Organizer notification failed", e));
     }
 
     private void sendLeaveNotifications(Event event, String entrantId) {

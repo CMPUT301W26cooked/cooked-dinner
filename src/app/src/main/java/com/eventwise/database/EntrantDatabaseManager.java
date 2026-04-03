@@ -4,6 +4,7 @@ import com.eventwise.Comment;
 import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.Enum.EventEntrantStatus;
+import com.eventwise.Location;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -159,7 +160,7 @@ public class EntrantDatabaseManager extends DatabaseManager {
      * @param eventId   The Id of the event for which the entrant is registering.
      * @throws DatabaseException If there is an error updating the database or if the entrant cannot be added.
      */
-    public Task<Void> registerEntrantInEvent(String entrantId, String eventId, long timestamp) {
+    public Task<Void> registerEntrantInEvent(String entrantId, String eventId, long timestamp, Location location) {
         TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
         if (entrantId == null || entrantId.trim().isEmpty()) {
@@ -195,7 +196,20 @@ public class EntrantDatabaseManager extends DatabaseManager {
                                     return;
                                 }
 
-                                event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.WAITLISTED, timestamp);
+                                if (location != null) {
+                                    event.addOrUpdateEntrantStatus(
+                                            entrantId,
+                                            EventEntrantStatus.WAITLISTED,
+                                            timestamp,
+                                            location
+                                    );
+                                } else {
+                                    event.addOrUpdateEntrantStatus(
+                                            entrantId,
+                                            EventEntrantStatus.WAITLISTED,
+                                            timestamp
+                                    );
+                                }
                                 entrant.addOrUpdateEventState(eventId, EventEntrantStatus.WAITLISTED, timestamp);
 
                                 WriteBatch batch = super.db.batch();

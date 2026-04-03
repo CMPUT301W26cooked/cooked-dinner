@@ -13,11 +13,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Event;
+import com.eventwise.Location;
+import com.eventwise.Notification;
 import com.eventwise.adapters.EventAdapter;
 import com.eventwise.Enum.EventEntrantStatus;
 import com.eventwise.R;
 import com.eventwise.database.EntrantDatabaseManager;
 import com.eventwise.database.EventSearcherDatabaseManager;
+import com.eventwise.database.NotificationDatabaseManager;
 import com.eventwise.database.SessionStore;
 
 import java.util.ArrayList;
@@ -29,6 +32,7 @@ import java.util.List;
  * @author Luke Forster
  * @version 1.0
  * @since 2026-03-16
+ * @update Luke Forster GeoLocation 2026-04-01
  */
 
 public class EntrantMyEventsFragment extends Fragment {
@@ -96,20 +100,45 @@ public class EntrantMyEventsFragment extends Fragment {
                         eventAdapter.notifyDataSetChanged();
                     });
         } else {
-            event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.WAITLISTED, timestamp);
+            if (event.isGeolocationRequired()) {
+                Location.getCurrentLocation(requireContext(), location -> {
+                    event.addOrUpdateEntrantStatus(
+                            entrantId,
+                            EventEntrantStatus.WAITLISTED,
+                            timestamp,
+                            location
+                    );
+
+                    db.registerEntrantInEvent(entrantId, event.getEventId(), timestamp, location)
+                            .addOnSuccessListener(unused -> {
+                                Log.d("Event", "Successfully joined: " + event.getName());
+                                sendJoinNotifications(event, entrantId);
+                                refreshEvents();
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("Event", "Join failed", e);
+
+                                event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
+                                eventAdapter.notifyDataSetChanged();
+                            });
+                });
+            } else {
+                event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.WAITLISTED, timestamp);
+                db.registerEntrantInEvent(entrantId, event.getEventId(), timestamp, null)
+                        .addOnSuccessListener(unused -> {
+                            Log.d("Event", "Successfully joined: " + event.getName());
+                            sendJoinNotifications(event, entrantId);
+                            refreshEvents();
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("Event", "Join failed", e);
+
+                            event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
+                            eventAdapter.notifyDataSetChanged();
+                        });
+            }
+
             eventAdapter.notifyDataSetChanged();
-
-            db.registerEntrantInEvent(entrantId, event.getEventId(), timestamp)
-                    .addOnSuccessListener(unused -> {
-                        Log.d("Event", "Successfully joined: " + event.getName());
-                        refreshEvents();
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("Event", "Join failed", e);
-
-                        event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
-                        eventAdapter.notifyDataSetChanged();
-                    });
         }
     }
 
@@ -189,6 +218,7 @@ public class EntrantMyEventsFragment extends Fragment {
         db.setEntrantStatusForEvent(entrantId, event.getEventId(), EventEntrantStatus.ENROLLED, timestamp)
                 .addOnSuccessListener(unused -> {
                     Log.d("Event", "Successfully accepted: " + event.getName());
+                    sendAcceptedNotifications(event, entrantId);
                     refreshEvents();
                 })
                 .addOnFailureListener(e -> {
@@ -216,6 +246,7 @@ public class EntrantMyEventsFragment extends Fragment {
         db.setEntrantStatusForEvent(entrantId, event.getEventId(), EventEntrantStatus.DECLINED, timestamp)
                 .addOnSuccessListener(unused -> {
                     Log.d("Event", "Successfully declined: " + event.getName());
+                    sendDeclinedNotifications(event, entrantId);
                     refreshEvents();
                 })
                 .addOnFailureListener(e -> {
@@ -272,4 +303,140 @@ public class EntrantMyEventsFragment extends Fragment {
             declineEvent(event);
         }
     }
+    private void sendJoinNotifications(Event event, String entrantId) {
+
+        NotificationDatabaseManager notificationDB =
+                new NotificationDatabaseManager();
+
+        long now = System.currentTimeMillis() / 1000L;
+        ArrayList<String> entrantRecipients = new ArrayList<>();
+        entrantRecipients.add(entrantId);
+
+        Notification entrantNotification = new Notification();
+        entrantNotification.setRecipientRole(Notification.RecipientRole.ENTRANT);
+        entrantNotification.setEntrantIds(entrantRecipients);
+        entrantNotification.setMessageTitle("Event Joined");
+        entrantNotification.setMessageBody("You joined " + event.getName());
+        entrantNotification.setType(Notification.NotificationType.OTHER);
+        entrantNotification.setTimestamp(now);
+        notificationDB.createNotification(entrantNotification)
+                .addOnSuccessListener(unused ->
+                        Log.d("Notification", "Entrant notification created"))
+                .addOnFailureListener(e ->
+                        Log.e("Notification", "Entrant notification failed", e));
+
+
+        ArrayList<String> organizerRecipients = new ArrayList<>();
+        organizerRecipients.add(event.getOrganizerProfileId());
+
+        Notification organizerNotification = new Notification();
+        organizerNotification.setRecipientRole(Notification.RecipientRole.ORGANIZER);
+        organizerNotification.setEntrantIds(organizerRecipients);
+        organizerNotification.setMessageTitle("New Entrant");
+        organizerNotification.setMessageBody(
+                entrantId + " joined your event " + event.getName()
+        );
+        organizerNotification.setType(Notification.NotificationType.OTHER);
+        organizerNotification.setTimestamp(now);
+
+        notificationDB.createNotification(organizerNotification)
+                .addOnSuccessListener(unused ->
+                        Log.d("Notification", "Organizer notification created"))
+                .addOnFailureListener(e ->
+                        Log.e("Notification", "Organizer notification failed", e));
+    }
+
+    private void sendLeaveNotifications(Event event, String entrantId) {
+
+        NotificationDatabaseManager notificationDB =
+                new NotificationDatabaseManager();
+
+        long now = System.currentTimeMillis() / 1000L;
+        ArrayList<String> entrantRecipients = new ArrayList<>();
+        entrantRecipients.add(entrantId);
+
+        Notification entrantNotification = new Notification();
+        entrantNotification.setRecipientRole(Notification.RecipientRole.ENTRANT);
+        entrantNotification.setEntrantIds(entrantRecipients);
+        entrantNotification.setMessageTitle("Event Left");
+        entrantNotification.setMessageBody("You left " + event.getName());
+        entrantNotification.setType(Notification.NotificationType.OTHER);
+        entrantNotification.setTimestamp(now);
+        notificationDB.createNotification(entrantNotification)
+                .addOnSuccessListener(unused ->
+                        Log.d("Notification", "Entrant notification created"))
+                .addOnFailureListener(e ->
+                        Log.e("Notification", "Entrant notification failed", e));
+
+
+        ArrayList<String> organizerRecipients = new ArrayList<>();
+        organizerRecipients.add(event.getOrganizerProfileId());
+
+        Notification organizerNotification = new Notification();
+        organizerNotification.setRecipientRole(Notification.RecipientRole.ORGANIZER);
+        organizerNotification.setEntrantIds(organizerRecipients);
+        organizerNotification.setMessageTitle("Entrant Left Event");
+        organizerNotification.setMessageBody(
+                entrantId + " left your event " + event.getName()
+        );
+        organizerNotification.setType(Notification.NotificationType.OTHER);
+        organizerNotification.setTimestamp(now);
+
+        notificationDB.createNotification(organizerNotification)
+                .addOnSuccessListener(unused ->
+                        Log.d("Notification", "Organizer notification created"))
+                .addOnFailureListener(e ->
+                        Log.e("Notification", "Organizer notification failed", e));
+    }
+    private void sendAcceptedNotifications(Event event, String entrantId) {
+
+        NotificationDatabaseManager notificationDB =
+                new NotificationDatabaseManager();
+
+        long now = System.currentTimeMillis() / 1000L;
+        ArrayList<String> organizerRecipients = new ArrayList<>();
+        organizerRecipients.add(event.getOrganizerProfileId());
+
+        Notification organizerNotification = new Notification();
+        organizerNotification.setRecipientRole(Notification.RecipientRole.ORGANIZER);
+        organizerNotification.setEntrantIds(organizerRecipients);
+        organizerNotification.setMessageTitle("New Entrant");
+        organizerNotification.setMessageBody(
+                entrantId + " Accepted your invite to" + event.getName()
+        );
+        organizerNotification.setType(Notification.NotificationType.OTHER);
+        organizerNotification.setTimestamp(now);
+
+        notificationDB.createNotification(organizerNotification)
+                .addOnSuccessListener(unused ->
+                        Log.d("Notification", "Organizer notification created"))
+                .addOnFailureListener(e ->
+                        Log.e("Notification", "Organizer notification failed", e));
+    }
+    private void sendDeclinedNotifications(Event event, String entrantId) {
+
+        NotificationDatabaseManager notificationDB =
+                new NotificationDatabaseManager();
+
+        long now = System.currentTimeMillis() / 1000L;
+        ArrayList<String> organizerRecipients = new ArrayList<>();
+        organizerRecipients.add(event.getOrganizerProfileId());
+
+        Notification organizerNotification = new Notification();
+        organizerNotification.setRecipientRole(Notification.RecipientRole.ORGANIZER);
+        organizerNotification.setEntrantIds(organizerRecipients);
+        organizerNotification.setMessageTitle("New Entrant");
+        organizerNotification.setMessageBody(
+                entrantId + " Declined your invite to " + event.getName()
+        );
+        organizerNotification.setType(Notification.NotificationType.OTHER);
+        organizerNotification.setTimestamp(now);
+
+        notificationDB.createNotification(organizerNotification)
+                .addOnSuccessListener(unused ->
+                        Log.d("Notification", "Organizer notification created"))
+                .addOnFailureListener(e ->
+                        Log.e("Notification", "Organizer notification failed", e));
+    }
 }
+
