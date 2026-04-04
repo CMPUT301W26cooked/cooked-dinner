@@ -6,11 +6,10 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * Entry activity for the app.
- * Immediately forwards to the landing page.
- *
- * Author: Becca Irving
- * Date: Apr 3, 2026
+ * This is the MainActivity class for the EventWise app.
+ * @author Luke Forster
+ * @version 1.0
+ * @since 2026-03-03
  */
 public class MainActivity extends AppCompatActivity {
 
