@@ -23,4 +23,9 @@
         android:icon="@drawable/qr_scanner_icon"
         android:title="QR Scanner"
         />
+    <item
+        android:id="@+id/profile_icon"
+        android:icon="@drawable/profile_icon"
+        android:title="Profile"
+        />
 </menu>
