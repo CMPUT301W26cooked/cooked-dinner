@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,6 +16,7 @@ import androidx.fragment.app.Fragment;
 
 import com.eventwise.Entrant;
 import com.eventwise.Organizer;
+import com.eventwise.ProfileDropdownHelper;
 import com.eventwise.R;
 import com.eventwise.database.DatabaseManager;
 import com.eventwise.database.EntrantDatabaseManager;
@@ -61,6 +64,19 @@ public class OrganizerProfileEmptyFragment extends Fragment {
         createProfileButton = view.findViewById(R.id.btn_create_profile);
         receiveNotificationsLayout = view.findViewById(R.id.layout_receive_notifications);
         receiveNotificationsCheckboxImage = view.findViewById(R.id.image_receive_notifications_checkbox);
+
+        /**
+         * Switch profile type dropdowm
+         */
+        LinearLayout profileSwitcher = view.findViewById(R.id.profile_switcher);
+        TextView topBarTitle = view.findViewById(R.id.top_bar_title);
+
+        ProfileDropdownHelper.setupDropdown(
+                this,
+                profileSwitcher,
+                topBarTitle,
+                "Organizer"
+        );
 
         Bundle args = getArguments();
         if (args != null) {
