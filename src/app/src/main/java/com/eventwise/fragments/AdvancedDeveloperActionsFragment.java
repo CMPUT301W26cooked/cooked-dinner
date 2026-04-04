@@ -10,7 +10,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.eventwise.Event;
 import com.eventwise.R;
+import com.eventwise.database.OrganizerDatabaseManager;
 
 /**
  * organizer page for advanced developer actions.
@@ -30,6 +32,13 @@ public class AdvancedDeveloperActionsFragment extends Fragment {
     private static final String ARG_EVENT_ID = "arg_event_id";
 
     private String eventId = "";
+
+    private Button waitlistEntrantsButton;
+    private Button removeWaitlistEntrantsButton;
+    private Button inviteEntrantsButton;
+    private Button removeInviteEntrantsButton;
+    private Button enrollEntrantsButton;
+    private Button removeEnrollEntrantsButton;
 
     public AdvancedDeveloperActionsFragment() {
     }
@@ -65,12 +74,12 @@ public class AdvancedDeveloperActionsFragment extends Fragment {
 
         View backButton = view.findViewById(R.id.button_back);
 
-        Button waitlistEntrantsButton = view.findViewById(R.id.button_waitlist_entrants);
-        Button removeWaitlistEntrantsButton = view.findViewById(R.id.button_remove_waitlist_entrants);
-        Button inviteEntrantsButton = view.findViewById(R.id.button_invite_entrants);
-        Button removeInviteEntrantsButton = view.findViewById(R.id.button_remove_invite_entrants);
-        Button enrollEntrantsButton = view.findViewById(R.id.button_enroll_entrants);
-        Button removeEnrollEntrantsButton = view.findViewById(R.id.button_remove_enroll_entrants);
+        waitlistEntrantsButton = view.findViewById(R.id.button_waitlist_entrants);
+        removeWaitlistEntrantsButton = view.findViewById(R.id.button_remove_waitlist_entrants);
+        inviteEntrantsButton = view.findViewById(R.id.button_invite_entrants);
+        removeInviteEntrantsButton = view.findViewById(R.id.button_remove_invite_entrants);
+        enrollEntrantsButton = view.findViewById(R.id.button_enroll_entrants);
+        removeEnrollEntrantsButton = view.findViewById(R.id.button_remove_enroll_entrants);
 
         backButton.setOnClickListener(v ->
                 requireActivity().getSupportFragmentManager().popBackStack()
@@ -99,6 +108,56 @@ public class AdvancedDeveloperActionsFragment extends Fragment {
         removeEnrollEntrantsButton.setOnClickListener(v ->
                 openEntrantPicker(EntrantSelectionFragment.ACTION_REMOVE_ENROLL)
         );
+
+        refreshActionAvailability();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshActionAvailability();
+    }
+
+    /**
+     * Refreshes which ADA buttons are allowed for this event.
+     *
+     * Private events do not support waitlist actions.
+     */
+    private void refreshActionAvailability() {
+        if (eventId == null || eventId.trim().isEmpty()) {
+            return;
+        }
+
+        OrganizerDatabaseManager organizerDatabaseManager = new OrganizerDatabaseManager();
+        organizerDatabaseManager.getEventById(eventId)
+                .addOnSuccessListener(this::applyPrivateEventRules);
+    }
+
+    /**
+     * Applies private event button rules.
+     *
+     * @param event current event
+     */
+    private void applyPrivateEventRules(@NonNull Event event) {
+        boolean waitlistActionsEnabled = !event.isPrivateEvent();
+
+        waitlistEntrantsButton.setEnabled(waitlistActionsEnabled);
+        waitlistEntrantsButton.setAlpha(waitlistActionsEnabled ? 1.0f : 0.5f);
+
+        removeWaitlistEntrantsButton.setEnabled(waitlistActionsEnabled);
+        removeWaitlistEntrantsButton.setAlpha(waitlistActionsEnabled ? 1.0f : 0.5f);
+
+        inviteEntrantsButton.setEnabled(true);
+        inviteEntrantsButton.setAlpha(1.0f);
+
+        removeInviteEntrantsButton.setEnabled(true);
+        removeInviteEntrantsButton.setAlpha(1.0f);
+
+        enrollEntrantsButton.setEnabled(true);
+        enrollEntrantsButton.setAlpha(1.0f);
+
+        removeEnrollEntrantsButton.setEnabled(true);
+        removeEnrollEntrantsButton.setAlpha(1.0f);
     }
 
     /**

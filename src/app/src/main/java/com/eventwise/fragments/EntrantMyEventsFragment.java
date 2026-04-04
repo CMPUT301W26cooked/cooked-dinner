@@ -85,6 +85,16 @@ public class EntrantMyEventsFragment extends Fragment {
                 event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(entrantId);
 
         if (alreadyInEvent) {
+            if (event.isPrivateEvent()) {
+                db.removeEntrantFromEvent(entrantId, event.getEventId())
+                        .addOnSuccessListener(unused -> {
+                            Log.d("Event", "Successfully removed from private event: " + event.getName());
+                            refreshEvents();
+                        })
+                        .addOnFailureListener(e -> Log.e("Event", "Private event removal failed", e));
+                return;
+            }
+
             event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
             eventAdapter.notifyDataSetChanged();
 
@@ -100,6 +110,11 @@ public class EntrantMyEventsFragment extends Fragment {
                         eventAdapter.notifyDataSetChanged();
                     });
         } else {
+            if (event.isPrivateEvent()) {
+                Log.d("Event", "Private events cannot be joined from my events");
+                return;
+            }
+
             if (event.isGeolocationRequired()) {
                 Location.getCurrentLocation(requireContext(), location -> {
                     event.addOrUpdateEntrantStatus(
@@ -178,13 +193,25 @@ public class EntrantMyEventsFragment extends Fragment {
                     eventList.clear();
 
                     for (Event event : returnedList) {
-                        if (event != null
-                                && (
-                                event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(entrantId)
-                                        || event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).contains(entrantId)
-                                        || event.getEntrantIdsByStatus(EventEntrantStatus.ENROLLED).contains(entrantId)
-                        )) {
-                            eventList.add(event);
+                        if (event == null) {
+                            continue;
+                        }
+
+                        boolean isWaitlisted =
+                                event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(entrantId);
+                        boolean isInvited =
+                                event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).contains(entrantId);
+                        boolean isEnrolled =
+                                event.getEntrantIdsByStatus(EventEntrantStatus.ENROLLED).contains(entrantId);
+
+                        if (event.isPrivateEvent()) {
+                            if (isInvited || isEnrolled) {
+                                eventList.add(event);
+                            }
+                        } else {
+                            if (isWaitlisted || isInvited || isEnrolled) {
+                                eventList.add(event);
+                            }
                         }
                     }
 
@@ -240,6 +267,17 @@ public class EntrantMyEventsFragment extends Fragment {
 
         EntrantDatabaseManager db = new EntrantDatabaseManager();
 
+        if (event.isPrivateEvent()) {
+            db.removeEntrantFromEvent(entrantId, event.getEventId())
+                    .addOnSuccessListener(unused -> {
+                        Log.d("Event", "Successfully declined private event invite: " + event.getName());
+                        sendDeclinedNotifications(event, entrantId);
+                        refreshEvents();
+                    })
+                    .addOnFailureListener(e -> Log.e("Event", "Private decline failed", e));
+            return;
+        }
+
         event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.DECLINED, timestamp);
         eventAdapter.notifyDataSetChanged();
 
@@ -267,6 +305,16 @@ public class EntrantMyEventsFragment extends Fragment {
         }
 
         EntrantDatabaseManager db = new EntrantDatabaseManager();
+
+        if (event.isPrivateEvent()) {
+            db.removeEntrantFromEvent(entrantId, event.getEventId())
+                    .addOnSuccessListener(unused -> {
+                        Log.d("Event", "Successfully left private event: " + event.getName());
+                        refreshEvents();
+                    })
+                    .addOnFailureListener(e -> Log.e("Event", "Private leave failed", e));
+            return;
+        }
 
         event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.CANCELLED, timestamp);
         eventAdapter.notifyDataSetChanged();
@@ -439,4 +487,3 @@ public class EntrantMyEventsFragment extends Fragment {
                         Log.e("Notification", "Organizer notification failed", e));
     }
 }
-

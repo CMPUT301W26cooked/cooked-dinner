@@ -17,15 +17,17 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDF71PVqM7QxrhWrtIUA7zNblvXp7ScHJs" />
+
         <activity
             android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".activities.LandingPageActivity" />
         <activity android:name=".activities.EntrantMainActivity" />
         <activity android:name=".activities.OrganizerMainActivity" />
         <activity android:name=".activities.AdminMainActivity" />

@@ -65,6 +65,7 @@ public class EntrantEventDetailFragment extends Fragment {
     private TextView eventLocationCity;
     private TextView eventGuidelines;
     private TextView detailStatusText;
+    private TextView eventDetailTitle;
 
     private LinearLayout eventActionRow;
     private Button eventPrimaryButton;
@@ -153,6 +154,7 @@ public class EntrantEventDetailFragment extends Fragment {
         eventLocationCity = view.findViewById(R.id.event_location_city);
         eventGuidelines = view.findViewById(R.id.event_guidelines);
         detailStatusText = view.findViewById(R.id.detail_status_text);
+        eventDetailTitle = view.findViewById(R.id.event_detail_title);
 
         eventActionRow = view.findViewById(R.id.event_action_row);
         eventPrimaryButton = view.findViewById(R.id.event_primary_button);
@@ -202,9 +204,17 @@ public class EntrantEventDetailFragment extends Fragment {
         if (currentState == EventEntrantStatus.INVITED) {
             updateEntrantState(EventEntrantStatus.ENROLLED, EventEntrantStatus.INVITED);
         } else if (currentState == EventEntrantStatus.WAITLISTED) {
-            updateEntrantState(EventEntrantStatus.LEFT_WAITLIST, EventEntrantStatus.WAITLISTED);
+            if (currentEvent.isPrivateEvent()) {
+                removeEntrantFromPrivateEvent();
+            } else {
+                updateEntrantState(EventEntrantStatus.LEFT_WAITLIST, EventEntrantStatus.WAITLISTED);
+            }
         } else if (currentState == EventEntrantStatus.ENROLLED) {
-            updateEntrantState(EventEntrantStatus.CANCELLED, EventEntrantStatus.ENROLLED);
+            if (currentEvent.isPrivateEvent()) {
+                removeEntrantFromPrivateEvent();
+            } else {
+                updateEntrantState(EventEntrantStatus.CANCELLED, EventEntrantStatus.ENROLLED);
+            }
         } else {
             joinEvent(currentState);
         }
@@ -226,7 +236,11 @@ public class EntrantEventDetailFragment extends Fragment {
         EventEntrantStatus currentState = getCurrentEntrantState(currentEvent);
 
         if (currentState == EventEntrantStatus.INVITED) {
-            updateEntrantState(EventEntrantStatus.DECLINED, EventEntrantStatus.INVITED);
+            if (currentEvent.isPrivateEvent()) {
+                removeEntrantFromPrivateEvent();
+            } else {
+                updateEntrantState(EventEntrantStatus.DECLINED, EventEntrantStatus.INVITED);
+            }
         }
     }
 
@@ -256,6 +270,30 @@ public class EntrantEventDetailFragment extends Fragment {
                         currentEvent.addOrUpdateEntrantStatus(entrantId, revertState, timestamp);
                     }
                     bindEvent(currentEvent);
+                });
+    }
+
+    /**
+     * Removes the entrant from a private event entirely so they return to no status.
+     */
+    private void removeEntrantFromPrivateEvent() {
+        if (currentEvent == null || entrantId == null || entrantId.trim().isEmpty()) {
+            return;
+        }
+
+        EntrantDatabaseManager db = new EntrantDatabaseManager();
+
+        currentEvent.removeEntrantStatus(entrantId);
+        bindEvent(currentEvent);
+
+        db.removeEntrantFromEvent(entrantId, currentEvent.getEventId())
+                .addOnSuccessListener(unused -> {
+                    Log.d("EntrantEventDetail", "Successfully removed entrant from private event");
+                    loadEvent();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("EntrantEventDetail", "Failed to remove entrant from private event", e);
+                    loadEvent();
                 });
     }
 
@@ -337,6 +375,8 @@ public class EntrantEventDetailFragment extends Fragment {
         if (!isAdded()) {
             return;
         }
+
+        eventDetailTitle.setText(event.isPrivateEvent() ? "Private Event Details" : "Event Details");
 
         eventName.setText(event.getName());
         eventOrganization.setText("Organization Name");
@@ -437,6 +477,14 @@ public class EntrantEventDetailFragment extends Fragment {
             detailStatusText.setTextColor(ContextCompat.getColor(requireContext(), R.color.red));
         }
 
+        if (event.isPrivateEvent()) {
+            detailStatusText.setVisibility(View.VISIBLE);
+            detailStatusText.setText("Private Event");
+            detailStatusText.setTextColor(ContextCompat.getColor(requireContext(), R.color.moss_green));
+            eventActionRow.setVisibility(View.GONE);
+            return;
+        }
+
         eventPrimaryButton.setText("Join");
         eventPrimaryButton.setBackgroundTintList(
                 ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.moss_green))
@@ -533,6 +581,11 @@ public class EntrantEventDetailFragment extends Fragment {
     private void joinEvent(@Nullable EventEntrantStatus revertState) {
         if (currentEvent == null || entrantId == null || entrantId.trim().isEmpty()) {
             Log.e("EntrantEventDetail", "Join failed: missing event or entrant Id");
+            return;
+        }
+
+        if (currentEvent.isPrivateEvent()) {
+            Log.d("EntrantEventDetail", "Private events cannot be joined");
             return;
         }
 

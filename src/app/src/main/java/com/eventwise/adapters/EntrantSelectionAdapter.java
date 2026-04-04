@@ -104,6 +104,22 @@ public class EntrantSelectionAdapter extends RecyclerView.Adapter<EntrantSelecti
     }
 
     /**
+     * Sets current selected entrant ids.
+     *
+     * @param entrantIds ids to preselect
+     */
+    public void setSelectedEntrantIds(@NonNull List<String> entrantIds) {
+        selectedEntrantIds.clear();
+        selectedEntrantIds.addAll(entrantIds);
+
+        if (onSelectionChangedListener != null) {
+            onSelectionChangedListener.onSelectionChanged(selectedEntrantIds.size());
+        }
+
+        notifyDataSetChanged();
+    }
+
+    /**
      * Sets a listener for selection count changes.
      *
      * @param listener listener

@@ -40,6 +40,7 @@ public class Event {
     private long registrationCloseEpochSec;
     private boolean geolocationRequired;
     private Integer maxWaitingListSize;
+    private boolean privateEvent;
 
     private int maxWinnersToSample;
     private String qrCodeId;
@@ -126,6 +127,9 @@ public class Event {
     public Integer getMaxWaitingListSize() { return maxWaitingListSize; }
     public void setMaxWaitingListSize(Integer maxWaitingListSize) { this.maxWaitingListSize = maxWaitingListSize; }
 
+    public boolean isPrivateEvent() { return privateEvent; }
+    public void setPrivateEvent(boolean privateEvent) { this.privateEvent = privateEvent; }
+
     public int getMaxWinnersToSample() { return maxWinnersToSample; }
     public void setMaxWinnersToSample(int maxWinnersToSample) { this.maxWinnersToSample = maxWinnersToSample; }
 
@@ -176,6 +180,26 @@ public class Event {
         }
 
         entrantStatuses.add(new EntrantStatusEntry(entrantProfileId, status, timestamp, joinLocation));
+    }
+
+    /**
+     * Removes one entrant state from this event entirely.
+     *
+     * @param entrantProfileId entrant profile id
+     */
+    public void removeEntrantStatus(String entrantProfileId) {
+        if (entrantStatuses == null || entrantProfileId == null) {
+            return;
+        }
+
+        for (int i = entrantStatuses.size() - 1; i >= 0; i--) {
+            EntrantStatusEntry entry = entrantStatuses.get(i);
+            if (entry != null
+                    && entry.getEntrantProfileId() != null
+                    && entrantProfileId.equals(entry.getEntrantProfileId())) {
+                entrantStatuses.remove(i);
+            }
+        }
     }
 
     /**

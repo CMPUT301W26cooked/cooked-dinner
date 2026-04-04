@@ -117,6 +117,26 @@ public class Entrant extends Profile {
     }
 
     /**
+     * Removes one event state from this entrant entirely.
+     *
+     * @param eventId event id
+     */
+    public void removeEventState(String eventId) {
+        if (eventStates == null || eventId == null) {
+            return;
+        }
+
+        for (int i = eventStates.size() - 1; i >= 0; i--) {
+            EventStateEntry entry = eventStates.get(i);
+            if (entry != null
+                    && entry.getEventId() != null
+                    && eventId.equals(entry.getEventId())) {
+                eventStates.remove(i);
+            }
+        }
+    }
+
+    /**
      * Gets event Ids matching a specific status.
      *
      * @param status status to filter by
@@ -255,7 +275,7 @@ public class Entrant extends Profile {
             EventStateEntry that = (EventStateEntry) o;
             return Objects.equals(eventId, that.eventId)
                     && Objects.equals(status, that.status);
-                    //Do not check for timestamp
+            //Do not check for timestamp
         }
 
         @Override
