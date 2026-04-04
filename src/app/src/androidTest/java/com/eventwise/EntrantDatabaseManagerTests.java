@@ -111,12 +111,13 @@ public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
         snapshot = Tasks.await(testDb.collection("events").document(randomEventId).get());
         Event event = snapshot.toObject(Event.class);
 
+        Location testLocation = new Location(53.5461, -113.4938, 5.0f);
         long localTimestamp = System.currentTimeMillis() / 1000L;
 
         event.addOrUpdateEntrantStatus(randomEntrantId, EventEntrantStatus.WAITLISTED, localTimestamp);
         entrant.addOrUpdateEventState(randomEventId, EventEntrantStatus.WAITLISTED, localTimestamp);
 
-        Tasks.await(dbManager.registerEntrantInEvent(randomEntrantId, randomEventId, localTimestamp, null));
+        Tasks.await(dbManager.registerEntrantInEvent(randomEntrantId, randomEventId, localTimestamp, testLocation));
 
         snapshot = Tasks.await(testDb.collection("events").document(randomEventId).get());
         event = snapshot.toObject(Event.class);
@@ -135,10 +136,10 @@ public class EntrantDatabaseManagerTests extends DatabaseManagerTests {
         DocumentSnapshot snapshot = Tasks.await(testDb.collection("profiles").document(entrant.getProfileId()).get());
         Assert.assertTrue(snapshot.exists());
 
-
+        Location testLocation = new Location(53.5461, -113.4938, 5.0f);
         long localTimestamp = System.currentTimeMillis() / 1000L;
         //Register the entrant
-        Tasks.await(dbManager.registerEntrantInEvent(randomEntrantId, randomEventId, localTimestamp, null));
+        Tasks.await(dbManager.registerEntrantInEvent(randomEntrantId, randomEventId, localTimestamp, testLocation));
         snapshot = Tasks.await(testDb.collection("events").document(randomEventId).get());
         Event event = snapshot.toObject(Event.class);
         ArrayList<String> waitingListEntrantIds = event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED);
