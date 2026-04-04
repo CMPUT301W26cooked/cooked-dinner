@@ -25,7 +25,7 @@
         <LinearLayout
             android:id="@+id/event_title"
             android:layout_width="183dp"
-            android:layout_height="90dp"
+            android:layout_height="94dp"
             android:layout_weight="1"
             android:orientation="vertical">
             <TextView
@@ -40,12 +40,28 @@
             <TextView
                 android:id="@+id/event_description"
                 android:layout_width="match_parent"
-                android:layout_height="42dp"
-                android:layout_gravity="bottom"
-                android:maxLines="3"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:text="Short event description"
                 android:textColor="@color/moss_green"
                 android:textSize="12sp" />
+            <TextView
+                android:id="@+id/private_event_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/private_event_tag_background"
+                android:paddingStart="10dp"
+                android:paddingTop="2dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="2dp"
+                android:text="Private Event"
+                android:textColor="@color/lighter_green"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
         </LinearLayout>
         <ImageView
             android:id="@+id/event_poster"
@@ -192,27 +208,27 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
-                <TextView
-                    android:id="@+id/event_spots_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="•  10 spots"
-                    android:textColor="@color/moss_green"
-                    android:textSize="12sp" />
-                <TextView
-                    android:id="@+id/event_waitlisted_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="•  5 waitlisted"
-                    android:textColor="@color/moss_green"
-                    android:textSize="12sp" />
-                <TextView
-                    android:id="@+id/event_event_registered_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="•  3 registered"
-                    android:textColor="@color/moss_green"
-                    android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/event_spots_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="•  10 spots"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/event_waitlisted_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="•  5 waitlisted"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/event_event_registered_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="•  3 registered"
+                        android:textColor="@color/moss_green"
+                        android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
