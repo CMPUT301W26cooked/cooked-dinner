@@ -52,6 +52,7 @@ public class OrganizerEventDetailFragment extends Fragment {
     private static final String ARG_MAX_SPOTS = "arg_max_spots";
     private static final String ARG_WAITLISTED = "arg_waitlisted";
     private static final String ARG_REGISTERED = "arg_registered";
+    private static final String ARG_IS_PRIVATE_EVENT = "arg_is_private_event";
 
     private String eventId;
     private String eventName;
@@ -63,6 +64,7 @@ public class OrganizerEventDetailFragment extends Fragment {
     private int maxSpots;
     private int waitlistedCount;
     private int registeredCount;
+    private boolean isPrivateEvent;
 
     public OrganizerEventDetailFragment() {
     }
@@ -87,6 +89,7 @@ public class OrganizerEventDetailFragment extends Fragment {
         args.putInt(ARG_MAX_SPOTS, event.getMaxWinnersToSample());
         args.putInt(ARG_WAITLISTED, event.getWaitingListCount());
         args.putInt(ARG_REGISTERED, event.getEnrolledCount());
+        args.putBoolean(ARG_IS_PRIVATE_EVENT, event.isPrivateEvent());
 
         fragment.setArguments(args);
         return fragment;
@@ -124,6 +127,7 @@ public class OrganizerEventDetailFragment extends Fragment {
         maxSpots = args.getInt(ARG_MAX_SPOTS, 0);
         waitlistedCount = args.getInt(ARG_WAITLISTED, 0);
         registeredCount = args.getInt(ARG_REGISTERED, 0);
+        isPrivateEvent = args.getBoolean(ARG_IS_PRIVATE_EVENT, false);
     }
 
     /**
@@ -162,7 +166,7 @@ public class OrganizerEventDetailFragment extends Fragment {
 
         boolean eventOver = hasEventStarted();
 
-        detailTitle.setText("Event Details");
+        detailTitle.setText(isPrivateEvent ? "Private Event Details" : "Event Details");
         eventNameText.setText(eventName);
         eventOrganization.setText("Organization Name");
         eventStatus.setText("Open");

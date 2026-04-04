@@ -146,6 +146,11 @@ public class EntrantEventsCommunityFragment extends Fragment {
     }
 
     public void joinEvent(Event event) {
+        if (event.isPrivateEvent()) {
+            Log.d("Event", "Private events cannot be joined from community");
+            return;
+        }
+
         String entrantId = getCurrentEntrantId();
         long timestamp = System.currentTimeMillis() / 1000L;
 
@@ -264,7 +269,18 @@ public class EntrantEventsCommunityFragment extends Fragment {
         eventSearcherDBMan.getFilteredEvents(currentFilter)
                 .addOnSuccessListener(returnedList -> {
                     eventList.clear();
-                    eventList.addAll(returnedList);
+
+                    for (Event event : returnedList) {
+                        if (event == null) {
+                            continue;
+                        }
+
+                        if (event.isPrivateEvent()) {
+                            continue;
+                        }
+
+                        eventList.add(event);
+                    }
 
                     Collections.sort(eventList, (eventOne, eventTwo) ->
                             Long.compare(eventTwo.getEventStartEpochSec(), eventOne.getEventStartEpochSec())

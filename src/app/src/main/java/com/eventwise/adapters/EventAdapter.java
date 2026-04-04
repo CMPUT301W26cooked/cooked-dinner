@@ -290,6 +290,11 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         TextView registeredBadge = holder.itemView.findViewById(R.id.registered);
         TextView waitlistedBadge = holder.itemView.findViewById(R.id.waitlisted_text);
+        TextView privateEventTag = holder.itemView.findViewById(R.id.private_event_tag);
+
+        if (privateEventTag != null) {
+            privateEventTag.setVisibility(event.isPrivateEvent() ? View.VISIBLE : View.GONE);
+        }
 
         if (registeredBadge != null) {
             registeredBadge.setVisibility(View.GONE);
@@ -323,10 +328,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         if (holder.primaryButton != null) {
             boolean enablePrimary = true;
 
+            if (event.isPrivateEvent() && viewType == TYPE_JOIN) {
+                holder.primaryButton.setText("Private");
+            }
+
             if (eventStarted) {
                 enablePrimary = false;
             } else if (viewType == TYPE_JOIN) {
-                enablePrimary = event.isRegistrationOpenNow() && !event.isWaitingListFull();
+                enablePrimary = event.isRegistrationOpenNow() && !event.isWaitingListFull() && !event.isPrivateEvent();
             } else if (viewType == TYPE_ACCEPT_DECLINE) {
                 enablePrimary = !registrationClosed;
             } else {

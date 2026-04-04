@@ -67,6 +67,7 @@ public class CreateEventFragment extends Fragment {
 
     private CheckBox checkLimitWaitlist;
     private CheckBox checkGeoRequired;
+    private CheckBox checkPrivateEvent;
 
     private ImageView returnArrow;
     private ImageView inputEventPoster;
@@ -164,6 +165,7 @@ public class CreateEventFragment extends Fragment {
 
         checkLimitWaitlist = view.findViewById(R.id.check_limit_waitlist);
         checkGeoRequired = view.findViewById(R.id.check_geo_required);
+        checkPrivateEvent = view.findViewById(R.id.check_private_event);
 
         returnArrow = view.findViewById(R.id.return_arrow);
         inputEventPoster = view.findViewById(R.id.input_event_poster);
@@ -175,6 +177,11 @@ public class CreateEventFragment extends Fragment {
             if (!isChecked) {
                 limitWaitlist.setText("");
             }
+            updateSubmitButtonState();
+        });
+
+        checkPrivateEvent.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            updatePrivateEventUiState();
             updateSubmitButtonState();
         });
 
@@ -202,13 +209,12 @@ public class CreateEventFragment extends Fragment {
 
         if (isEditMode) {
             headerTitle.setText("Edit Event");
-            buttonCreateEvent.setText("Update Event");
             loadEventForEdit();
         } else {
             headerTitle.setText("Create Event");
-            buttonCreateEvent.setText("Create Event");
         }
 
+        updatePrivateEventUiState();
         setupFormStateTracking();
         updateSubmitButtonState();
 
@@ -259,6 +265,9 @@ public class CreateEventFragment extends Fragment {
         }
 
         checkGeoRequired.setChecked(event.isGeolocationRequired());
+        checkPrivateEvent.setChecked(event.isPrivateEvent());
+        checkPrivateEvent.setEnabled(false);
+        checkPrivateEvent.setAlpha(0.5f);
 
         if (event.getTags() != null && !event.getTags().isEmpty() && event.getTags().get(0) != null) {
             String criteriaText = event.getTags().get(0).getKeyword();
@@ -276,6 +285,7 @@ public class CreateEventFragment extends Fragment {
             }
         }
 
+        updatePrivateEventUiState();
         updateSubmitButtonState();
     }
 
@@ -289,6 +299,7 @@ public class CreateEventFragment extends Fragment {
 
         boolean geolocationRequired = checkGeoRequired.isChecked();
         boolean limitWaitListChecked = checkLimitWaitlist.isChecked();
+        boolean privateEvent = checkPrivateEvent.isChecked();
 
         if (TextUtils.isEmpty(name)) {
             inputEventName.setError("Required");
@@ -380,6 +391,7 @@ public class CreateEventFragment extends Fragment {
             editingEvent.setGeolocationRequired(geolocationRequired);
             editingEvent.setMaxWaitingListSize(maxWaitingListSize);
             editingEvent.setMaxWinnersToSample(maxWinnersToSample);
+            editingEvent.setPrivateEvent(privateEvent);
 
             organizerDBMan.updateEvent(editingEvent)
                     .addOnSuccessListener(unused -> {
@@ -389,14 +401,14 @@ public class CreateEventFragment extends Fragment {
                             organizerDBMan.updateEventPoster(editingEvent.getEventId(), selectedImageBytes, requireContext())
                                     .addOnSuccessListener(path -> {
                                         Log.d("CreateEvent", "Updated poster uploaded: " + path);
-                                        getParentFragmentManager().popBackStack();
+                                        finishAfterSave(editingEvent);
                                     })
                                     .addOnFailureListener(e -> {
                                         Log.d("CreateEvent", "Updated poster upload failed", e);
-                                        getParentFragmentManager().popBackStack();
+                                        finishAfterSave(editingEvent);
                                     });
                         } else {
-                            getParentFragmentManager().popBackStack();
+                            finishAfterSave(editingEvent);
                         }
                     })
                     .addOnFailureListener(e ->
@@ -422,10 +434,11 @@ public class CreateEventFragment extends Fragment {
                 posterPath,
                 qrCodeId
         );
+        event.setPrivateEvent(privateEvent);
+
         organizerDBMan.addEvent(event)
                 .addOnSuccessListener(param -> {
                     Log.d("CreateEvent", "Event added successfully to Firebase");
-                    sendInviteNotifications(event);
 
                     // ====== New code start ======
                     Log.d("ProfileLinking", "Event created with organizer Id: " +
@@ -438,19 +451,51 @@ public class CreateEventFragment extends Fragment {
                         organizerDBMan.uploadEventPoster(event.getEventId(), selectedImageBytes, requireContext())
                                 .addOnSuccessListener(path -> {
                                     Log.d("CreateEvent", "Poster uploaded: " + path);
-                                    getParentFragmentManager().popBackStack();
+                                    finishAfterSave(event);
                                 })
                                 .addOnFailureListener(e -> {
                                     Log.d("CreateEvent", "Poster upload failed", e);
-                                    getParentFragmentManager().popBackStack();
+                                    finishAfterSave(event);
                                 });
                     } else {
-                        getParentFragmentManager().popBackStack();
+                        finishAfterSave(event);
                     }
                 })
                 .addOnFailureListener(param -> {
                     Log.d("CreateEvent", "Event failed to add to Firebase");
                 });
+    }
+
+    private void finishAfterSave(@NonNull Event event) {
+        if (!isAdded()) {
+            return;
+        }
+
+        if (!isEditMode && event.isPrivateEvent()) {
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .replace(
+                            R.id.organizer_fragment_container,
+                            EntrantSelectionFragment.newPrivateInviteInstance(event.getEventId())
+                    )
+                    .addToBackStack(null)
+                    .commit();
+            return;
+        }
+
+        if (isEditMode && event.isPrivateEvent()) {
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .replace(
+                            R.id.organizer_fragment_container,
+                            EntrantSelectionFragment.newPrivateEditInstance(event.getEventId())
+                    )
+                    .addToBackStack(null)
+                    .commit();
+            return;
+        }
+
+        getParentFragmentManager().popBackStack();
     }
 
     private void setupFormStateTracking() {
@@ -482,6 +527,23 @@ public class CreateEventFragment extends Fragment {
         buttonCreateEvent.setEnabled(enabled);
         buttonCreateEvent.setAlpha(enabled ? 1.0f : 0.5f);
         buttonCreateEvent.setTextColor(ContextCompat.getColor(requireContext(), R.color.lighter_green));
+    }
+
+    private void updatePrivateEventUiState() {
+        if (isEditMode) {
+            if (checkPrivateEvent.isChecked()) {
+                buttonCreateEvent.setText("Update Private Event");
+            } else {
+                buttonCreateEvent.setText("Update Event");
+            }
+            return;
+        }
+
+        if (checkPrivateEvent.isChecked()) {
+            buttonCreateEvent.setText("Create Private Event");
+        } else {
+            buttonCreateEvent.setText("Create Event");
+        }
     }
 
     private boolean isFormReadyForSubmit() {
@@ -610,6 +672,10 @@ public class CreateEventFragment extends Fragment {
         }
 
         if (checkGeoRequired.isChecked() != editingEvent.isGeolocationRequired()) {
+            return true;
+        }
+
+        if (checkPrivateEvent.isChecked() != editingEvent.isPrivateEvent()) {
             return true;
         }
 

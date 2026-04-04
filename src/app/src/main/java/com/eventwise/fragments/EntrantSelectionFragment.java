@@ -46,12 +46,15 @@ public class EntrantSelectionFragment extends Fragment {
     public static final String ACTION_REMOVE_INVITE = "action_remove_invite";
     public static final String ACTION_ENROLL = "action_enroll";
     public static final String ACTION_REMOVE_ENROLL = "action_remove_enroll";
+    public static final String ACTION_SYNC_PRIVATE_SELECTION = "action_sync_private_selection";
 
     private static final String ARG_EVENT_ID = "arg_event_id";
     private static final String ARG_ACTION = "arg_action";
+    private static final String ARG_RETURN_TO_ORGANIZER_EVENTS = "arg_return_to_organizer_events";
 
     private String eventId = "";
     private String action = "";
+    private boolean returnToOrganizerEvents = false;
 
     private TextView titleText;
     private TextView subtitleText;
@@ -81,6 +84,38 @@ public class EntrantSelectionFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Makes a private invite selection fragment that returns to organizer events after apply.
+     *
+     * @param eventId event id
+     * @return configured fragment
+     */
+    public static EntrantSelectionFragment newPrivateInviteInstance(@NonNull String eventId) {
+        EntrantSelectionFragment fragment = new EntrantSelectionFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_EVENT_ID, eventId);
+        args.putString(ARG_ACTION, ACTION_INVITE);
+        args.putBoolean(ARG_RETURN_TO_ORGANIZER_EVENTS, true);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    /**
+     * Makes a private edit selection fragment that shows all entrants and syncs selection.
+     *
+     * @param eventId event id
+     * @return configured fragment
+     */
+    public static EntrantSelectionFragment newPrivateEditInstance(@NonNull String eventId) {
+        EntrantSelectionFragment fragment = new EntrantSelectionFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_EVENT_ID, eventId);
+        args.putString(ARG_ACTION, ACTION_SYNC_PRIVATE_SELECTION);
+        args.putBoolean(ARG_RETURN_TO_ORGANIZER_EVENTS, true);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
@@ -95,6 +130,7 @@ public class EntrantSelectionFragment extends Fragment {
         if (args != null) {
             eventId = args.getString(ARG_EVENT_ID, "");
             action = args.getString(ARG_ACTION, "");
+            returnToOrganizerEvents = args.getBoolean(ARG_RETURN_TO_ORGANIZER_EVENTS, false);
         }
 
         View backButton = view.findViewById(R.id.button_back);
@@ -114,7 +150,7 @@ public class EntrantSelectionFragment extends Fragment {
         actionButton.setEnabled(false);
 
         adapter.setOnSelectionChangedListener(selectedCount ->
-                actionButton.setEnabled(selectedCount > 0)
+                actionButton.setEnabled(selectedCount > 0 || ACTION_SYNC_PRIVATE_SELECTION.equals(action))
         );
 
         backButton.setOnClickListener(v ->
@@ -162,6 +198,22 @@ public class EntrantSelectionFragment extends Fragment {
             return;
         }
 
+        if (ACTION_SYNC_PRIVATE_SELECTION.equals(action)) {
+            eligibleEntrantIds.addAll(allEntrantIds);
+            Collections.sort(eligibleEntrantIds);
+
+            ArrayList<String> preselectedIds = new ArrayList<>();
+            preselectedIds.addAll(event.getEntrantIdsByStatus(EventEntrantStatus.INVITED));
+            preselectedIds.addAll(event.getEntrantIdsByStatus(EventEntrantStatus.ENROLLED));
+
+            adapter.notifyDataSetChanged();
+            adapter.setSelectedEntrantIds(preselectedIds);
+
+            recyclerView.setVisibility(View.VISIBLE);
+            emptyText.setVisibility(View.GONE);
+            return;
+        }
+
         ArrayList<String> idsInTargetState = getIdsInRelevantState(event);
 
         if (isAddAction()) {
@@ -190,7 +242,7 @@ public class EntrantSelectionFragment extends Fragment {
     private void applySelectedEntrants() {
         ArrayList<String> selectedEntrantIds = adapter.getSelectedEntrantIds();
 
-        if (selectedEntrantIds.isEmpty()) {
+        if (selectedEntrantIds.isEmpty() && !ACTION_SYNC_PRIVATE_SELECTION.equals(action)) {
             return;
         }
 
@@ -207,6 +259,36 @@ public class EntrantSelectionFragment extends Fragment {
                         runAction(selectedEntrantIds)
                                 .addOnSuccessListener(unused -> {
                                     if (!isAdded()) {
+                                        return;
+                                    }
+
+                                    if (returnToOrganizerEvents) {
+                                        String message = ACTION_SYNC_PRIVATE_SELECTION.equals(action)
+                                                ? "The private event entrant list was updated successfully."
+                                                : "The selected entrants were invited successfully.";
+
+                                        showStyledDialog(
+                                                "Action Complete",
+                                                message,
+                                                "OK",
+                                                null,
+                                                new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        if (!isAdded()) {
+                                                            return;
+                                                        }
+
+                                                        getParentFragmentManager()
+                                                                .beginTransaction()
+                                                                .replace(
+                                                                        R.id.organizer_fragment_container,
+                                                                        new OrganizerYourEventsFragment()
+                                                                )
+                                                                .commit();
+                                                    }
+                                                }
+                                        );
                                         return;
                                     }
 
@@ -264,6 +346,9 @@ public class EntrantSelectionFragment extends Fragment {
             case ACTION_REMOVE_ENROLL:
                 return organizerDatabaseManager.removeEnrollEntrants(eventId, selectedEntrantIds);
 
+            case ACTION_SYNC_PRIVATE_SELECTION:
+                return organizerDatabaseManager.syncPrivateEventSelection(eventId, selectedEntrantIds);
+
             default:
                 return organizerDatabaseManager.waitlistEntrants(eventId, new ArrayList<>());
         }
@@ -320,6 +405,8 @@ public class EntrantSelectionFragment extends Fragment {
                 return "Enroll Entrants";
             case ACTION_REMOVE_ENROLL:
                 return "Remove Enroll Entrants";
+            case ACTION_SYNC_PRIVATE_SELECTION:
+                return "Invite Entrants";
             default:
                 return "Entrant Selection";
         }
@@ -329,6 +416,10 @@ public class EntrantSelectionFragment extends Fragment {
      * Gets the page sub for the current action.
      */
     private String getActionSubtitle() {
+        if (ACTION_SYNC_PRIVATE_SELECTION.equals(action)) {
+            return "Select entrant ids for this private event.";
+        }
+
         if (isAddAction()) {
             return "Select entrant ids to add to this event state.";
         }
@@ -339,6 +430,9 @@ public class EntrantSelectionFragment extends Fragment {
      * Gets the floating button label.
      */
     private String getActionButtonLabel() {
+        if (ACTION_SYNC_PRIVATE_SELECTION.equals(action)) {
+            return "Apply";
+        }
         return isAddAction() ? "Add" : "Remove";
     }
 
