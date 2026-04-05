@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.eventwise.R;
+import com.eventwise.RandomNameGen;
 import com.eventwise.fragments.EntrantEventsCommunityFragment;
 import com.eventwise.fragments.EntrantEventsFragment;
 import com.eventwise.fragments.EntrantNotificationsFragment;
@@ -159,7 +160,7 @@ public class EntrantMainActivity extends AppCompatActivity {
                     Log.d("EntrantMainActivity", "Entrant not found, creating new entrant: " + entrantProfileId);
 
                     Entrant newEntrant = new Entrant(
-                            "New Entrant",
+                            RandomNameGen.getRandomName(),
                             "",
                             "",
                             true,
