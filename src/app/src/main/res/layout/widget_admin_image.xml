@@ -2,29 +2,21 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical">
 
     <!-- Root card container (324x266) -->
     <FrameLayout
         android:id="@+id/event_box_entrant"
-        android:layout_width="324dp"
-        android:layout_height="266dp">
+        android:layout_width="match_parent"
+        android:layout_height="266dp"
+        android:layout_marginTop="25dp">
 
-        <!-- SHADOW LAYER: offset blur shape behind the card -->
-        <LinearLayout
-            android:id="@+id/shadow_blur"
-            android:layout_width="324dp"
-            android:layout_height="266dp"
-            android:layout_marginStart="26dp"
-            android:layout_marginTop="31dp"
-            android:background="@drawable/event_card_shape"
-            android:orientation="vertical" />
 
         <!-- FILL + CONTENT: main card background -->
         <LinearLayout
             android:id="@+id/fill"
-            android:layout_width="324dp"
+            android:layout_width="match_parent"
             android:layout_height="266dp"
             android:background="@drawable/event_card_shape"
             android:orientation="vertical">
@@ -62,7 +54,7 @@
                 <!-- MIDDLE SECTION: Image thumbnail + Delete button -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="160dp"
+                    android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:paddingStart="16dp"
                     android:paddingTop="8dp"
@@ -75,7 +67,7 @@
                         android:id="@+id/image_placeholder"
                         android:layout_width="106dp"
                         android:layout_height="120dp"
-                        android:background="#FFF3F6E5">
+                        android:background="@color/lighter_green">
 
                         <ImageView
                             android:id="@+id/event_image"
@@ -86,6 +78,10 @@
 
 
                     </FrameLayout>
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
 
                     <!-- Delete button -->
                     <Button
@@ -93,7 +89,7 @@
                         android:layout_width="120dp"
                         android:layout_height="80dp"
                         android:minHeight="80dp"
-                        android:layout_margin="50dp"
+                        android:layout_marginStart="24dp"
                         android:text="Delete"
                         android:textSize="18sp"
                         android:textColor="@color/lighter_green"
