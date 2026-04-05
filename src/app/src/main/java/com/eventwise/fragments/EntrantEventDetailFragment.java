@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.eventwise.CommentBottomSheet;
 import com.eventwise.Event;
 import com.eventwise.Enum.EventEntrantStatus;
@@ -397,6 +398,14 @@ public class EntrantEventDetailFragment extends Fragment {
         eventLocationName.setText(event.getLocationName());
         eventLocationCity.setText("");
         eventGuidelines.setText("");
+
+        //Update Poster
+        Glide.with(eventPoster.getContext())
+                .load(event.getPosterPath())
+                .centerCrop()
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .into(eventPoster);
+
 
         eventStatusIcon.setImageResource(getEventStatusDrawable(event));
 

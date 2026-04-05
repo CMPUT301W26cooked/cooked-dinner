@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.eventwise.CommentBottomSheet;
 import com.eventwise.Event;
 import com.eventwise.ProfileType;
@@ -53,11 +54,13 @@ public class OrganizerEventDetailFragment extends Fragment {
     private static final String ARG_WAITLISTED = "arg_waitlisted";
     private static final String ARG_REGISTERED = "arg_registered";
     private static final String ARG_IS_PRIVATE_EVENT = "arg_is_private_event";
+    private static final String ARG_EVENT_POSTER_PATH = "arg_event_poster_path";
 
     private String eventId;
     private String eventName;
     private String eventDescription;
     private String eventLocation;
+    private String eventPosterPath;
     private long eventStart;
     private long eventEnd;
     private long registrationClose;
@@ -90,6 +93,7 @@ public class OrganizerEventDetailFragment extends Fragment {
         args.putInt(ARG_WAITLISTED, event.getWaitingListCount());
         args.putInt(ARG_REGISTERED, event.getEnrolledCount());
         args.putBoolean(ARG_IS_PRIVATE_EVENT, event.isPrivateEvent());
+        args.putString(ARG_EVENT_POSTER_PATH, event.getPosterPath());
 
         fragment.setArguments(args);
         return fragment;
@@ -128,6 +132,7 @@ public class OrganizerEventDetailFragment extends Fragment {
         waitlistedCount = args.getInt(ARG_WAITLISTED, 0);
         registeredCount = args.getInt(ARG_REGISTERED, 0);
         isPrivateEvent = args.getBoolean(ARG_IS_PRIVATE_EVENT, false);
+        eventPosterPath = args.getString(ARG_EVENT_POSTER_PATH, "");
     }
 
     /**
@@ -164,6 +169,8 @@ public class OrganizerEventDetailFragment extends Fragment {
         Button cancelEventButton = view.findViewById(R.id.cancel_event_button);
         Button eventCommentButton = view.findViewById(R.id.event_comment_button);
 
+        ImageView eventPoster = view.findViewById(R.id.event_poster);
+
         boolean eventOver = hasEventStarted();
 
         detailTitle.setText(isPrivateEvent ? "Private Event Details" : "Event Details");
@@ -182,6 +189,13 @@ public class OrganizerEventDetailFragment extends Fragment {
         lotteryCloseTime.setText(formatTime(registrationClose));
         registrationCloseDate.setText(formatDate(registrationClose));
         registrationCloseTime.setText(formatTime(registrationClose));
+
+        //Update Poster
+        Glide.with(eventPoster.getContext())
+                .load(eventPosterPath)
+                .centerCrop()
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .into(eventPoster);
 
         eventLocationName.setText(TextUtils.isEmpty(eventLocation) ? "No location" : eventLocation);
         eventLocationCity.setText("");
