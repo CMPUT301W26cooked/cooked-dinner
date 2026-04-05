@@ -4,6 +4,8 @@ import com.eventwise.Enum.EventEntrantStatus;
 import com.google.firebase.firestore.Exclude;
 
 import java.util.ArrayList;
+import java.util.Objects;
+
 import com.google.firebase.firestore.IgnoreExtraProperties;
 
 /**
@@ -270,6 +272,53 @@ public class Event {
         return getWaitingListCount() >= maxWaitingListSize;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Event)) return false;
+        Event event = (Event) o;
+        return Objects.equals(eventId, event.eventId)
+                && Objects.equals(organizerProfileId, event.organizerProfileId)
+                && Objects.equals(name, event.name)
+                && Objects.equals(description, event.description)
+                && Objects.equals(price, event.price)
+                && Objects.equals(locationName, event.locationName)
+                && Objects.equals(tags, event.tags)
+                && Objects.equals(eventStartEpochSec, event.eventStartEpochSec)
+                && Objects.equals(eventEndEpochSec, event.eventEndEpochSec)
+                && Objects.equals(registrationOpenEpochSec, event.registrationOpenEpochSec)
+                && Objects.equals(registrationCloseEpochSec, event.registrationCloseEpochSec)
+                && Objects.equals(geolocationRequired, event.geolocationRequired)
+                && Objects.equals(maxWaitingListSize, event.maxWaitingListSize)
+                && Objects.equals(maxWinnersToSample, event.maxWinnersToSample)
+                && Objects.equals(posterPath, event.posterPath)
+                && Objects.equals(qrCodeId, event.qrCodeId)
+                && Objects.equals(entrantStatuses, event.entrantStatuses)
+                && Objects.equals(comments, event.comments);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                eventId,
+                organizerProfileId,
+                name,
+                description,
+                price,
+                locationName,
+                tags,
+                eventStartEpochSec,
+                eventEndEpochSec,
+                registrationOpenEpochSec,
+                registrationCloseEpochSec,
+                geolocationRequired,
+                maxWaitingListSize,
+                maxWinnersToSample,
+                posterPath,
+                qrCodeId,
+                entrantStatuses,
+                comments);
+    }
 
 
     public static class EntrantStatusEntry {
