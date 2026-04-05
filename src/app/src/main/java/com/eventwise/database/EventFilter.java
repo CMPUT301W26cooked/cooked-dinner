@@ -9,7 +9,11 @@ import java.util.EnumSet;
 //TODO
 // Documentation and Tests
 
+
 // Any field can be null! Be careful!
+/**
+ * Represents a collection of criteria used to filter events within the database.
+ */
     public class EventFilter{
         private Long startTimestamp = null;
         private Long endTimestamp = null;
@@ -23,6 +27,16 @@ import java.util.EnumSet;
 
         private Tag tag = null;
 
+        /**
+         * Constructs an EventFilter with the specified criteria.
+         * If a parameter is non-null, the corresponding filter type is automatically enabled.
+         *
+         * @param startTimestamp The earliest allowed start time for an event, or null if no lower bound.
+         * @param endTimestamp The latest allowed end time for an event, or null if no upper bound.
+         * @param eventCapacity The minimum required capacity or available spots, or null if not filtering by capacity.
+         * @param keywords A list of strings to search for in event details, or null if no keyword filtering is required.
+         * @param tag A specific category tag to filter by, or null if no tag filtering is required.
+         */
         public EventFilter(Long startTimestamp, Long endTimestamp, Integer eventCapacity, ArrayList<String> keywords, Tag tag){
             filterTypes = EnumSet.noneOf(FilterType.class);
             if (startTimestamp != null){

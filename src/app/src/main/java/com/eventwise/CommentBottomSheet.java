@@ -21,13 +21,25 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import java.util.ArrayList;
 
+/**
+ * A {@link BottomSheetDialogFragment} that provides a user interface for viewing, posting,
+ * and managing comments associated with a specific event.
+ * <p>
+ * This class handles the retrieval of comments from the database, displays them in a
+ * {@link RecyclerView}, and allows users to add new comments. It also supports comment
+ * deletion via a callback in the {@link CommentAdapter}. UI elements for posting comments
+ * are dynamically hidden if the current user has an {@link ProfileType#ADMIN} profile.
+ * </p>
+ *
+ * @see BottomSheetDialogFragment
+ * @see CommentAdapter
+ * @see EntrantDatabaseManager
+ */
 public class CommentBottomSheet extends BottomSheetDialogFragment {
 
     public interface OnEnterClickListener{
         void onEnterClicked(Comment comment);
     }
-
-//    private final OnEnterClickListener listener;
 
     private EditText commentEditText;
     private CommentAdapter adapter;
@@ -69,7 +81,7 @@ public class CommentBottomSheet extends BottomSheetDialogFragment {
 
 
 
-
+        //Set up post comment button and its callback
         post_comment_button = view.findViewById(R.id.post_comment_button);
         post_comment_button.setOnClickListener(v -> {
             String commentText = commentEditText.getText().toString();
@@ -130,6 +142,7 @@ public class CommentBottomSheet extends BottomSheetDialogFragment {
         });
         recyclerView.setAdapter(adapter);
 
+        //Get comments from Firebase
         entrantDBMan.getCommentsFromEventId(eventId)
                 .addOnSuccessListener(comments -> {
                     this.comments.clear();
