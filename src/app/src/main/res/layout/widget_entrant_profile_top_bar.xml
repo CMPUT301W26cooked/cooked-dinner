@@ -9,12 +9,33 @@
     android:paddingTop="18dp"
     android:paddingBottom="14dp">
 
-    <TextView
-        android:id="@+id/top_bar_title"
+    <LinearLayout
+        android:id="@+id/profile_switcher"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Your Profile"
-        android:textColor="@color/forest_green"
-        android:textSize="32sp"
-        android:textStyle="bold" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="4dp">
+
+        <TextView
+            android:id="@+id/top_bar_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your Profile"
+            android:textColor="@color/forest_green"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/profile_switcher_arrow"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_marginStart="6dp"
+            android:contentDescription="Switch profile type"
+            android:src="@drawable/profile_dropdown" />
+
+    </LinearLayout>
+
 </LinearLayout>

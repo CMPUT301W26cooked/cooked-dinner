@@ -24,27 +24,35 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-        <ImageView
-            android:id="@+id/return_arrow"
-            android:layout_width="60dp"
-            android:layout_height="30dp"
-            android:src="@drawable/return_arrow"
-            android:layout_gravity="center"/>
-        <TextView
-            android:id="@+id/create_event_title"
+            <ImageView
+                android:id="@+id/return_arrow"
+                android:layout_width="60dp"
+                android:layout_height="30dp"
+                android:src="@drawable/return_arrow"
+                android:layout_gravity="center"/>
+            <TextView
+                android:id="@+id/create_event_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Create Event"
+                android:textSize="36dp"
+                android:textStyle="bold"
+                android:textColor="@color/forest_green" />
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/check_private_event"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Create Event"
-            android:textSize="36dp"
-            android:textStyle="bold"
-            android:textColor="@color/forest_green" />
-        </LinearLayout>
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="6dp"
+            android:text="Make event private" />
 
         <EditText
             android:id="@+id/input_event_name"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:layout_marginTop="5dp"
+            android:layout_marginTop="4dp"
             android:hint="*Title" />
 
         <LinearLayout
@@ -72,7 +80,7 @@
             android:layout_height="wrap_content"
             android:background="@color/bacon_color"
             android:backgroundTint="@color/bacon_color"
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="8dp">
             <EditText
                 android:id="@+id/input_criteria"
                 android:layout_width="match_parent"
@@ -91,7 +99,7 @@
             android:id="@+id/input_event_location"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:hint="*Location"
             android:textSize="17dp" />
 

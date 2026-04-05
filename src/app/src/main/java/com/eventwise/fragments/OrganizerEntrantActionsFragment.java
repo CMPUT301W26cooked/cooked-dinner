@@ -307,27 +307,38 @@ public class OrganizerEntrantActionsFragment extends Fragment {
         advancedDeveloperActionsButton.setEnabled(true);
         advancedDeveloperActionsButton.setAlpha(1.0f);
 
-        boolean drawEnabled = waitlistedCount > 0 && invitedCount == 0 && enrolledCount == 0;
+        boolean drawEnabled;
         String drawReason = null;
 
-        if (!drawEnabled) {
-            if (invitedCount > 0 || enrolledCount > 0) {
-                drawReason = "* cannot draw with invited / registered entrants";
-            } else if (waitlistedCount == 0) {
-                drawReason = "* no entrants in waitlist";
-            }
-        }
-
-        boolean redrawEnabled = waitlistedCount > 0 && filledSpots > 0 && openSpots > 0;
+        boolean redrawEnabled;
         String redrawReason = null;
 
-        if (!redrawEnabled) {
-            if (filledSpots == 0) {
-                redrawReason = "* you must draw first before re-draw";
-            } else if (openSpots <= 0) {
-                redrawReason = "* no open spots in this event";
-            } else if (waitlistedCount == 0) {
-                redrawReason = "* no entrants in waitlist";
+        if (event.isPrivateEvent()) {
+            drawEnabled = false;
+            redrawEnabled = false;
+            drawReason = "* private events do not use waitlist drawing";
+            redrawReason = "* private events do not use waitlist drawing";
+        } else {
+            drawEnabled = waitlistedCount > 0 && invitedCount == 0 && enrolledCount == 0;
+
+            if (!drawEnabled) {
+                if (invitedCount > 0 || enrolledCount > 0) {
+                    drawReason = "* cannot draw with invited / registered entrants";
+                } else if (waitlistedCount == 0) {
+                    drawReason = "* no entrants in waitlist";
+                }
+            }
+
+            redrawEnabled = waitlistedCount > 0 && filledSpots > 0 && openSpots > 0;
+
+            if (!redrawEnabled) {
+                if (filledSpots == 0) {
+                    redrawReason = "* you must draw first before re-draw";
+                } else if (openSpots <= 0) {
+                    redrawReason = "* no open spots in this event";
+                } else if (waitlistedCount == 0) {
+                    redrawReason = "* no entrants in waitlist";
+                }
             }
         }
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: Rounded background for the private event tag.
+    Author: Becca Irving
+    Date: March 30 2026
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#6C4BA8" />
+    <corners android:radius="10dp" />
+</shape>

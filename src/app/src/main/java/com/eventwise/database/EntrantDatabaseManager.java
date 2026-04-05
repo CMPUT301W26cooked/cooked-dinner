@@ -225,7 +225,7 @@ public class EntrantDatabaseManager extends DatabaseManager {
                                     tcs.setException(new DatabaseException("Error getting Entrant")));
                 })
                 .addOnFailureListener(e -> {
-                        tcs.setException(new DatabaseException("Error getting Event"));
+                    tcs.setException(new DatabaseException("Error getting Event"));
                 });
 
         return tcs.getTask();
@@ -280,6 +280,67 @@ public class EntrantDatabaseManager extends DatabaseManager {
                                         .addOnSuccessListener(unused -> tcs.setResult(null))
                                         .addOnFailureListener(e ->
                                                 tcs.setException(new DatabaseException("Could not remove Entrant from Event")));
+                            })
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Error getting Entrant")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Error getting Event")));
+
+        return tcs.getTask();
+    }
+
+    /**
+     * Removes an entrant from an event entirely so they return to no status.
+     *
+     * @param entrantId entrant id
+     * @param eventId event id
+     * @return task that completes when both docs are updated
+     */
+    public Task<Void> removeEntrantFromEvent(String entrantId, String eventId) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (entrantId == null || entrantId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("EntrantId cannot be null or empty"));
+            return tcs.getTask();
+        }
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("EventId cannot be null or empty"));
+            return tcs.getTask();
+        }
+
+        events.document(eventId).get()
+                .addOnSuccessListener(eventSnapshot -> {
+                    Event event = eventSnapshot.toObject(Event.class);
+                    if (event == null) {
+                        tcs.setException(new DatabaseException("Error getting Event"));
+                        return;
+                    }
+
+                    if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+                        event.setEventId(eventSnapshot.getId());
+                    }
+
+                    profiles.document(entrantId).get()
+                            .addOnSuccessListener(profileSnapshot -> {
+                                Entrant entrant = profileSnapshot.toObject(Entrant.class);
+                                if (entrant == null) {
+                                    tcs.setException(new DatabaseException("Error getting Entrant"));
+                                    return;
+                                }
+
+                                event.removeEntrantStatus(entrantId);
+                                entrant.removeEventState(eventId);
+
+                                WriteBatch batch = super.db.batch();
+                                batch.set(events.document(eventId), event);
+                                batch.set(profiles.document(entrantId), entrant);
+
+                                batch.commit()
+                                        .addOnSuccessListener(unused -> tcs.setResult(null))
+                                        .addOnFailureListener(e ->
+                                                tcs.setException(new DatabaseException("Error removing Entrant from Event")));
                             })
                             .addOnFailureListener(e ->
                                     tcs.setException(new DatabaseException("Error getting Entrant")));

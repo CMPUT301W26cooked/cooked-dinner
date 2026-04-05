@@ -8,6 +8,7 @@ import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.Enum.EventEntrantStatus;
 import com.eventwise.Notification;
+import com.eventwise.Organizer;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -40,6 +41,17 @@ public class OrganizerDatabaseManager extends DatabaseManager{
     }
     public OrganizerDatabaseManager(FirebaseFirestore db){
         super(db);
+    }
+
+
+    /**
+     * Adds a new entrant profile to the database.
+     *
+     * @param organizer The entrant object to be added.
+     * @throws DatabaseException If an error occurs while adding the entrant to the database.
+     */
+    public Task<Void> addOrganizer(Organizer organizer) {
+        return super.addProfile(organizer);
     }
 
 
@@ -215,7 +227,7 @@ public class OrganizerDatabaseManager extends DatabaseManager{
     // *                                       Event Poster Images
     // *************************************************************************************************/
 
-    
+
     /**
      * Uploads the event poster image to Firebase Storage and stores the download URL in Firestore.
      *
@@ -244,7 +256,7 @@ public class OrganizerDatabaseManager extends DatabaseManager{
         return tcs.getTask();
     }
 
-   
+
     /**
      * Updates and replaces an existing event poster image in Firebase Storage and updates the database reference.
      *
@@ -369,6 +381,176 @@ public class OrganizerDatabaseManager extends DatabaseManager{
                             })
                             .addOnFailureListener(e ->
                                     tcs.setException(new DatabaseException("Failed to load entrant profiles")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Failed to load event")));
+
+        return tcs.getTask();
+    }
+
+    /**
+     * Removes many entrants from one event entirely so they return to no status.
+     *
+     * @param entrantIds entrant ids to remove
+     * @param eventId event id
+     * @return task that completes when removals are saved
+     */
+    public Task<Void> removeEntrantsFromEvent(ArrayList<String> entrantIds, String eventId) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (entrantIds == null || entrantIds.isEmpty()) {
+            tcs.setResult(null);
+            return tcs.getTask();
+        }
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("Event Id is null"));
+            return tcs.getTask();
+        }
+
+        events.document(eventId).get()
+                .addOnSuccessListener(eventSnapshot -> {
+                    Event event = eventSnapshot.toObject(Event.class);
+
+                    if (event == null) {
+                        tcs.setException(new DatabaseException("Event not found"));
+                        return;
+                    }
+
+                    if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+                        event.setEventId(eventSnapshot.getId());
+                    }
+
+                    ArrayList<Task<DocumentSnapshot>> profileTasks = new ArrayList<>();
+
+                    for (String entrantId : entrantIds) {
+                        if (entrantId != null && !entrantId.trim().isEmpty()) {
+                            profileTasks.add(profiles.document(entrantId).get());
+                        }
+                    }
+
+                    if (profileTasks.isEmpty()) {
+                        tcs.setResult(null);
+                        return;
+                    }
+
+                    Tasks.whenAllComplete(profileTasks)
+                            .addOnSuccessListener(profileResults -> {
+                                WriteBatch batch = db.batch();
+                                boolean hasAnyUpdates = false;
+
+                                for (Task<?> profileTask : profileResults) {
+                                    if (!profileTask.isSuccessful()) {
+                                        tcs.setException(new DatabaseException("Error getting Entrant"));
+                                        return;
+                                    }
+
+                                    DocumentSnapshot profileSnapshot =
+                                            (DocumentSnapshot) profileTask.getResult();
+
+                                    if (profileSnapshot == null || !profileSnapshot.exists()) {
+                                        continue;
+                                    }
+
+                                    Entrant entrant = profileSnapshot.toObject(Entrant.class);
+                                    if (entrant == null) {
+                                        continue;
+                                    }
+
+                                    String entrantId = profileSnapshot.getId();
+
+                                    event.removeEntrantStatus(entrantId);
+                                    entrant.removeEventState(eventId);
+
+                                    batch.set(profileSnapshot.getReference(), entrant);
+                                    hasAnyUpdates = true;
+                                }
+
+                                if (!hasAnyUpdates) {
+                                    tcs.setResult(null);
+                                    return;
+                                }
+
+                                batch.set(events.document(eventId), event);
+
+                                batch.commit()
+                                        .addOnSuccessListener(unused -> tcs.setResult(null))
+                                        .addOnFailureListener(e ->
+                                                tcs.setException(new DatabaseException("Failed to remove entrants from event")));
+                            })
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Failed to load entrant profiles")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Failed to load event")));
+
+        return tcs.getTask();
+    }
+
+    /**
+     * Reconciles private event invite selection with the selected entrant ids.
+     *
+     * Selected entrants are invited if they are not already invited or enrolled.
+     * Unselected invited or enrolled entrants are removed back to no status.
+     *
+     * @param eventId event id
+     * @param selectedEntrantIds selected entrant ids
+     * @return task that completes when the event matches the selection
+     */
+    public Task<Void> syncPrivateEventSelection(String eventId, ArrayList<String> selectedEntrantIds) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        getEventById(eventId)
+                .addOnSuccessListener(event -> {
+                    ArrayList<String> selectedIds = selectedEntrantIds == null
+                            ? new ArrayList<>()
+                            : new ArrayList<>(selectedEntrantIds);
+
+                    ArrayList<String> currentSelectedIds = new ArrayList<>();
+                    currentSelectedIds.addAll(event.getEntrantIdsByStatus(EventEntrantStatus.INVITED));
+                    currentSelectedIds.addAll(event.getEntrantIdsByStatus(EventEntrantStatus.ENROLLED));
+
+                    ArrayList<String> idsToInvite = new ArrayList<>();
+                    for (String selectedId : selectedIds) {
+                        if (!currentSelectedIds.contains(selectedId)) {
+                            idsToInvite.add(selectedId);
+                        }
+                    }
+
+                    ArrayList<String> idsToRemove = new ArrayList<>();
+                    for (String currentId : currentSelectedIds) {
+                        if (!selectedIds.contains(currentId)) {
+                            idsToRemove.add(currentId);
+                        }
+                    }
+
+                    ArrayList<Task<Void>> tasks = new ArrayList<>();
+
+                    if (!idsToInvite.isEmpty()) {
+                        tasks.add(inviteEntrants(eventId, idsToInvite));
+                    }
+
+                    if (!idsToRemove.isEmpty()) {
+                        tasks.add(removeEntrantsFromEvent(idsToRemove, eventId));
+                    }
+
+                    if (tasks.isEmpty()) {
+                        tcs.setResult(null);
+                        return;
+                    }
+
+                    Tasks.whenAllComplete(tasks)
+                            .addOnSuccessListener(results -> {
+                                for (Task<?> task : results) {
+                                    if (!task.isSuccessful()) {
+                                        tcs.setException(new DatabaseException("Failed to sync private event selection"));
+                                        return;
+                                    }
+                                }
+                                tcs.setResult(null);
+                            })
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Failed to sync private event selection")));
                 })
                 .addOnFailureListener(e ->
                         tcs.setException(new DatabaseException("Failed to load event")));
@@ -775,5 +957,57 @@ public class OrganizerDatabaseManager extends DatabaseManager{
                 new NotificationDatabaseManager(super.db);
 
         return notificationDatabaseManager.createNotification(notification);
+    }
+
+    public Task<Organizer> getOrganizerFromId(String organizerId) {
+        return super.getProfileFromId(organizerId)
+                .continueWith(task -> (Organizer) task.getResult());
+    }
+
+    public Task<Void> updateOrganizerInfo(Organizer organizer) {
+        return super.updateProfile(organizer);
+    }
+
+    public Task<Void> clearOrganizerProfile(String organizerId) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (organizerId == null || organizerId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("EntrantId cannot be null or empty"));
+            return tcs.getTask();
+        }
+
+        long timestamp = System.currentTimeMillis() / 1000L;
+
+        profiles.document(organizerId).get()
+                .addOnSuccessListener(profileSnapshot -> {
+                    Organizer organizer = profileSnapshot.toObject(Organizer.class);
+
+                    if (organizer == null) {
+                        tcs.setException(new DatabaseException("Error getting Entrant"));
+                        return;
+                    }
+
+                    organizer.setName("");
+                    organizer.setEmail("");
+                    organizer.setPhone("");
+
+
+                    events.get()
+                            .addOnSuccessListener(eventSnapshots -> {
+                                WriteBatch batch = db.batch();
+
+                                batch.set(profiles.document(organizerId), organizer);
+                                batch.commit()
+                                        .addOnSuccessListener(unused -> tcs.setResult(null))
+                                        .addOnFailureListener(e ->
+                                                tcs.setException(new DatabaseException("Error clearing Entrant profile")));
+                            })
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Error loading events")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Error getting Entrant")));
+
+        return tcs.getTask();
     }
 }
