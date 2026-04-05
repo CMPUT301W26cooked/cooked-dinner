@@ -1,14 +1,12 @@
 package com.eventwise.items;
 
-import java.io.File;
-
 public class AdminImageItem{
 
     private final String eventId;
 
     private final String filepath;
 
-    private final File imageFile;
+    private final String imageUrl;
 
     private final String imageTitle;
 
@@ -17,14 +15,13 @@ public class AdminImageItem{
     private final String timestampString;
 
 
-    public AdminImageItem(String eventId, String filepath, File imageFile, String imageTitle, String imgUploadingOrg, String timestampString) {
+    public AdminImageItem(String eventId, String filepath, String imageUrl, String imageTitle, String imgUploadingOrg, String timestampString) {
         this.eventId = eventId;
         this.filepath = filepath;
-        this.imageFile = imageFile;
+        this.imageUrl = imageUrl;
         this.imageTitle = imageTitle;
         this.imgUploadingOrg = imgUploadingOrg;
         this.timestampString = timestampString;
-
     }
 
     public String getEventId() {
@@ -35,8 +32,8 @@ public class AdminImageItem{
         return filepath;
     }
 
-    public File getImageFile() {
-        return imageFile;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
     public String getImageTitle() {

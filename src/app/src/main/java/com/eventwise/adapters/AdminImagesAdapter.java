@@ -1,6 +1,5 @@
 package com.eventwise.adapters;
 
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.eventwise.R;
 import com.eventwise.items.AdminImageItem;
 
@@ -43,7 +43,11 @@ public class AdminImagesAdapter extends RecyclerView.Adapter<AdminImagesAdapter.
         AdminImageItem item = images.get(position);
 
         holder.imageTitle.setText(item.getImageTitle());
-        holder.eventImage.setImageURI(Uri.fromFile(item.getImageFile()));
+        Glide.with(holder.itemView.getContext())
+                .load(item.getImageUrl())
+                .centerCrop()
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .into(holder.eventImage);
         holder.imgUploadingOrg.setText(item.getImgUploadingOrg());
         holder.timestampString.setText(item.getTimestampString());
         holder.deleteButton.setOnClickListener(v -> listener.onDeleteClicked(item));
