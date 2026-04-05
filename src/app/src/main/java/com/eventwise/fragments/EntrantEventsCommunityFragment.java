@@ -198,7 +198,6 @@ public class EntrantEventsCommunityFragment extends Fragment {
                             })
                             .addOnFailureListener(e -> {
                                 Log.e("Event", "Join failed", e);
-
                                 event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
                                 eventAdapter.notifyDataSetChanged();
                             });
@@ -220,19 +219,6 @@ public class EntrantEventsCommunityFragment extends Fragment {
             }
 
             eventAdapter.notifyDataSetChanged();
-
-            db.registerEntrantInEvent(entrantId, event.getEventId(), timestamp, null)
-                    .addOnSuccessListener(unused -> {
-                        Log.d("Event", "Successfully joined: " + event.getName());
-                        sendJoinNotifications(event, entrantId);
-                        refreshEvents();
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("Event", "Join failed", e);
-
-                        event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
-                        eventAdapter.notifyDataSetChanged();
-                    });
         }
     }
 
