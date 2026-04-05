@@ -15,25 +15,23 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.eventwise.Entrant;
+import com.eventwise.Organizer;
 import com.eventwise.ProfileDropdownHelper;
 import com.eventwise.R;
+import com.eventwise.database.DatabaseManager;
 import com.eventwise.database.EntrantDatabaseManager;
+import com.eventwise.database.OrganizerDatabaseManager;
 import com.eventwise.database.SessionStore;
 
 /**
- * This class is responsible for the entrant empty profile view.
+ * This class is responsible for the Organizer empty profile view.
  * It is shown when the entrant has not yet created a profile.
  *
- * @author Becca Irving
+ * @author Luke Forster
  * @version 1.0
- * @since 2026-03-11
+ * @since 2026-04-03
  */
-public class EntrantProfileEmptyFragment extends Fragment {
-
-    /**
-     * TODO
-     * - Add tests for stub entrant creation and notification toggle persistence.
-     */
+public class OrganizerProfileEmptyFragment extends Fragment {
 
     private static final String ARG_NOTIFICATIONS_ENABLED = "arg_notifications_enabled";
 
@@ -42,11 +40,11 @@ public class EntrantProfileEmptyFragment extends Fragment {
     private ImageView receiveNotificationsCheckboxImage;
     private boolean receiveNotificationsEnabled = true;
 
-    public EntrantProfileEmptyFragment() {
+    public OrganizerProfileEmptyFragment() {
     }
 
-    public static EntrantProfileEmptyFragment newInstance(boolean receiveNotificationsEnabled) {
-        EntrantProfileEmptyFragment fragment = new EntrantProfileEmptyFragment();
+    public static OrganizerProfileEmptyFragment newInstance(boolean receiveNotificationsEnabled) {
+        OrganizerProfileEmptyFragment fragment = new OrganizerProfileEmptyFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_NOTIFICATIONS_ENABLED, receiveNotificationsEnabled);
         fragment.setArguments(args);
@@ -56,7 +54,7 @@ public class EntrantProfileEmptyFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_entrant_profile_empty, container, false);
+        return inflater.inflate(R.layout.fragment_organizer_profile_empty, container, false);
     }
 
     @Override
@@ -77,7 +75,7 @@ public class EntrantProfileEmptyFragment extends Fragment {
                 this,
                 profileSwitcher,
                 topBarTitle,
-                "Entrant"
+                "Organizer"
         );
 
         Bundle args = getArguments();
@@ -91,8 +89,8 @@ public class EntrantProfileEmptyFragment extends Fragment {
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
                     .replace(
-                            R.id.entrant_fragment_container,
-                            EntrantProfileExistsFormFragment.newCreateInstance(receiveNotificationsEnabled)
+                            R.id.organizer_fragment_container,
+                            OrganizerProfileExistsFormFragment.newCreateInstance(receiveNotificationsEnabled)
                     )
                     .commit();
         });
@@ -114,29 +112,31 @@ public class EntrantProfileEmptyFragment extends Fragment {
 
     private void persistNotificationPreference() {
         SessionStore sessionStore = new SessionStore(requireContext());
-        String entrantId = sessionStore.getOrCreateDeviceId();
+        String organizerId = sessionStore.getOrCreateDeviceId();
 
-        EntrantDatabaseManager entrantDatabaseManager = new EntrantDatabaseManager();
-
-        entrantDatabaseManager.getEntrantFromId(entrantId)
-                .addOnSuccessListener(entrant -> {
-                    if (entrant == null) {
-                        createStubEntrantWithNotifications(entrantDatabaseManager);
+        OrganizerDatabaseManager organizerDatabaseManager = new OrganizerDatabaseManager();
+        organizerDatabaseManager.getOrganizerFromId(organizerId)
+                .addOnSuccessListener(organizer -> {
+                    if (organizer == null) {
+                        createStubEntrantWithNotifications(organizerDatabaseManager);
                         return;
                     }
 
-                    entrant.setNotificationsEnabled(receiveNotificationsEnabled);
-                    entrantDatabaseManager.updateEntrantInfo(entrant)
+                    organizer.setNotificationsEnabled(receiveNotificationsEnabled);
+                    organizerDatabaseManager.updateOrganizerInfo(organizer)
                             .addOnFailureListener(e ->
                                     Log.e("EntrantProfileEmpty", "Failed to update notification preference", e));
                 })
-                .addOnFailureListener(e -> createStubEntrantWithNotifications(entrantDatabaseManager));
+                .addOnFailureListener(e -> createStubEntrantWithNotifications(organizerDatabaseManager));
     }
 
-    private void createStubEntrantWithNotifications(EntrantDatabaseManager entrantDatabaseManager){
-        Entrant entrant = new Entrant("", "", "", receiveNotificationsEnabled, requireContext());
-        entrantDatabaseManager.addEntrant(entrant)
+    private void createStubEntrantWithNotifications(OrganizerDatabaseManager organizerDatabaseManager){
+        Organizer organizer = new Organizer("", "", "", receiveNotificationsEnabled, requireContext());
+        organizerDatabaseManager.addOrganizer(organizer)
                 .addOnFailureListener(err ->
                         Log.e("EntrantProfileEmpty", "Failed to create stub entrant", err));
     }
+
+
 }
+

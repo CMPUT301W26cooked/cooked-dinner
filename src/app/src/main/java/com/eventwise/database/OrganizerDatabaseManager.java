@@ -9,6 +9,7 @@ import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.Enum.EventEntrantStatus;
 import com.eventwise.Notification;
+import com.eventwise.Organizer;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -40,6 +41,17 @@ public class OrganizerDatabaseManager extends DatabaseManager{
     }
     public OrganizerDatabaseManager(FirebaseFirestore db){
         super(db);
+    }
+
+
+    /**
+     * Adds a new entrant profile to the database.
+     *
+     * @param organizer The entrant object to be added.
+     * @throws DatabaseException If an error occurs while adding the entrant to the database.
+     */
+    public Task<Void> addOrganizer(Organizer organizer) {
+        return super.addProfile(organizer);
     }
 
 
@@ -953,5 +965,57 @@ public class OrganizerDatabaseManager extends DatabaseManager{
                 new NotificationDatabaseManager(super.db);
 
         return notificationDatabaseManager.createNotification(notification);
+    }
+
+    public Task<Organizer> getOrganizerFromId(String organizerId) {
+        return super.getProfileFromId(organizerId)
+                .continueWith(task -> (Organizer) task.getResult());
+    }
+
+    public Task<Void> updateOrganizerInfo(Organizer organizer) {
+        return super.updateProfile(organizer);
+    }
+
+    public Task<Void> clearOrganizerProfile(String organizerId) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (organizerId == null || organizerId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("EntrantId cannot be null or empty"));
+            return tcs.getTask();
+        }
+
+        long timestamp = System.currentTimeMillis() / 1000L;
+
+        profiles.document(organizerId).get()
+                .addOnSuccessListener(profileSnapshot -> {
+                    Organizer organizer = profileSnapshot.toObject(Organizer.class);
+
+                    if (organizer == null) {
+                        tcs.setException(new DatabaseException("Error getting Entrant"));
+                        return;
+                    }
+
+                    organizer.setName("");
+                    organizer.setEmail("");
+                    organizer.setPhone("");
+
+
+                    events.get()
+                            .addOnSuccessListener(eventSnapshots -> {
+                                WriteBatch batch = db.batch();
+
+                                batch.set(profiles.document(organizerId), organizer);
+                                batch.commit()
+                                        .addOnSuccessListener(unused -> tcs.setResult(null))
+                                        .addOnFailureListener(e ->
+                                                tcs.setException(new DatabaseException("Error clearing Entrant profile")));
+                            })
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Error loading events")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Error getting Entrant")));
+
+        return tcs.getTask();
     }
 }

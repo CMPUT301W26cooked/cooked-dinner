@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ProfilePopupMenuStyle" parent="Widget.MaterialComponents.PopupMenu">
+        <item name="android:popupBackground">@color/bacon_color</item>
+        <item name="android:textColor">@color/forest_green</item>
+    </style>
+</resources>

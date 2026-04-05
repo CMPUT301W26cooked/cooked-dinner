@@ -19,21 +19,22 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.eventwise.Entrant;
+import com.eventwise.Organizer;
 import com.eventwise.ProfileDropdownHelper;
 import com.eventwise.R;
-import com.eventwise.database.EntrantDatabaseManager;
+import com.eventwise.database.DatabaseManager;
+import com.eventwise.database.OrganizerDatabaseManager;
 import com.eventwise.database.SessionStore;
 
 /**
- * Reusable entrant profile form fragment.
+ * Reusable organizer profile form fragment. (Heavily Inspired By EntrantProfileFormFragment)
  * Supports create mode and update mode.
  *
- * @author Becca Irving
+ * @author Luke Forster
  * @version 1.0
- * @since 2026-03-12
+ * @since 2026-04-03
  */
-public class EntrantProfileExistsFormFragment extends Fragment {
+public class OrganizerProfileExistsFormFragment extends Fragment {
 
     /**
      * TODO
@@ -93,7 +94,7 @@ public class EntrantProfileExistsFormFragment extends Fragment {
     private String originalPhone = "";
     private boolean originalNotificationsEnabled = true;
 
-    public EntrantProfileExistsFormFragment() {
+    public OrganizerProfileExistsFormFragment() {
     }
 
     /**
@@ -101,7 +102,7 @@ public class EntrantProfileExistsFormFragment extends Fragment {
      *
      * @return create mode fragment
      */
-    public static EntrantProfileExistsFormFragment newCreateInstance() {
+    public static OrganizerProfileExistsFormFragment newCreateInstance() {
         return newCreateInstance(true);
     }
 
@@ -111,8 +112,8 @@ public class EntrantProfileExistsFormFragment extends Fragment {
      * @param receiveNotificationsEnabled starting notifications setting
      * @return create mode fragment
      */
-    public static EntrantProfileExistsFormFragment newCreateInstance(boolean receiveNotificationsEnabled) {
-        EntrantProfileExistsFormFragment fragment = new EntrantProfileExistsFormFragment();
+    public static OrganizerProfileExistsFormFragment newCreateInstance(boolean receiveNotificationsEnabled) {
+        OrganizerProfileExistsFormFragment fragment = new OrganizerProfileExistsFormFragment();
         Bundle args = new Bundle();
         args.putString(ARG_MODE, MODE_CREATE);
         args.putString(ARG_NAME, "");
@@ -133,13 +134,13 @@ public class EntrantProfileExistsFormFragment extends Fragment {
      * @param receiveNotificationsEnabled current notifications setting
      * @return update mode fragment
      */
-    public static EntrantProfileExistsFormFragment newUpdateInstance(
+    public static OrganizerProfileExistsFormFragment newUpdateInstance(
             String name,
             String email,
             String phone,
             boolean receiveNotificationsEnabled
     ) {
-        EntrantProfileExistsFormFragment fragment = new EntrantProfileExistsFormFragment();
+        OrganizerProfileExistsFormFragment fragment = new OrganizerProfileExistsFormFragment();
         Bundle args = new Bundle();
         args.putString(ARG_MODE, MODE_UPDATE);
         args.putString(ARG_NAME, name);
@@ -152,7 +153,7 @@ public class EntrantProfileExistsFormFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_entrant_profile_exists, container, false);
+        return inflater.inflate(R.layout.fragment_organizer_profile_exists, container, false);
     }
 
     @Override
@@ -191,7 +192,7 @@ public class EntrantProfileExistsFormFragment extends Fragment {
                 this,
                 profileSwitcher,
                 topBarTitle,
-                "Entrant"
+                "Organizer"
         );
 
         loadArguments();
@@ -380,8 +381,8 @@ public class EntrantProfileExistsFormFragment extends Fragment {
                 requireActivity().getSupportFragmentManager()
                         .beginTransaction()
                         .replace(
-                                R.id.entrant_fragment_container,
-                                EntrantProfileEmptyFragment.newInstance(receiveNotificationsEnabled)
+                                R.id.organizer_fragment_container,
+                                OrganizerProfileEmptyFragment.newInstance(receiveNotificationsEnabled)
                         )
                         .commit();
             } else {
@@ -391,21 +392,21 @@ public class EntrantProfileExistsFormFragment extends Fragment {
 
         deleteProfileButton.setOnClickListener(v -> {
             SessionStore sessionStore = new SessionStore(requireContext());
-            String entrantId = sessionStore.getOrCreateDeviceId();
+            String organizerId = sessionStore.getOrCreateDeviceId();
 
-            EntrantDatabaseManager entrantDatabaseManager = new EntrantDatabaseManager();
-            entrantDatabaseManager.clearEntrantProfile(entrantId)
+            OrganizerDatabaseManager organizerDatabaseManager = new OrganizerDatabaseManager();
+            organizerDatabaseManager.clearOrganizerProfile(organizerId)
                     .addOnSuccessListener(unused -> {
                         requireActivity().getSupportFragmentManager()
                                 .beginTransaction()
                                 .replace(
-                                        R.id.entrant_fragment_container,
-                                        EntrantProfileEmptyFragment.newInstance(receiveNotificationsEnabled)
+                                        R.id.organizer_fragment_container,
+                                        OrganizerProfileEmptyFragment.newInstance(receiveNotificationsEnabled)
                                 )
                                 .commit();
                     })
                     .addOnFailureListener(e ->
-                            Log.e("EntrantProfileForm", "Failed to clear entrant profile", e));
+                            Log.e("OrganizerProfileForm", "Failed to clear organizer profile", e));
         });
     }
 
@@ -414,36 +415,36 @@ public class EntrantProfileExistsFormFragment extends Fragment {
      */
     private void persistProfileToBackend() {
         SessionStore sessionStore = new SessionStore(requireContext());
-        String entrantId = sessionStore.getOrCreateDeviceId();
+        String organizerId = sessionStore.getOrCreateDeviceId();
 
-        EntrantDatabaseManager entrantDatabaseManager = new EntrantDatabaseManager();
+        OrganizerDatabaseManager organizerDatabaseManager = new OrganizerDatabaseManager();
 
-        entrantDatabaseManager.getEntrantFromId(entrantId)
-                .addOnSuccessListener(existingEntrant -> {
-                    if (existingEntrant == null) {
-                        createNewEntrantProfile(entrantDatabaseManager);
+        organizerDatabaseManager.getOrganizerFromId(organizerId)
+                .addOnSuccessListener(existingOrganizer -> {
+                    if (existingOrganizer == null) {
+                        createNewOrganizerProfile(organizerDatabaseManager);
                         return;
                     }
 
 
-                    existingEntrant.setName(getTrimmedText(nameEditText));
-                    existingEntrant.setEmail(getTrimmedText(emailEditText));
-                    existingEntrant.setPhone(getTrimmedText(phoneEditText));
-                    existingEntrant.setNotificationsEnabled(receiveNotificationsEnabled);
+                    existingOrganizer.setName(getTrimmedText(nameEditText));
+                    existingOrganizer.setEmail(getTrimmedText(emailEditText));
+                    existingOrganizer.setPhone(getTrimmedText(phoneEditText));
+                    existingOrganizer.setNotificationsEnabled(receiveNotificationsEnabled);
 
-                    entrantDatabaseManager.updateEntrantInfo(existingEntrant)
+                    organizerDatabaseManager.updateOrganizerInfo(existingOrganizer)
                             .addOnSuccessListener(unused -> handleSuccessfulProfileSave())
                             .addOnFailureListener(e ->
-                                    Log.e("EntrantProfileForm", "Failed to update entrant profile", e));
+                                    Log.e("OrganizerProfileForm", "Failed to update organizer profile", e));
                 })
-                .addOnFailureListener(e -> createNewEntrantProfile(entrantDatabaseManager));
+                .addOnFailureListener(e -> createNewOrganizerProfile(organizerDatabaseManager));
     }
 
     /**
-     * Creates a new entrant profile in Firestore.
+     * Creates a new organizer profile in Firestore.
      */
-    private void createNewEntrantProfile(EntrantDatabaseManager entrantDatabaseManager) {
-        Entrant entrant = new Entrant(
+    private void createNewOrganizerProfile(OrganizerDatabaseManager organizerDatabaseManager) {
+        Organizer organizer = new Organizer(
                 getTrimmedText(nameEditText),
                 getTrimmedText(emailEditText),
                 getTrimmedText(phoneEditText),
@@ -451,10 +452,10 @@ public class EntrantProfileExistsFormFragment extends Fragment {
                 requireContext()
         );
 
-        entrantDatabaseManager.addEntrant(entrant)
+        organizerDatabaseManager.addOrganizer(organizer)
                 .addOnSuccessListener(unused -> handleSuccessfulProfileSave())
                 .addOnFailureListener(err ->
-                        Log.e("EntrantProfileForm", "Failed to create entrant profile", err));
+                        Log.e("OrganizerProfileForm", "Failed to create organizer profile", err));
     }
 
     /**
@@ -465,8 +466,8 @@ public class EntrantProfileExistsFormFragment extends Fragment {
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
                     .replace(
-                            R.id.entrant_fragment_container,
-                            EntrantProfileExistsFormFragment.newUpdateInstance(
+                            R.id.organizer_fragment_container,
+                            OrganizerProfileExistsFormFragment.newUpdateInstance(
                                     getTrimmedText(nameEditText),
                                     getTrimmedText(emailEditText),
                                     getTrimmedText(phoneEditText),

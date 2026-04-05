@@ -1,5 +1,10 @@
 package com.eventwise;
 
+import android.util.Log;
+
+import com.eventwise.database.SessionStore;
+import com.google.firebase.firestore.Exclude;
+
 import java.util.ArrayList;
 
 /**
@@ -17,6 +22,9 @@ public class Organizer extends Profile {
      * - Keep lottery/notification/export logic out of the model and in services later.
      * - Add unit tests.
      */
+    private String deviceId;
+
+    private ArrayList<String> notificationIds = new ArrayList<>();
 
     /** List of event Ids created by this organizer. */
     private ArrayList<String> createdEventIds = new ArrayList<>();
@@ -25,8 +33,13 @@ public class Organizer extends Profile {
         super();
     }
 
-    public Organizer(String name, String email, String phone, boolean notificationsEnabled) {
+    public Organizer(String name, String email, String phone, boolean notificationsEnabled, android.content.Context context) {
         super(name, email, phone, notificationsEnabled, ProfileType.ORGANIZER);
+
+        SessionStore session = new SessionStore(context);
+        this.deviceId = session.getOrCreateDeviceId();
+        setProfileId(this.deviceId);
+        Log.d("Entrant", "DeviceId/ProfileId: " + this.deviceId);
     }
 
     public ArrayList<String> getCreatedEventIds() {
@@ -67,5 +80,19 @@ public class Organizer extends Profile {
      */
     public boolean hasCreatedEvent(String eventId) {
         return createdEventIds != null && eventId != null && createdEventIds.contains(eventId);
+    }
+
+    @Exclude
+    public boolean hasCompletedProfile() {
+        return getName() != null && !getName().trim().isEmpty()
+                && getEmail() != null && !getEmail().trim().isEmpty();
+    }
+
+    public ArrayList<String> getNotificationIds() {
+        return notificationIds;
+    }
+
+    public void setNotificationIds(ArrayList<String> notificationIds) {
+        this.notificationIds = notificationIds;
     }
 }

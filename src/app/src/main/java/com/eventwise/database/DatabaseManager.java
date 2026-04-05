@@ -172,7 +172,8 @@ public abstract class DatabaseManager {
 
         profiles.get().addOnSuccessListener( result -> {
             for (DocumentSnapshot document : result) {
-                if (document.getData().get("profileType").equals(ProfileType.ENTRANT.toString())) {
+                String type = document.getString("profileType");
+                if ("ENTRANT".equals(type)) {
                     entrantsArray.add(document.toObject(Entrant.class));
                 }
             }
@@ -201,7 +202,8 @@ public abstract class DatabaseManager {
 
         profiles.get().addOnSuccessListener( result -> {
             for (DocumentSnapshot document : result) {
-                if (document.getData().get("profileType").equals(ProfileType.ADMIN.toString())) {
+                String type = document.getString("profileType");
+                if ("ADMIN".equals(type)) {
                     adminArray.add(document.toObject(Admin.class));
                 }
             }
@@ -223,21 +225,28 @@ public abstract class DatabaseManager {
      * @see Organizer
      * @see ProfileType
      */
-    protected Task<ArrayList<Organizer>> getOrganizers(){
+    protected Task<ArrayList<Organizer>> getOrganizers() {
 
         TaskCompletionSource<ArrayList<Organizer>> tcs = new TaskCompletionSource<>();
         ArrayList<Organizer> organizerArray = new ArrayList<>();
 
-        profiles.get().addOnSuccessListener( result -> {
+        profiles.get().addOnSuccessListener(result -> {
+
             for (DocumentSnapshot document : result) {
-                if (document.getData().get("profileType").equals(ProfileType.ORGANIZER.toString())) {
+
+                String type = document.getString("profileType");
+
+                if ("ORGANIZER".equals(type)) {
                     organizerArray.add(document.toObject(Organizer.class));
                 }
             }
+
             tcs.setResult(organizerArray);
-        }).addOnFailureListener(exception -> {
-                    tcs.setException(new DatabaseException("Error getting Organizers"));
-        });
+
+        }).addOnFailureListener(exception ->
+                tcs.setException(new DatabaseException("Error getting Organizers"))
+        );
+
         return tcs.getTask();
     }
 //**************************************************************************************************

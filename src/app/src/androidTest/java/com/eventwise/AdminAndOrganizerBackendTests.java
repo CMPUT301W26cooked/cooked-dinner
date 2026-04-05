@@ -72,7 +72,7 @@ public class AdminAndOrganizerBackendTests extends DatabaseManagerTests {
         String organizerId = UUID.randomUUID().toString();
         profileIdsToDelete.add(organizerId);
 
-        Organizer organizer = new Organizer("Organizer One", "organizer@test.com", "7805550202", true);
+        Organizer organizer = new Organizer("Organizer One", "organizer@test.com", "7805550202", true, ApplicationProvider.getApplicationContext());
         organizer.setProfileId(organizerId);
 
         Tasks.await(testDb.collection("profiles").document(organizerId).set(organizer));
@@ -95,7 +95,7 @@ public class AdminAndOrganizerBackendTests extends DatabaseManagerTests {
     public void adminRemoveProfileByIdDeletesProfileDocument() throws Exception {
         String organizerId = UUID.randomUUID().toString();
 
-        Organizer organizer = new Organizer("Delete Organizer", "delete@test.com", "7805550303", true);
+        Organizer organizer = new Organizer("Delete Organizer", "delete@test.com", "7805550303", true, ApplicationProvider.getApplicationContext());
         organizer.setProfileId(organizerId);
 
         Tasks.await(testDb.collection("profiles").document(organizerId).set(organizer));
