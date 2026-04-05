@@ -43,28 +43,9 @@ public class OrganizerEventDetailFragment extends Fragment {
     public static final String BUNDLE_KEY_DELETED_EVENT_ID = "organizer_bundle_key_deleted_event_id";
 
     private static final String ARG_EVENT_ID = "arg_event_id";
-    private static final String ARG_EVENT_NAME = "arg_event_name";
-    private static final String ARG_EVENT_DESCRIPTION = "arg_event_description";
-    private static final String ARG_EVENT_LOCATION = "arg_event_location";
-    private static final String ARG_EVENT_START = "arg_event_start";
-    private static final String ARG_EVENT_END = "arg_event_end";
-    private static final String ARG_REG_CLOSE = "arg_reg_close";
-    private static final String ARG_MAX_SPOTS = "arg_max_spots";
-    private static final String ARG_WAITLISTED = "arg_waitlisted";
-    private static final String ARG_REGISTERED = "arg_registered";
-    private static final String ARG_IS_PRIVATE_EVENT = "arg_is_private_event";
 
     private String eventId;
-    private String eventName;
-    private String eventDescription;
-    private String eventLocation;
-    private long eventStart;
-    private long eventEnd;
-    private long registrationClose;
-    private int maxSpots;
-    private int waitlistedCount;
-    private int registeredCount;
-    private boolean isPrivateEvent;
+    private Event currentEvent;
 
     public OrganizerEventDetailFragment() {
     }
@@ -72,29 +53,14 @@ public class OrganizerEventDetailFragment extends Fragment {
     /**
      * Makes a new organizer detail fragment for one event.
      *
-     * @param event event to display
-     * @return configured fragment
      */
-    public static OrganizerEventDetailFragment newInstance(Event event) {
+    public static OrganizerEventDetailFragment newInstance(@NonNull String eventId) {
         OrganizerEventDetailFragment fragment = new OrganizerEventDetailFragment();
         Bundle args = new Bundle();
-
-        args.putString(ARG_EVENT_ID, event.getEventId());
-        args.putString(ARG_EVENT_NAME, event.getName());
-        args.putString(ARG_EVENT_DESCRIPTION, event.getDescription());
-        args.putString(ARG_EVENT_LOCATION, event.getLocationName());
-        args.putLong(ARG_EVENT_START, event.getEventStartEpochSec());
-        args.putLong(ARG_EVENT_END, event.getEventEndEpochSec());
-        args.putLong(ARG_REG_CLOSE, event.getRegistrationCloseEpochSec());
-        args.putInt(ARG_MAX_SPOTS, event.getMaxWinnersToSample());
-        args.putInt(ARG_WAITLISTED, event.getWaitingListCount());
-        args.putInt(ARG_REGISTERED, event.getEnrolledCount());
-        args.putBoolean(ARG_IS_PRIVATE_EVENT, event.isPrivateEvent());
-
+        args.putString(ARG_EVENT_ID, eventId);
         fragment.setArguments(args);
         return fragment;
     }
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
@@ -106,6 +72,7 @@ public class OrganizerEventDetailFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         readArgs();
         bindViews(view);
+        loadEvent();
     }
 
     /**
@@ -118,16 +85,6 @@ public class OrganizerEventDetailFragment extends Fragment {
         }
 
         eventId = args.getString(ARG_EVENT_ID, "");
-        eventName = args.getString(ARG_EVENT_NAME, "");
-        eventDescription = args.getString(ARG_EVENT_DESCRIPTION, "");
-        eventLocation = args.getString(ARG_EVENT_LOCATION, "");
-        eventStart = args.getLong(ARG_EVENT_START, 0L);
-        eventEnd = args.getLong(ARG_EVENT_END, 0L);
-        registrationClose = args.getLong(ARG_REG_CLOSE, 0L);
-        maxSpots = args.getInt(ARG_MAX_SPOTS, 0);
-        waitlistedCount = args.getInt(ARG_WAITLISTED, 0);
-        registeredCount = args.getInt(ARG_REGISTERED, 0);
-        isPrivateEvent = args.getBoolean(ARG_IS_PRIVATE_EVENT, false);
     }
 
     /**
@@ -137,6 +94,7 @@ public class OrganizerEventDetailFragment extends Fragment {
      */
     private void bindViews(@NonNull View view) {
         ImageView backButton = view.findViewById(R.id.back_button);
+        ImageView qrCode = view.findViewById(R.id.qr_code);
 
         TextView detailTitle = view.findViewById(R.id.event_detail_title);
         TextView eventNameText = view.findViewById(R.id.event_name);
@@ -164,29 +122,6 @@ public class OrganizerEventDetailFragment extends Fragment {
         Button cancelEventButton = view.findViewById(R.id.cancel_event_button);
         Button eventCommentButton = view.findViewById(R.id.event_comment_button);
 
-        boolean eventOver = hasEventStarted();
-
-        detailTitle.setText(isPrivateEvent ? "Private Event Details" : "Event Details");
-        eventNameText.setText(eventName);
-        eventOrganization.setText("Organization Name");
-        eventStatus.setText("Open");
-        eventDescriptionText.setText(eventDescription);
-
-        eventDate.setText(formatDate(eventStart));
-        eventTime.setText(formatTimeRange(eventStart, eventEnd));
-        eventSpots.setText("•  " + maxSpots + " event spots");
-        eventWaitlisted.setText("•  " + waitlistedCount + " on the wait list");
-        eventRegistered.setText("•  " + registeredCount + " registered");
-
-        lotteryCloseDate.setText(formatDate(registrationClose));
-        lotteryCloseTime.setText(formatTime(registrationClose));
-        registrationCloseDate.setText(formatDate(registrationClose));
-        registrationCloseTime.setText(formatTime(registrationClose));
-
-        eventLocationName.setText(TextUtils.isEmpty(eventLocation) ? "No location" : eventLocation);
-        eventLocationCity.setText("");
-        eventGuidelines.setText("Rules and regulations limitations and considerations and other such things");
-
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
 
         viewEntrantsButton.setOnClickListener(v -> {
@@ -196,12 +131,6 @@ public class OrganizerEventDetailFragment extends Fragment {
                     .addToBackStack(null)
                     .commit();
         });
-
-        editEventButton.setEnabled(!eventOver);
-        editEventButton.setAlpha(eventOver ? 0.5f : 1.0f);
-
-        cancelEventButton.setEnabled(!eventOver);
-        cancelEventButton.setAlpha(eventOver ? 0.5f : 1.0f);
 
         editEventButton.setOnClickListener(v -> {
             if (eventId == null || eventId.trim().isEmpty()) {
@@ -219,7 +148,6 @@ public class OrganizerEventDetailFragment extends Fragment {
         });
 
         eventCommentButton.setOnClickListener(v -> {
-
             if (getParentFragmentManager().findFragmentByTag("CommentBottomSheet") == null) {
                 CommentBottomSheet sheet = new CommentBottomSheet();
                 Bundle args = new Bundle();
@@ -228,9 +156,55 @@ public class OrganizerEventDetailFragment extends Fragment {
                 sheet.setArguments(args);
                 sheet.show(getParentFragmentManager(), "CommentBottomSheet");
             }
-
         });
+
         cancelEventButton.setOnClickListener(v -> cancelEvent());
+
+        if (currentEvent == null) {
+            return;
+        }
+
+        boolean eventOver = hasEventStarted();
+
+        detailTitle.setText(currentEvent.isPrivateEvent() ? "Private Event Details" : "Event Details");
+        eventNameText.setText(currentEvent.getName());
+        eventOrganization.setText("Organization Name");
+        eventStatus.setText("Open");
+        eventDescriptionText.setText(currentEvent.getDescription());
+
+        try {
+            android.graphics.Bitmap qrBitmap =
+                    new com.eventwise.QRCodeEncoder(currentEvent.getEventId(), 600, 600, null)
+                            .encodeAsBitmap();
+            qrCode.setImageBitmap(qrBitmap);
+        } catch (Exception e) {
+            android.util.Log.e("OrganizerEventDetail", "Failed to generate QR code", e);
+            qrCode.setImageDrawable(null);
+        }
+
+        eventDate.setText(formatDate(currentEvent.getEventStartEpochSec()));
+        eventTime.setText(formatTimeRange(
+                currentEvent.getEventStartEpochSec(),
+                currentEvent.getEventEndEpochSec()
+        ));
+        eventSpots.setText("•  " + currentEvent.getMaxWinnersToSample() + " event spots");
+        eventWaitlisted.setText("•  " + currentEvent.getWaitingListCount() + " on the wait list");
+        eventRegistered.setText("•  " + currentEvent.getEnrolledCount() + " registered");
+
+        lotteryCloseDate.setText(formatDate(currentEvent.getRegistrationCloseEpochSec()));
+        lotteryCloseTime.setText(formatTime(currentEvent.getRegistrationCloseEpochSec()));
+        registrationCloseDate.setText(formatDate(currentEvent.getRegistrationCloseEpochSec()));
+        registrationCloseTime.setText(formatTime(currentEvent.getRegistrationCloseEpochSec()));
+
+        eventLocationName.setText(TextUtils.isEmpty(currentEvent.getLocationName()) ? "No location" : currentEvent.getLocationName());
+        eventLocationCity.setText("");
+        eventGuidelines.setText("Rules and regulations limitations and considerations and other such things");
+
+        editEventButton.setEnabled(!eventOver);
+        editEventButton.setAlpha(eventOver ? 0.5f : 1.0f);
+
+        cancelEventButton.setEnabled(!eventOver);
+        cancelEventButton.setAlpha(eventOver ? 0.5f : 1.0f);
     }
 
     /**
@@ -262,8 +236,12 @@ public class OrganizerEventDetailFragment extends Fragment {
      * @return true if the event has started
      */
     private boolean hasEventStarted() {
+        if (currentEvent == null) {
+            return false;
+        }
+
         long nowEpochSec = System.currentTimeMillis() / 1000L;
-        return nowEpochSec >= eventStart;
+        return nowEpochSec >= currentEvent.getEventStartEpochSec();
     }
 
     /**
@@ -303,5 +281,28 @@ public class OrganizerEventDetailFragment extends Fragment {
      */
     private String formatTimeRange(long startEpochSeconds, long endEpochSeconds) {
         return formatTime(startEpochSeconds) + " – " + formatTime(endEpochSeconds);
+    }
+
+    private void loadEvent() {
+        if (eventId == null || eventId.trim().isEmpty() || getView() == null) {
+            return;
+        }
+
+        EventSearcherDatabaseManager db = new EventSearcherDatabaseManager();
+        db.getEvents()
+                .addOnSuccessListener(events -> {
+                    currentEvent = null;
+
+                    for (Event event : events) {
+                        if (event != null && eventId.equals(event.getEventId())) {
+                            currentEvent = event;
+                            break;
+                        }
+                    }
+
+                    if (currentEvent != null && getView() != null) {
+                        bindViews(getView());
+                    }
+                });
     }
 }

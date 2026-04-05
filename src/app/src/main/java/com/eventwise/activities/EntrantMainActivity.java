@@ -13,6 +13,7 @@ import com.eventwise.fragments.EntrantEventsCommunityFragment;
 import com.eventwise.fragments.EntrantEventsFragment;
 import com.eventwise.fragments.EntrantNotificationsFragment;
 import com.eventwise.fragments.EntrantProfileEmptyFragment;
+import com.eventwise.fragments.QRScannerFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.core.app.ActivityCompat;
@@ -82,7 +83,10 @@ public class EntrantMainActivity extends AppCompatActivity {
             }
 
             if (item.getItemId() == R.id.qr_scanner_icon) {
-                // TODO: replace with QRScannerFragment later
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.entrant_fragment_container, new QRScannerFragment())
+                        .commit();
                 return true;
             }
 

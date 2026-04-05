@@ -26,6 +26,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import android.graphics.Bitmap;
+import com.google.zxing.WriterException;
+import com.eventwise.QRCodeEncoder;
 
 /**
  * Shows the entrant event detail page.
@@ -381,6 +384,17 @@ public class EntrantEventDetailFragment extends Fragment {
         eventName.setText(event.getName());
         eventOrganization.setText("Organization Name");
         eventDescription.setText(event.getDescription());
+
+        /**
+         * QR code generator implementation
+         */
+        try {
+            Bitmap qrBitmap = new QRCodeEncoder(event.getEventId(), 600, 600, null).encodeAsBitmap();
+            qrCode.setImageBitmap(qrBitmap);
+        } catch (WriterException e) {
+            Log.e("EntrantEventDetail", "Failed to generate QR code", e);
+            qrCode.setImageDrawable(null);
+        }
 
         eventDate.setText(formatDate(event.getEventStartEpochSec()));
         eventTime.setText(formatTimeRange(event.getEventStartEpochSec(), event.getEventEndEpochSec()));

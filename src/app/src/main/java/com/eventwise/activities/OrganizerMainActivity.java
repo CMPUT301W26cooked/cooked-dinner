@@ -22,6 +22,7 @@ import com.eventwise.fragments.OrganizerProfileEmptyFragment;
 import com.eventwise.fragments.OrganizerProfileExistsFormFragment;
 import com.eventwise.fragments.OrganizerNotificationsFragment;
 import com.eventwise.fragments.OrganizerYourEventsFragment;
+import com.eventwise.fragments.QRScannerFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 /**
@@ -68,7 +69,10 @@ public class OrganizerMainActivity extends AppCompatActivity {
             }
 
             if (item.getItemId() == R.id.qr_scanner_icon) {
-                // TODO: replace with QRScannerFragment later
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.entrant_fragment_container, new QRScannerFragment())
+                        .commit();
                 return true;
             }
 
