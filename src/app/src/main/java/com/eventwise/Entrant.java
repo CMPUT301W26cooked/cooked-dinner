@@ -58,7 +58,7 @@ public class Entrant extends Profile {
 
         SessionStore session = new SessionStore(context);
         this.deviceId = session.getOrCreateDeviceId();
-        setProfileId(this.deviceId);
+        setProfileId(this.deviceId + "_entrant");
         Log.d("Entrant", "DeviceId/ProfileId: " + this.deviceId);
     }
 

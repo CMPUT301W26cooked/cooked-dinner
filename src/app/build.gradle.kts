@@ -33,7 +33,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 }
-
+val camerax_version = "1.3.3"
 dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
@@ -50,4 +50,11 @@ dependencies {
     androidTestImplementation ("androidx.test.ext:junit:1.1.5")
     implementation("com.google.android.gms:play-services-location:21.0.1")
     implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.zxing:core:3.5.4")
+    implementation ("androidx.camera:camera-core:$camerax_version")
+    implementation ("androidx.camera:camera-camera2:$camerax_version")
+    implementation ("androidx.camera:camera-lifecycle:$camerax_version")
+    implementation ("androidx.camera:camera-view:$camerax_version")
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
+    implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
 }

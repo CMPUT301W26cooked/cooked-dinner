@@ -61,7 +61,7 @@ public class OrganizerYourEventsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         SessionStore sessionStore = new SessionStore(requireContext());
-        organizerProfileId = sessionStore.getOrCreateDeviceId();
+        organizerProfileId = sessionStore.getOrganizerProfileId();
         eventSearcherDBMan = new EventSearcherDatabaseManager();
         organizerDatabaseManager = new OrganizerDatabaseManager();
         View createEventButton = view.findViewById(R.id.create_new_event_button);
@@ -183,9 +183,17 @@ public class OrganizerYourEventsFragment extends Fragment {
      * @param event event to open
      */
     private void openEventDetail(Event event) {
+        if (event == null || event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+            Log.e("OrganizerEvents", "Cannot open event detail because eventId is null or empty");
+            return;
+        }
+
         getParentFragmentManager()
                 .beginTransaction()
-                .replace(R.id.organizer_fragment_container, OrganizerEventDetailFragment.newInstance(event))
+                .replace(
+                        R.id.organizer_fragment_container,
+                        OrganizerEventDetailFragment.newInstance(event.getEventId())
+                )
                 .addToBackStack(null)
                 .commit();
     }

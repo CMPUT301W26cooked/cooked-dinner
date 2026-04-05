@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: This XML file contains the top bar for the qr scanner tab
+    Author: Luke Forster
+    LastRevAuthor: Luke Forster
+    Version: 1
+    Date: 2026-03-16
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/top_bar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/moss_green"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:paddingTop="18dp"
+    android:paddingBottom="14dp">
+        <TextView
+            android:id="@+id/top_bar_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="QR Code Scanner"
+            android:textColor="@color/forest_green"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+</LinearLayout>

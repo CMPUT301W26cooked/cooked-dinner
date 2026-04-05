@@ -38,7 +38,7 @@ public class Organizer extends Profile {
 
         SessionStore session = new SessionStore(context);
         this.deviceId = session.getOrCreateDeviceId();
-        setProfileId(this.deviceId);
+        setProfileId(this.deviceId + "_organizer");
         Log.d("Entrant", "DeviceId/ProfileId: " + this.deviceId);
     }
 

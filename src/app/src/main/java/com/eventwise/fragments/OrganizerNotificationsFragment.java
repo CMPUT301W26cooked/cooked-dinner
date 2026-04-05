@@ -73,9 +73,9 @@ public class OrganizerNotificationsFragment extends Fragment {
     }
     private String getCurrentEntrantId() {
         SessionStore sessionStore = new SessionStore(requireContext());
-        String deviceId = sessionStore.getOrCreateDeviceId();
-        Log.d("Notification", "Current entrant/device Id: " + deviceId);
-        return deviceId;
+        String organizerProfileId = sessionStore.getOrganizerProfileId();
+        Log.d("Notification", "Current entrant/device Id: " + organizerProfileId);
+        return organizerProfileId;
     }
 
     private void refreshNotifications() {

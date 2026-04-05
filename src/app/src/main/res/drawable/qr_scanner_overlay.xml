@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Description: QR Scanner overlay frame
+    Author: Hao
+    Version: 1.0
+    Date: 2026-04-01
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Transparent center -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#80000000" />
+        </shape>
+    </item>
+
+    <!-- Clear center square -->
+    <item
+        android:left="25dp"
+        android:right="25dp"
+        android:top="25dp"
+        android:bottom="25dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#00000000" />
+            <stroke
+                android:width="2dp"
+                android:color="@color/white" />
+        </shape>
+    </item>
+
+    <!-- Corner markers -->
+    <item
+        android:left="25dp"
+        android:right="25dp"
+        android:top="25dp"
+        android:bottom="25dp">
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="4dp"
+                android:color="@color/moss_green" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+</layer-list>
