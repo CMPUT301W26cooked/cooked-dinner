@@ -1,15 +1,12 @@
 package com.eventwise;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.adapters.ImageGalleryAdapter;
 import com.eventwise.items.ImageListItem;
 
-import java.io.File;
 import java.util.ArrayList;
 
 
@@ -51,18 +48,12 @@ public class ImageGalleryBuilder {
             if (posterPath == null || posterPath.isEmpty()) {
                 continue;
             }
-            File imageFile = new File(appContext.getFilesDir(), posterPath);
-            if (imageFile.exists()) {
-                Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
 
-                ImageListItem imageListItem = new ImageListItem();
-
-                // Set the image
-                imageListItem.setImage(bitmap);
-                imageListItem.setStoragePath(posterPath);
-                imageListItem.setEventId(event.getEventId());
-                listOfImages.add(imageListItem);
-            }
+            ImageListItem imageListItem = new ImageListItem();
+            imageListItem.setImageUrl(posterPath);
+            imageListItem.setStoragePath(posterPath);
+            imageListItem.setEventId(event.getEventId());
+            listOfImages.add(imageListItem);
         }
 
         return listOfImages;

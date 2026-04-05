@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 public class ImageListItem {
 
     private Bitmap image;
+    private String imageUrl;
     private String storagePath;
     private String eventId;
 
@@ -43,5 +44,13 @@ public class ImageListItem {
 
     public void setEventId(String eventId) {
         this.eventId = eventId;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

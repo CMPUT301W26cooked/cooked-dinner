@@ -3,7 +3,6 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -36,8 +35,9 @@ import com.eventwise.database.OrganizerDatabaseManager;
 import com.eventwise.Event;
 import com.eventwise.database.SessionStore;
 
+import com.bumptech.glide.Glide;
+
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -278,11 +278,10 @@ public class CreateEventFragment extends Fragment {
         }
 
         if (event.getPosterPath() != null && !event.getPosterPath().trim().isEmpty()) {
-            File file = new File(requireContext().getFilesDir(), event.getPosterPath());
-            if (file.exists()) {
-                inputEventPoster.setImageURI(Uri.fromFile(file));
-                inputEventPoster.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            }
+            Glide.with(requireContext())
+                    .load(event.getPosterPath())
+                    .centerCrop()
+                    .into(inputEventPoster);
         }
 
         updatePrivateEventUiState();
@@ -398,7 +397,7 @@ public class CreateEventFragment extends Fragment {
                         Log.d("CreateEvent", "Event updated successfully");
 
                         if (selectedImageBytes != null) {
-                            organizerDBMan.updateEventPoster(editingEvent.getEventId(), selectedImageBytes, requireContext())
+                            organizerDBMan.updateEventPoster(editingEvent.getEventId(), selectedImageBytes)
                                     .addOnSuccessListener(path -> {
                                         Log.d("CreateEvent", "Updated poster uploaded: " + path);
                                         finishAfterSave(editingEvent);
@@ -448,7 +447,7 @@ public class CreateEventFragment extends Fragment {
                     // ====== New code end ======
 
                     if (selectedImageBytes != null) {
-                        organizerDBMan.uploadEventPoster(event.getEventId(), selectedImageBytes, requireContext())
+                        organizerDBMan.uploadEventPoster(event.getEventId(), selectedImageBytes)
                                 .addOnSuccessListener(path -> {
                                     Log.d("CreateEvent", "Poster uploaded: " + path);
                                     finishAfterSave(event);

@@ -31,7 +31,6 @@ import com.eventwise.adapters.AdminImagesAdapter;
 import com.eventwise.database.AdminDatabaseManager;
 import com.eventwise.items.AdminImageItem;
 
-import java.io.File;
 import java.util.ArrayList;
 
 public class AdminImagesFragment extends Fragment {
@@ -71,7 +70,7 @@ public class AdminImagesFragment extends Fragment {
 
         adapter = new AdminImagesAdapter(imageItems,item ->
         {
-            adminDatabaseManager.deletePoster(item.getFilepath(), requireContext())
+            adminDatabaseManager.deletePoster(item.getEventId())
                     .addOnSuccessListener( notUsed-> {
                         imageItems.remove(item);
                         adapter.notifyDataSetChanged();
@@ -112,11 +111,7 @@ public class AdminImagesFragment extends Fragment {
                     }
 
                     if (event.getPosterPath() != null && !event.getPosterPath().isEmpty()) {
-                        File file = new File(getContext().getFilesDir(), event.getPosterPath());
-                        if (file.exists()) {
-                            //Keep track of image file, event ID and the poster filepath
-                            imageItems.add(new AdminImageItem(event.getEventId(), event.getPosterPath(), file, event.getName(), "NEED TO ADD ORG NAME",  "NEED TO ADD TIMESTAMP?"));
-                        }
+                        imageItems.add(new AdminImageItem(event.getEventId(), event.getPosterPath(), event.getPosterPath(), event.getName(), "NEED TO ADD ORG NAME",  "NEED TO ADD TIMESTAMP?"));
                     }
 
                 }
