@@ -19,8 +19,18 @@ import java.util.TimeZone;
 
 
 //Todo
-//Documentation and Tests
+// Tests
 
+/**
+ * A BottomSheetDialogFragment that provides a user interface for filtering events.
+ * Users can select a date range (start and end dates) using Material Date Pickers
+ * and specify a minimum number of available spots via a SeekBar.
+ *
+ * <p>The selected filter criteria are communicated back to the calling component
+ * through the {@link FilterListener} interface.</p>
+ *
+ * @see BottomSheetDialogFragment
+ */
 public class FilterBottomSheet extends BottomSheetDialogFragment {
 
     private static final long END_OF_DAY_OFFSET = 86399000L; // (24*60*60 - 1) * 1000
