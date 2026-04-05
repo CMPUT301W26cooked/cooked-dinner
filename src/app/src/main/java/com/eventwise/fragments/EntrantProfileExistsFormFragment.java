@@ -391,10 +391,10 @@ public class EntrantProfileExistsFormFragment extends Fragment {
 
         deleteProfileButton.setOnClickListener(v -> {
             SessionStore sessionStore = new SessionStore(requireContext());
-            String entrantId = sessionStore.getOrCreateDeviceId();
+            String entrantProfileId = sessionStore.getEntrantProfileId();
 
             EntrantDatabaseManager entrantDatabaseManager = new EntrantDatabaseManager();
-            entrantDatabaseManager.clearEntrantProfile(entrantId)
+            entrantDatabaseManager.clearEntrantProfile(entrantProfileId)
                     .addOnSuccessListener(unused -> {
                         requireActivity().getSupportFragmentManager()
                                 .beginTransaction()
@@ -414,11 +414,11 @@ public class EntrantProfileExistsFormFragment extends Fragment {
      */
     private void persistProfileToBackend() {
         SessionStore sessionStore = new SessionStore(requireContext());
-        String entrantId = sessionStore.getOrCreateDeviceId();
+        String entrantProfileId = sessionStore.getEntrantProfileId();
 
         EntrantDatabaseManager entrantDatabaseManager = new EntrantDatabaseManager();
 
-        entrantDatabaseManager.getEntrantFromId(entrantId)
+        entrantDatabaseManager.getEntrantFromId(entrantProfileId)
                 .addOnSuccessListener(existingEntrant -> {
                     if (existingEntrant == null) {
                         createNewEntrantProfile(entrantDatabaseManager);

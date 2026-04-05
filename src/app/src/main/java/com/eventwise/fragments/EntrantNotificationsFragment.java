@@ -115,9 +115,9 @@ public class EntrantNotificationsFragment extends Fragment {
     }
     private String getCurrentEntrantId() {
         SessionStore sessionStore = new SessionStore(requireContext());
-        String deviceId = sessionStore.getOrCreateDeviceId();
-        Log.d("Notification", "Current entrant/device Id: " + deviceId);
-        return deviceId;
+        String entrantProfileId = sessionStore.getEntrantProfileId();
+        Log.d("Notification", "Current entrant/device Id: " + entrantProfileId);
+        return entrantProfileId;
     }
 
     private void refreshNotifications() {

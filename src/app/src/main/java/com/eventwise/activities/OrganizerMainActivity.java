@@ -15,8 +15,11 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.eventwise.Entrant;
+import com.eventwise.Organizer;
 import com.eventwise.R;
+import com.eventwise.database.DatabaseManager;
 import com.eventwise.database.EntrantDatabaseManager;
+import com.eventwise.database.OrganizerDatabaseManager;
 import com.eventwise.database.SessionStore;
 import com.eventwise.fragments.OrganizerProfileEmptyFragment;
 import com.eventwise.fragments.OrganizerProfileExistsFormFragment;
@@ -40,6 +43,8 @@ public class OrganizerMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_organizer);
+
+        ensureOrganizerExists();
 
         if (savedInstanceState == null) {
             getSupportFragmentManager()
@@ -71,7 +76,7 @@ public class OrganizerMainActivity extends AppCompatActivity {
             if (item.getItemId() == R.id.qr_scanner_icon) {
                 getSupportFragmentManager()
                         .beginTransaction()
-                        .replace(R.id.entrant_fragment_container, new QRScannerFragment())
+                        .replace(R.id.organizer_fragment_container, new QRScannerFragment())
                         .commit();
                 return true;
             }
@@ -87,23 +92,23 @@ public class OrganizerMainActivity extends AppCompatActivity {
 
     private void openProfileTab() {
         SessionStore sessionStore = new SessionStore(this);
-        String organizerId = sessionStore.getOrCreateDeviceId();
+        String organizerId = sessionStore.getOrganizerProfileId();
 
-        EntrantDatabaseManager entrantDatabaseManager = new EntrantDatabaseManager();
+        OrganizerDatabaseManager organizerDatabaseManager = new OrganizerDatabaseManager();
 
-        entrantDatabaseManager.getEntrantFromId(organizerId)
-                .addOnSuccessListener(entrant -> {
+        organizerDatabaseManager.getOrganizerFromId(organizerId)
+                .addOnSuccessListener(organizer -> {
                     Fragment fragmentToShow;
 
-                    if (entrant != null && entrant.hasCompletedProfile()) {
+                    if (organizer != null && organizer.hasCompletedProfile()) {
                         fragmentToShow = OrganizerProfileExistsFormFragment.newUpdateInstance(
-                                entrant.getName(),
-                                entrant.getEmail(),
-                                entrant.getPhone(),
-                                entrant.getNotificationsEnabled()
+                                organizer.getName(),
+                                organizer.getEmail(),
+                                organizer.getPhone(),
+                                organizer.getNotificationsEnabled()
                         );
                     } else {
-                        boolean notificationsEnabled = entrant == null || entrant.getNotificationsEnabled();
+                        boolean notificationsEnabled = organizer == null || organizer.getNotificationsEnabled();
                         fragmentToShow = OrganizerProfileEmptyFragment.newInstance(notificationsEnabled);
                     }
 
@@ -125,25 +130,25 @@ public class OrganizerMainActivity extends AppCompatActivity {
 
     private void ensureOrganizerExists() {
         SessionStore sessionStore = new SessionStore(this);
-        String deviceId = sessionStore.getOrCreateDeviceId();
+        String organizationProfileId = sessionStore.getOrganizerProfileId();
 
-        if (deviceId == null || deviceId.trim().isEmpty()) {
-            Log.e("EntrantMainActivity", "Failed to create device Id");
+        if (organizationProfileId == null || organizationProfileId.trim().isEmpty()) {
+            Log.e("OrganizerMainActivity", "Failed to create device Id");
             return;
         }
 
-        EntrantDatabaseManager db = new EntrantDatabaseManager();
+        OrganizerDatabaseManager db = new OrganizerDatabaseManager();
 
-        db.getEntrantFromId(deviceId)
-                .addOnSuccessListener(entrant -> {
-                    if (entrant != null){
-                        Log.d("EntrantMainActivity", "Organizer already exists: " + deviceId);
+        db.getOrganizerFromId(organizationProfileId)
+                .addOnSuccessListener(organizer -> {
+                    if (organizer != null){
+                        Log.d("OrganizerMainActivity", "Organizer already exists: " + organizationProfileId);
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Log.d("EntrantMainActivity", "Organizer not found, creating new Organizer: " + deviceId);
+                    Log.d("OrganizerMainActivity", "Organizer not found, creating new organizer: " + organizationProfileId);
 
-                    Entrant newEntrant = new Entrant(
+                    Organizer newOrganizer = new Organizer(
                             "SuperCoolOrganizer",
                             "",
                             "",
@@ -151,11 +156,11 @@ public class OrganizerMainActivity extends AppCompatActivity {
                             this
                     );
 
-                    db.addEntrant(newEntrant)
+                    db.addOrganizer(newOrganizer)
                             .addOnSuccessListener(unused ->
-                                    Log.d("EntrantMainActivity", "Entrant created successfully"))
+                                    Log.d("OrganizerMainActivity", "Organizer created successfully"))
                             .addOnFailureListener(createError ->
-                                    Log.e("EntrantMainActivity", "Failed to create entrant", createError));
+                                    Log.e("OrganizerMainActivity", "Failed to create organizer", createError));
                 });
     }
 

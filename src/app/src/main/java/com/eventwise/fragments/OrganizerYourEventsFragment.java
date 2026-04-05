@@ -61,7 +61,7 @@ public class OrganizerYourEventsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         SessionStore sessionStore = new SessionStore(requireContext());
-        organizerProfileId = sessionStore.getOrCreateDeviceId();
+        organizerProfileId = sessionStore.getOrganizerProfileId();
         eventSearcherDBMan = new EventSearcherDatabaseManager();
         organizerDatabaseManager = new OrganizerDatabaseManager();
         View createEventButton = view.findViewById(R.id.create_new_event_button);

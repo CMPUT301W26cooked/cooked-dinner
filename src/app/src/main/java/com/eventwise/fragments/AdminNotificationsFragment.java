@@ -70,12 +70,6 @@ public class AdminNotificationsFragment extends Fragment {
     private void primaryButton(Notification notification) {
         Log.d("Notification", "Primary button clicked: " + notification.getMessageTitle());
     }
-    private String getCurrentEntrantId() {
-        SessionStore sessionStore = new SessionStore(requireContext());
-        String deviceId = sessionStore.getOrCreateDeviceId();
-        Log.d("Notification", "Current entrant/device Id: " + deviceId);
-        return deviceId;
-    }
 
     private void refreshNotifications() {
         NotificationSearcherDataBaseManager notificationSearcherDBMan = new NotificationSearcherDataBaseManager();

@@ -87,6 +87,14 @@ public class SessionStore {
         sp.edit().clear().apply();
     }
 
+    public String getEntrantProfileId() {
+        return getOrCreateDeviceId() + "_entrant";
+    }
+
+    public String getOrganizerProfileId() {
+        return getOrCreateDeviceId() + "_organizer";
+    }
+
 }
 
 

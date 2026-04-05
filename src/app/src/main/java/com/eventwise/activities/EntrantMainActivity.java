@@ -102,7 +102,7 @@ public class EntrantMainActivity extends AppCompatActivity {
 
     private void openProfileTab() {
         SessionStore sessionStore = new SessionStore(this);
-        String entrantId = sessionStore.getOrCreateDeviceId();
+        String entrantId = sessionStore.getEntrantProfileId();
 
         EntrantDatabaseManager entrantDatabaseManager = new EntrantDatabaseManager();
 
@@ -140,23 +140,23 @@ public class EntrantMainActivity extends AppCompatActivity {
 
     private void ensureEntrantExists() {
         SessionStore sessionStore = new SessionStore(this);
-        String deviceId = sessionStore.getOrCreateDeviceId();
+        String entrantProfileId = sessionStore.getEntrantProfileId();
 
-        if (deviceId == null || deviceId.trim().isEmpty()) {
+        if (entrantProfileId == null || entrantProfileId.trim().isEmpty()) {
             Log.e("EntrantMainActivity", "Failed to create device Id");
             return;
         }
 
         EntrantDatabaseManager db = new EntrantDatabaseManager();
 
-        db.getEntrantFromId(deviceId)
+        db.getEntrantFromId(entrantProfileId)
                 .addOnSuccessListener(entrant -> {
                     if (entrant != null){
-                        Log.d("EntrantMainActivity", "Entrant already exists: " + deviceId);
+                        Log.d("EntrantMainActivity", "Entrant already exists: " + entrantProfileId);
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Log.d("EntrantMainActivity", "Entrant not found, creating new entrant: " + deviceId);
+                    Log.d("EntrantMainActivity", "Entrant not found, creating new entrant: " + entrantProfileId);
 
                     Entrant newEntrant = new Entrant(
                             "New Entrant",
