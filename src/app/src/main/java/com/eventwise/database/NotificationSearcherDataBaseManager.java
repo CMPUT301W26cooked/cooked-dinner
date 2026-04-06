@@ -103,7 +103,12 @@ public class NotificationSearcherDataBaseManager extends DatabaseManager{
 
         return tcs.getTask();
     }
-
+    /**
+     * Retrieves only the notifications linked to a specific organizer profile.
+     *
+     * @param entrantId the entrant profile id
+     * @return a Task containing only that organizer's notifications
+     */
     public Task<ArrayList<Notification>> getOrganizerNotifications(String entrantId) {
         TaskCompletionSource<ArrayList<Notification>> tcs = new TaskCompletionSource<>();
 

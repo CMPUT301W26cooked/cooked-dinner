@@ -56,6 +56,20 @@ public class EntrantDatabaseManager extends DatabaseManager {
                 .continueWith(task -> (Entrant) task.getResult());
     }
 
+    /**
+     * Clears an entrant's profile by anonymizing personal information and cancelling active event statuses.
+     * <p>
+     * This method performs the following actions:
+     * 1. Replaces the entrant's name with a randomly generated one.
+     * 2. Clears the email and phone number fields.
+     * 3. Updates all "ACCEPTED" or "ENROLLED" statuses to "CANCELLED" within the entrant's profile.
+     * 4. Scans all events in the database to synchronize the "CANCELLED" status for this entrant
+     *    where they were previously "ACCEPTED" or "ENROLLED".
+     * 5. Commits all changes (profile update and event updates) using a Firestore {@link WriteBatch}.
+     *
+     * @param entrantId The unique identifier of the entrant profile to be cleared.
+     * @return A {@link Task} that resolves when the profile and all associated event records are updated.
+     */
     public Task<Void> clearEntrantProfile(String entrantId) {
         TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 

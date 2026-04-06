@@ -1,5 +1,13 @@
 package com.eventwise;
 
+/**
+ * A utility class designed to generate random, human-readable names.
+ * <p>
+ * This class combines a predefined list of adjectives and animal names
+ * to create unique identifier strings (e.g., "BraveLion", "SilentShark").
+ * It is primarily used for generating default usernames or session identifiers.
+ * </p>
+ */
 public class RandomNameGen {
 
     public final static String[] AnimalNames = {
@@ -375,6 +383,11 @@ final static String[] adjectives ={
         "Wonderful",
         "Zesty"
     };
+    /**
+     * Generates a random name by combining a randomly selected adjective and animal name.
+     *
+     * @return a string consisting of a random adjective concatenated with a random animal name.
+     */
     public static String getRandomName() {
         return  adjectives[(int) (Math.random() * adjectives.length)] + AnimalNames[(int) (Math.random() * AnimalNames.length)] ;
     }

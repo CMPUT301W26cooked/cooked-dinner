@@ -4,6 +4,15 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Represents a notification within the EventWise system.
+ * This class stores details about messages sent to various participants (Entrants, Organizers, or Admins)
+ * regarding event updates, invitation statuses, and waiting list changes.
+ *
+ * <p>It supports Firebase synchronization by maintaining redundant fields for message bodies
+ * and providing both enum and string representations for types and roles.</p>
+ *
+ */
 public class Notification {
 
     // TODO:

@@ -334,7 +334,16 @@ public abstract class DatabaseManager {
 //        return newEventRef.set(event);
     }
 
-//**************************************************************************************************
+/**
+ * Asynchronously retrieves the list of comments associated with a specific event.
+ * This method fetches the event document from Firestore and extracts the "comments"
+ * field as an {@link ArrayList} of {@link Comment} objects.
+ *
+ * @param eventId The unique identifier of the event whose comments are to be retrieved.
+ * @return A {@link Task} that, when successful, contains an {@link ArrayList} of
+ *         {@link Comment} objects, or a {@link DatabaseException} if the event
+ *         does not exist, lacks comments, or the fetch fails.
+ */ //**************************************************************************************************
 // *                                            Comments
 // *************************************************************************************************/
     protected Task<ArrayList<Comment>> getCommentsFromEventId(String eventId) {
@@ -356,6 +365,15 @@ public abstract class DatabaseManager {
         return tcs.getTask();
     }
 
+    /**
+     * Adds a comment to a specific event in the Firestore database.
+     * This method uses an array union operation to atomatically append the provided
+     * {@link Comment} object to the "comments" array field of the event document.
+     *
+     * @param comment The {@link Comment} object to be added.
+     * @param eventId The unique identifier of the event to which the comment will be added.
+     * @return A {@link Task} representing the asynchronous database update operation.
+     */
     protected Task<Void> addCommentToEvent(Comment comment, String eventId) {
         return events.document(eventId).update("comments", FieldValue.arrayUnion(comment));
     }
