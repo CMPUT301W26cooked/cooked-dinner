@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -41,9 +42,21 @@ public class OrganizerYourEventsFragment extends Fragment {
      */
 
     private String organizerProfileId;
-    private RecyclerView eventListView;
-    private EventAdapter eventAdapter;
-    private List<Event> eventList;
+
+
+    private RecyclerView currentEventListView;
+    private RecyclerView historyEventListView;
+
+    private TextView currentEmptyText;
+    private TextView historyEmptyText;
+
+
+    private EventAdapter currentEventAdapter;
+    private EventAdapter historyEventAdapter;
+
+    private List<Event> currentEventList;
+    private List<Event> historyEventList;
+
     private EventSearcherDatabaseManager eventSearcherDBMan;
     private OrganizerDatabaseManager organizerDatabaseManager;
 
@@ -64,7 +77,12 @@ public class OrganizerYourEventsFragment extends Fragment {
         organizerProfileId = sessionStore.getOrganizerProfileId();
         eventSearcherDBMan = new EventSearcherDatabaseManager();
         organizerDatabaseManager = new OrganizerDatabaseManager();
+
         View createEventButton = view.findViewById(R.id.create_new_event_button);
+        currentEventListView = view.findViewById(R.id.organizer_current_events_list_view);
+        historyEventListView = view.findViewById(R.id.organizer_history_events_list_view);
+        currentEmptyText = view.findViewById(R.id.empty_current_organizer_events_text);
+        historyEmptyText = view.findViewById(R.id.empty_history_organizer_events_text);
 
         // Create New Event button
         createEventButton.setOnClickListener(v -> {
@@ -75,19 +93,33 @@ public class OrganizerYourEventsFragment extends Fragment {
                     .commit();
         });
 
-        // Setup RecyclerView
-        eventListView = view.findViewById(R.id.events_community_list_view);
-        eventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
-        eventList = new ArrayList<>();
+        currentEventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        historyEventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        eventAdapter = new EventAdapter(
-                eventList,
+        currentEventListView.setNestedScrollingEnabled(false);
+        historyEventListView.setNestedScrollingEnabled(false);
+
+        currentEventList = new ArrayList<>();
+        historyEventList = new ArrayList<>();
+
+        currentEventAdapter = new EventAdapter(
+                currentEventList,
                 EventAdapter.TYPE_EDIT_CANCEL,
                 this::openEditEvent,
                 this::deleteEvent,
                 this::openEventDetail
         );
-        eventListView.setAdapter(eventAdapter);
+
+        historyEventAdapter = new EventAdapter(
+                historyEventList,
+                EventAdapter.TYPE_EDIT_CANCEL,
+                this::openEditEvent,
+                this::deleteEvent,
+                this::openEventDetail
+        );
+
+        currentEventListView.setAdapter(currentEventAdapter);
+        historyEventListView.setAdapter(historyEventAdapter);
 
         getParentFragmentManager().setFragmentResultListener(
                 OrganizerEventDetailFragment.REQUEST_KEY_EVENT_CANCELLED,
@@ -100,14 +132,9 @@ public class OrganizerYourEventsFragment extends Fragment {
                             return;
                         }
 
-                        for (int i = 0; i < eventList.size(); i++) {
-                            Event event = eventList.get(i);
-                            if (deletedEventId.equals(event.getEventId())) {
-                                eventList.remove(i);
-                                eventAdapter.notifyItemRemoved(i);
-                                break;
-                            }
-                        }
+                        removeEventFromList(currentEventList, currentEventAdapter, deletedEventId);
+                        removeEventFromList(historyEventList, historyEventAdapter, deletedEventId);
+                        updateEmptyStates();
                     }
                 }
         );
@@ -126,12 +153,32 @@ public class OrganizerYourEventsFragment extends Fragment {
 
         organizerDatabaseManager.getOrganizersCreatedEventsFromOrganizerId(organizerProfileId)
                 .addOnSuccessListener(returnedList -> {
-                    eventList.clear();
+                    currentEventList.clear();
+                    historyEventList.clear();
+
                     if (returnedList != null) {
-                        eventList.addAll(returnedList);
-                        Collections.sort(eventList, (first, second) -> Long.compare(second.getEventStartEpochSec(), first.getEventStartEpochSec()));
+                        for (Event event : returnedList) {
+                            if (event == null) {
+                                continue;
+                            }
+
+                            if (event.isEventOverNow()) {
+                                historyEventList.add(event);
+                            } else {
+                                currentEventList.add(event);
+                            }
+                        }
+
+                        Collections.sort(currentEventList, (first, second) ->
+                                Long.compare(second.getEventStartEpochSec(), first.getEventStartEpochSec()));
+
+                        Collections.sort(historyEventList, (first, second) ->
+                                Long.compare(second.getEventStartEpochSec(), first.getEventStartEpochSec()));
                     }
-                    eventAdapter.notifyDataSetChanged();
+
+                    currentEventAdapter.notifyDataSetChanged();
+                    historyEventAdapter.notifyDataSetChanged();
+                    updateEmptyStates();
                 })
                 .addOnFailureListener(e ->
                         Log.e("OrganizerEvents", "Failed to load organizer events", e));
@@ -150,8 +197,11 @@ public class OrganizerYourEventsFragment extends Fragment {
 
         eventSearcherDBMan.deleteEvent(event)
                 .addOnSuccessListener(unused -> {
-                    eventList.remove(event);
-                    eventAdapter.notifyDataSetChanged();
+                    currentEventList.remove(event);
+                    historyEventList.remove(event);
+                    currentEventAdapter.notifyDataSetChanged();
+                    historyEventAdapter.notifyDataSetChanged();
+                    updateEmptyStates();
                     Log.d("Event", "Event deleted successfully...");
                 })
                 .addOnFailureListener(e -> Log.e("Event", "Event delete failed...", e));
@@ -175,8 +225,6 @@ public class OrganizerYourEventsFragment extends Fragment {
                 .commit();
     }
 
-    // ====== New method start ======
-
     /**
      * Opens the organizer event detail page for one event.
      *
@@ -196,5 +244,44 @@ public class OrganizerYourEventsFragment extends Fragment {
                 )
                 .addToBackStack(null)
                 .commit();
+    }
+
+    /**
+     * Removes one event by id from a list and notifies the adapter.
+     *
+     * @param list target list
+     * @param adapter adapter tied to the list
+     * @param deletedEventId deleted event id
+     */
+    private void removeEventFromList(@NonNull List<Event> list,@NonNull EventAdapter adapter,@NonNull String deletedEventId) {
+        for (int i = 0; i < list.size(); i++) {
+            Event event = list.get(i);
+            if (event != null && deletedEventId.equals(event.getEventId())) {
+                list.remove(i);
+                adapter.notifyItemRemoved(i);
+                return;
+            }
+        }
+    }
+
+    /**
+     * Updates the empty state labels for both sections.
+     */
+    private void updateEmptyStates() {
+        if (currentEventList.isEmpty()) {
+            currentEventListView.setVisibility(View.GONE);
+            currentEmptyText.setVisibility(View.VISIBLE);
+        } else {
+            currentEventListView.setVisibility(View.VISIBLE);
+            currentEmptyText.setVisibility(View.GONE);
+        }
+
+        if (historyEventList.isEmpty()) {
+            historyEventListView.setVisibility(View.GONE);
+            historyEmptyText.setVisibility(View.VISIBLE);
+        } else {
+            historyEventListView.setVisibility(View.VISIBLE);
+            historyEmptyText.setVisibility(View.GONE);
+        }
     }
 }

@@ -213,13 +213,18 @@ public class EntrantEventDetailFragment extends Fragment {
             updateEntrantState(EventEntrantStatus.ENROLLED, EventEntrantStatus.INVITED);
         } else if (currentState == EventEntrantStatus.WAITLISTED) {
             if (currentEvent.isPrivateEvent()) {
-                removeEntrantFromPrivateEvent();
+                removeEntrantFromPrivateEvent(null);
             } else {
                 updateEntrantState(EventEntrantStatus.LEFT_WAITLIST, EventEntrantStatus.WAITLISTED);
             }
         } else if (currentState == EventEntrantStatus.ENROLLED) {
             if (currentEvent.isPrivateEvent()) {
-                removeEntrantFromPrivateEvent();
+                removeEntrantFromPrivateEvent(new Runnable() {
+                    @Override
+                    public void run() {
+                        sendLeaveNotifications(currentEvent, entrantId);
+                    }
+                });
             } else {
                 updateEntrantState(EventEntrantStatus.CANCELLED, EventEntrantStatus.ENROLLED);
             }
@@ -245,7 +250,12 @@ public class EntrantEventDetailFragment extends Fragment {
 
         if (currentState == EventEntrantStatus.INVITED) {
             if (currentEvent.isPrivateEvent()) {
-                removeEntrantFromPrivateEvent();
+                removeEntrantFromPrivateEvent(new Runnable() {
+                    @Override
+                    public void run() {
+                        sendDeclinedNotifications(currentEvent, entrantId);
+                    }
+                });
             } else {
                 updateEntrantState(EventEntrantStatus.DECLINED, EventEntrantStatus.INVITED);
             }
@@ -269,6 +279,18 @@ public class EntrantEventDetailFragment extends Fragment {
         db.setEntrantStatusForEvent(entrantId, currentEvent.getEventId(), newState, timestamp)
                 .addOnSuccessListener(unused -> {
                     Log.d("EntrantEventDetail", "Successfully updated entrant state to " + newState);
+
+                    if (newState == EventEntrantStatus.ENROLLED
+                            && revertState == EventEntrantStatus.INVITED) {
+                        sendAcceptedNotifications(currentEvent, entrantId);
+                    } else if (newState == EventEntrantStatus.DECLINED
+                            && revertState == EventEntrantStatus.INVITED) {
+                        sendDeclinedNotifications(currentEvent, entrantId);
+                    } else if (newState == EventEntrantStatus.LEFT_WAITLIST
+                            || newState == EventEntrantStatus.CANCELLED) {
+                        sendLeaveNotifications(currentEvent, entrantId);
+                    }
+
                     loadEvent();
                 })
                 .addOnFailureListener(e -> {
@@ -276,7 +298,10 @@ public class EntrantEventDetailFragment extends Fragment {
 
                     if (revertState != null) {
                         currentEvent.addOrUpdateEntrantStatus(entrantId, revertState, timestamp);
+                    } else {
+                        currentEvent.removeEntrantStatus(entrantId);
                     }
+
                     bindEvent(currentEvent);
                 });
     }
@@ -284,7 +309,7 @@ public class EntrantEventDetailFragment extends Fragment {
     /**
      * Removes the entrant from a private event entirely so they return to no status.
      */
-    private void removeEntrantFromPrivateEvent() {
+    private void removeEntrantFromPrivateEvent(@Nullable Runnable onSuccessAction) {
         if (currentEvent == null || entrantId == null || entrantId.trim().isEmpty()) {
             return;
         }
@@ -297,12 +322,31 @@ public class EntrantEventDetailFragment extends Fragment {
         db.removeEntrantFromEvent(entrantId, currentEvent.getEventId())
                 .addOnSuccessListener(unused -> {
                     Log.d("EntrantEventDetail", "Successfully removed entrant from private event");
+
+                    if (onSuccessAction != null) {
+                        onSuccessAction.run();
+                    }
+
                     loadEvent();
                 })
                 .addOnFailureListener(e -> {
                     Log.e("EntrantEventDetail", "Failed to remove entrant from private event", e);
                     loadEvent();
                 });
+    }
+
+    private void restoreAfterJoinFailure(@Nullable EventEntrantStatus revertState, long timestamp) {
+        if (currentEvent == null || entrantId == null || entrantId.trim().isEmpty()) {
+            return;
+        }
+
+        if (revertState != null) {
+            currentEvent.addOrUpdateEntrantStatus(entrantId, revertState, timestamp);
+        } else {
+            currentEvent.removeEntrantStatus(entrantId);
+        }
+
+        bindEvent(currentEvent);
     }
 
     /**
@@ -429,7 +473,7 @@ public class EntrantEventDetailFragment extends Fragment {
 
         EventEntrantStatus currentState = getCurrentEntrantState(event);
 
-        boolean eventOver = hasEventStarted(event);
+        boolean eventOver = isEventOver(event);
         boolean eventClosed = isRegistrationClosed(event);
 
         detailStatusText.setVisibility(View.GONE);
@@ -523,14 +567,13 @@ public class EntrantEventDetailFragment extends Fragment {
     }
 
     /**
-     * Checks whether the event has already started.
+     * Checks whether the event is now over.
      *
      * @param event event to check
-     * @return true if the event has started
+     * @return true if the event is over
      */
-    private boolean hasEventStarted(@NonNull Event event) {
-        long nowEpochSec = System.currentTimeMillis() / 1000L;
-        return nowEpochSec >= event.getEventStartEpochSec();
+    private boolean isEventOver(@NonNull Event event) {
+        return event.isEventOverNow();
     }
 
     /**
@@ -551,7 +594,7 @@ public class EntrantEventDetailFragment extends Fragment {
      * @return drawable resource id for the status icon
      */
     private int getEventStatusDrawable(@NonNull Event event) {
-        if (hasEventStarted(event)) {
+        if (isEventOver(event)) {
             return R.drawable.event_over;
         }
         if (isRegistrationClosed(event)) {
@@ -628,20 +671,16 @@ public class EntrantEventDetailFragment extends Fragment {
                         location
                 );
                 bindEvent(currentEvent);
-                sendJoinNotifications(currentEvent, entrantId);
 
                 db.registerEntrantInEvent(entrantId, currentEvent.getEventId(), timestamp, location)
                         .addOnSuccessListener(unused -> {
                             Log.d("EntrantEventDetail", "Successfully joined event with location");
+                            sendJoinNotifications(currentEvent, entrantId);
                             loadEvent();
                         })
                         .addOnFailureListener(e -> {
                             Log.e("EntrantEventDetail", "Join failed", e);
-
-                            if (revertState != null) {
-                                currentEvent.addOrUpdateEntrantStatus(entrantId, revertState, timestamp);
-                            }
-                            bindEvent(currentEvent);
+                            restoreAfterJoinFailure(revertState, timestamp);
                         });
             });
         } else {
@@ -651,23 +690,70 @@ public class EntrantEventDetailFragment extends Fragment {
                     timestamp
             );
             bindEvent(currentEvent);
-            sendJoinNotifications(currentEvent, entrantId);
 
             db.registerEntrantInEvent(entrantId, currentEvent.getEventId(), timestamp, null)
                     .addOnSuccessListener(unused -> {
                         Log.d("EntrantEventDetail", "Successfully joined event");
+                        sendJoinNotifications(currentEvent, entrantId);
                         loadEvent();
                     })
                     .addOnFailureListener(e -> {
                         Log.e("EntrantEventDetail", "Join failed", e);
-
-                        if (revertState != null) {
-                            currentEvent.addOrUpdateEntrantStatus(entrantId, revertState, timestamp);
-                        }
-                        bindEvent(currentEvent);
+                        restoreAfterJoinFailure(revertState, timestamp);
                     });
         }
     }
+
+    private void sendAcceptedNotifications(Event event, String entrantId) {
+        NotificationDatabaseManager notificationDB =
+                new NotificationDatabaseManager();
+
+        long now = System.currentTimeMillis() / 1000L;
+        ArrayList<String> organizerRecipients = new ArrayList<>();
+        organizerRecipients.add(event.getOrganizerProfileId());
+
+        Notification organizerNotification = new Notification();
+        organizerNotification.setRecipientRole(Notification.RecipientRole.ORGANIZER);
+        organizerNotification.setEntrantIds(organizerRecipients);
+        organizerNotification.setMessageTitle("Invite Accepted");
+        organizerNotification.setMessageBody(
+                entrantId + " accepted your invite to " + event.getName()
+        );
+        organizerNotification.setType(Notification.NotificationType.OTHER);
+        organizerNotification.setTimestamp(now);
+
+        notificationDB.createNotification(organizerNotification)
+                .addOnSuccessListener(unused ->
+                        Log.d("Notification", "Organizer accepted notification created"))
+                .addOnFailureListener(e ->
+                        Log.e("Notification", "Organizer accepted notification failed", e));
+    }
+
+    private void sendDeclinedNotifications(Event event, String entrantId) {
+        NotificationDatabaseManager notificationDB =
+                new NotificationDatabaseManager();
+
+        long now = System.currentTimeMillis() / 1000L;
+        ArrayList<String> organizerRecipients = new ArrayList<>();
+        organizerRecipients.add(event.getOrganizerProfileId());
+
+        Notification organizerNotification = new Notification();
+        organizerNotification.setRecipientRole(Notification.RecipientRole.ORGANIZER);
+        organizerNotification.setEntrantIds(organizerRecipients);
+        organizerNotification.setMessageTitle("Invite Declined");
+        organizerNotification.setMessageBody(
+                entrantId + " declined your invite to " + event.getName()
+        );
+        organizerNotification.setType(Notification.NotificationType.OTHER);
+        organizerNotification.setTimestamp(now);
+
+        notificationDB.createNotification(organizerNotification)
+                .addOnSuccessListener(unused ->
+                        Log.d("Notification", "Organizer declined notification created"))
+                .addOnFailureListener(e ->
+                        Log.e("Notification", "Organizer declined notification failed", e));
+    }
+
     private void sendJoinNotifications(Event event, String entrantId) {
 
         NotificationDatabaseManager notificationDB =

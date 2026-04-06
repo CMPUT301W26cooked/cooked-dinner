@@ -78,19 +78,21 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         switch (notification.getType()) {
             case INVITED:
             case CHOSEN:
+            case CO_ORGANIZER_INVITE:
                 return true;
             default:
                 return false;
         }
     }
 
-    private boolean isLatestActionRequiredNotificationForEvent(@NonNull Notification notification) {
+    private boolean isLatestActionRequiredNotificationForSameEventAndType(@NonNull Notification notification) {
         String eventId = notification.getEventId();
 
         if (eventId == null || eventId.trim().isEmpty()) {
             return false;
         }
 
+        Notification.NotificationType type = notification.getType();
         long timestamp = notification.getTimestamp() != null ? notification.getTimestamp() : Long.MIN_VALUE;
         String notificationId = notification.getNotificationId();
 
@@ -104,6 +106,10 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             }
 
             if (!eventId.equals(other.getEventId())) {
+                continue;
+            }
+
+            if (other.getType() != type) {
                 continue;
             }
 
@@ -202,7 +208,11 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         }
 
         if (holder.notificationTitle != null) {
-            holder.notificationTitle.setText(notification.getMessageTitle());
+            if (isActionRequiredNotification(notification)) {
+                holder.notificationTitle.setText("Action Required Notification");
+            } else {
+                holder.notificationTitle.setText(notification.getMessageTitle());
+            }
         }
 
         if (holder.notificationMessage != null) {
@@ -210,9 +220,10 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         }
 
         if (holder.notificationDate != null) {
+            long timestamp = notification.getTimestamp() != null ? notification.getTimestamp() : 0L;
             holder.notificationDate.setText(
                     new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                            .format(new Date(notification.getTimestamp() * 1000L))
+                            .format(new Date(timestamp * 1000L))
             );
         }
 
@@ -246,6 +257,11 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                     holder.notificationType.setText("Not Selected");
                 }
                 break;
+            case CO_ORGANIZER_INVITE:
+                if (holder.notificationType != null) {
+                    holder.notificationType.setText("Action Required");
+                }
+                break;
             case OTHER:
                 if (holder.notificationType != null) {
                     holder.notificationType.setText("Notification");
@@ -265,7 +281,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
             boolean enablePrimary = notification.getEventId() != null
                     && actionableEventIds.contains(notification.getEventId())
-                    && isLatestActionRequiredNotificationForEvent(notification);
+                    && isLatestActionRequiredNotificationForSameEventAndType(notification);
+
             holder.primaryButton.setEnabled(enablePrimary);
             holder.primaryButton.setAlpha(enablePrimary ? 1.0f : 0.5f);
 

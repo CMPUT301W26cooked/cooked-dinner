@@ -14,7 +14,8 @@ public class Notification {
         CANCELLED,
         OTHER,
         CHOSEN,
-        NOT_CHOSEN
+        NOT_CHOSEN,
+        CO_ORGANIZER_INVITE
     }
 
     private String notificationId;

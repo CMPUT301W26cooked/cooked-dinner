@@ -1,8 +1,11 @@
 package com.eventwise.fragments;
+
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.ImageDecoder;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -18,24 +21,22 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.eventwise.Enum.EventEntrantStatus;
-import com.eventwise.Notification;
+import com.bumptech.glide.Glide;
+import com.eventwise.Event;
 import com.eventwise.R;
 import com.eventwise.Tag;
-import com.eventwise.database.NotificationDatabaseManager;
 import com.eventwise.database.OrganizerDatabaseManager;
-import com.eventwise.Event;
 import com.eventwise.database.SessionStore;
-
-import com.bumptech.glide.Glide;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -105,8 +106,6 @@ public class CreateEventFragment extends Fragment {
         return fragment;
     }
 
-    // reference: https://developer.android.com/training/data-storage/shared/photo-picker
-    // used to pick an image from the gallery
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -218,8 +217,7 @@ public class CreateEventFragment extends Fragment {
         setupFormStateTracking();
         updateSubmitButtonState();
 
-        buttonCreateEvent.setOnClickListener(v ->
-                uploadEventToFirebase());
+        buttonCreateEvent.setOnClickListener(v -> uploadEventToFirebase());
     }
 
     private void loadEventForEdit() {
@@ -439,13 +437,6 @@ public class CreateEventFragment extends Fragment {
                 .addOnSuccessListener(param -> {
                     Log.d("CreateEvent", "Event added successfully to Firebase");
 
-                    // ====== New code start ======
-                    Log.d("ProfileLinking", "Event created with organizer Id: " +
-                            event.getOrganizerProfileId());
-                    Log.d("ProfileLinking", "Event Id: " + event.getEventId());
-                    Log.d("ProfileLinking", "Successfully linked profile to created event");
-                    // ====== New code end ======
-
                     if (selectedImageBytes != null) {
                         organizerDBMan.uploadEventPoster(event.getEventId(), selectedImageBytes)
                                 .addOnSuccessListener(path -> {
@@ -460,9 +451,8 @@ public class CreateEventFragment extends Fragment {
                         finishAfterSave(event);
                     }
                 })
-                .addOnFailureListener(param -> {
-                    Log.d("CreateEvent", "Event failed to add to Firebase");
-                });
+                .addOnFailureListener(param ->
+                        Log.d("CreateEvent", "Event failed to add to Firebase"));
     }
 
     private void finishAfterSave(@NonNull Event event) {
@@ -470,24 +460,47 @@ public class CreateEventFragment extends Fragment {
             return;
         }
 
-        if (!isEditMode && event.isPrivateEvent()) {
-            getParentFragmentManager()
-                    .beginTransaction()
-                    .replace(
-                            R.id.organizer_fragment_container,
-                            EntrantSelectionFragment.newPrivateInviteInstance(event.getEventId())
-                    )
-                    .addToBackStack(null)
-                    .commit();
+        showCoOrganizerPrompt(event);
+    }
+
+    private void showCoOrganizerPrompt(@NonNull Event event) {
+        showStyledDecisionDialog("Invite Co-organizer","Do you want to invite a co-organizer?","Yes","No",
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isAdded()) {
+                            return;
+                        }
+
+                        getParentFragmentManager()
+                                .beginTransaction()
+                                .replace(
+                                        R.id.organizer_fragment_container,
+                                        InviteProfileSelectionFragment.newCoOrganizerInviteInstance(event.getEventId(),event.isPrivateEvent()))
+                                .addToBackStack(null)
+                                .commit();
+                    }
+                },
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        continueAfterCoOrganizerChoice(event);
+                    }
+                }
+        );
+    }
+
+    private void continueAfterCoOrganizerChoice(@NonNull Event event) {
+        if (!isAdded()) {
             return;
         }
 
-        if (isEditMode && event.isPrivateEvent()) {
+        if (event.isPrivateEvent()) {
             getParentFragmentManager()
                     .beginTransaction()
                     .replace(
                             R.id.organizer_fragment_container,
-                            EntrantSelectionFragment.newPrivateEditInstance(event.getEventId())
+                            InviteProfileSelectionFragment.newPrivateInviteInstance(event.getEventId())
                     )
                     .addToBackStack(null)
                     .commit();
@@ -686,18 +699,13 @@ public class CreateEventFragment extends Fragment {
             return true;
         }
 
-        if (selectedImageBytes != null) {
-            return true;
-        }
-
-        return false;
+        return selectedImageBytes != null;
     }
 
     private interface OnDateTimeSelectedListener {
         void onDateTimeSelected(Calendar calendar);
     }
 
-    // reference: https://github.com/Pritish-git/date-and-time-picker-dialog
     private void showDateTimePicker(EditText dateField, OnDateTimeSelectedListener listener) {
         Calendar now = Calendar.getInstance();
         DatePickerDialog datePicker = new DatePickerDialog(requireContext(),
@@ -728,66 +736,43 @@ public class CreateEventFragment extends Fragment {
         datePicker.show();
     }
 
-    private void sendInviteNotifications(Event event) {
-        NotificationDatabaseManager notificationDB = new NotificationDatabaseManager();
-        long now = System.currentTimeMillis() / 1000L;
+    private void showStyledDecisionDialog(String title,String message,String positiveText,String negativeText,@Nullable Runnable onPositive, @Nullable Runnable onNegative) {
 
-        notificationDB.getAllEntrantProfileIds()
-                .addOnSuccessListener(entrantIds -> {
-                    if (entrantIds == null || entrantIds.isEmpty()) {
-                        Log.d("Notification", "No entrant profiles found to notify");
-                        return;
-                    }
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.widget_custom_dialog, null, false);
 
-                    Notification entrantNotification = new Notification();
-                    entrantNotification.setNotificationId(java.util.UUID.randomUUID().toString());
-                    entrantNotification.setRecipientRole(Notification.RecipientRole.ENTRANT);
-                    entrantNotification.setEntrantIds(entrantIds);
-                    entrantNotification.setMessageTitle("Event Invite");
-                    entrantNotification.setMessageBody("You've been invited to " + event.getName());
-                    entrantNotification.setType(Notification.NotificationType.OTHER);
-                    entrantNotification.setTimestamp(now);
+        TextView titleText = dialogView.findViewById(R.id.dialog_title);
+        TextView messageText = dialogView.findViewById(R.id.dialog_message);
+        Button negativeButton = dialogView.findViewById(R.id.dialog_negative_button);
+        Button positiveButton = dialogView.findViewById(R.id.dialog_positive_button);
 
-                    notificationDB.createNotification(entrantNotification)
-                            .addOnSuccessListener(unused ->
-                                    Log.d("Notification", "Entrant invite notification created"))
-                            .addOnFailureListener(e ->
-                                    Log.e("Notification", "Bulk entrant notification failed", e));
-                })
-                .addOnFailureListener(e ->
-                        Log.e("Notification", "Failed to fetch entrant profile IDs", e));
-    }
+        titleText.setText(title);
+        messageText.setText(message);
+        positiveButton.setText(positiveText);
+        negativeButton.setText(negativeText);
 
-    private void sendInvite(Event event) {
-        NotificationDatabaseManager notificationDB = new NotificationDatabaseManager();
-        OrganizerDatabaseManager organizerDBMan = new OrganizerDatabaseManager();
-        long now = System.currentTimeMillis() / 1000L;
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .create();
 
-        notificationDB.getAllEntrantProfileIds()
-                .addOnSuccessListener(entrantIds -> {
-                    if (entrantIds == null || entrantIds.isEmpty()) {
-                        Log.d("Notification", "No entrant profiles found to notify");
-                        return;
-                    }
+        negativeButton.setOnClickListener(v -> {
+            dialog.dismiss();
+            if (onNegative != null) {
+                onNegative.run();
+            }
+        });
 
-                    for (String entrantId : entrantIds) {
-                        boolean alreadyInvited =
-                                event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).contains(entrantId);
+        positiveButton.setOnClickListener(v -> {
+            dialog.dismiss();
+            if (onPositive != null) {
+                onPositive.run();
+            }
+        });
 
-                        if (!alreadyInvited) {
-                            organizerDBMan.updateEntrantStatusInEvent(
-                                            entrantId,
-                                            event.getEventId(),
-                                            EventEntrantStatus.INVITED,
-                                            now
-                                    ).addOnSuccessListener(unused ->
-                                            Log.d("Invite", "Invited entrant: " + entrantId))
-                                    .addOnFailureListener(e ->
-                                            Log.e("Invite", "Failed to invite entrant: " + entrantId, e));
-                        }
-                    }
-                })
-                .addOnFailureListener(e ->
-                        Log.e("Invite", "Failed to fetch entrant profile IDs", e));
+        dialog.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
     }
 }

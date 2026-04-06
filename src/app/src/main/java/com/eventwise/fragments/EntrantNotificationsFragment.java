@@ -1,5 +1,6 @@
 package com.eventwise.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,13 +14,15 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.eventwise.Event;
 import com.eventwise.Enum.EventEntrantStatus;
+import com.eventwise.Event;
 import com.eventwise.Notification;
-import com.eventwise.adapters.NotificationAdapter;
 import com.eventwise.R;
+import com.eventwise.activities.OrganizerMainActivity;
+import com.eventwise.adapters.NotificationAdapter;
 import com.eventwise.database.EventSearcherDatabaseManager;
 import com.eventwise.database.NotificationSearcherDataBaseManager;
+import com.eventwise.database.OrganizerDatabaseManager;
 import com.eventwise.database.SessionStore;
 
 import java.util.ArrayList;
@@ -80,51 +83,56 @@ public class EntrantNotificationsFragment extends Fragment {
     }
 
     private void primaryButton(Notification notification) {
-        if (notification == null) {
-            Log.e("Notification", "Notification is null");
+        if (notification == null || notification.getEventId() == null || notification.getEventId().trim().isEmpty()) {
+            Log.e("Notification", "Cannot act because notification eventId is missing");
             return;
         }
 
         String entrantId = getCurrentEntrantId();
-        String eventId = notification.getEventId();
-
         if (entrantId == null || entrantId.trim().isEmpty()) {
-            Log.e("Notification", "Entrant ID is null");
+            Log.e("Notification", "Cannot act because entrant Id is missing");
             return;
         }
 
-        if (eventId == null || eventId.trim().isEmpty()) {
-            Log.e("Notification", "Notification event ID is missing");
+        if (notification.getType() == Notification.NotificationType.CO_ORGANIZER_INVITE) {
+            OrganizerDatabaseManager organizerDatabaseManager = new OrganizerDatabaseManager();
+
+            organizerDatabaseManager.acceptCoOrganizerInvite(notification.getEventId(), entrantId)
+                    .addOnSuccessListener(unused -> {
+                        Intent intent = new Intent(requireContext(), OrganizerMainActivity.class);
+                        startActivity(intent);
+                    })
+                    .addOnFailureListener(e ->
+                            Log.e("Notification", "Failed to accept co-organizer invite", e));
+
             return;
         }
 
-        if (!actionableEventIds.contains(eventId)) {
-            Log.d("Notification", "Take Action ignored because entrant is no longer invited for event: " + eventId);
-            refreshNotifications();
-            return;
-        }
+        EntrantEventDetailFragment fragment =
+                EntrantEventDetailFragment.newInstance(notification.getEventId(), entrantId);
 
         requireActivity().getSupportFragmentManager()
                 .beginTransaction()
-                .replace(
-                        R.id.entrant_fragment_container,
-                        EntrantEventDetailFragment.newInstance(eventId, entrantId)
-                )
-                .addToBackStack("entrant_notifications")
+                .replace(R.id.entrant_fragment_container, fragment)
+                .addToBackStack(null)
                 .commit();
     }
     private String getCurrentEntrantId() {
         SessionStore sessionStore = new SessionStore(requireContext());
-        String entrantProfileId = sessionStore.getEntrantProfileId();
-        Log.d("Notification", "Current entrant/device Id: " + entrantProfileId);
-        return entrantProfileId;
+        return sessionStore.getEntrantProfileId();
+    }
+
+    private String getCurrentOrganizerId() {
+        SessionStore sessionStore = new SessionStore(requireContext());
+        return sessionStore.getOrganizerProfileId();
     }
 
     private void refreshNotifications() {
         String entrantId = getCurrentEntrantId();
+        String organizerId = getCurrentOrganizerId();
 
         if (entrantId == null || entrantId.trim().isEmpty()) {
-            Log.e("Notification", "Entrant ID is null");
+            Log.e("Notification", "Cannot refresh entrant notifications because entrant Id is missing");
             notificationList.clear();
             actionableEventIds.clear();
             notificationAdapter.notifyDataSetChanged();
@@ -135,68 +143,98 @@ public class EntrantNotificationsFragment extends Fragment {
 
         NotificationSearcherDataBaseManager notificationSearcherDBMan =
                 new NotificationSearcherDataBaseManager();
+        EventSearcherDatabaseManager eventSearcherDBMan =
+                new EventSearcherDatabaseManager();
 
         notificationSearcherDBMan.getEntrantNotifications(entrantId)
-                .addOnSuccessListener(returnedList -> {
-                    notificationList.clear();
-                    if (returnedList != null) {
-                        notificationList.addAll(returnedList);
-                        Collections.sort(notificationList, (first, second) -> {
-                            long firstTimestamp = first != null && first.getTimestamp() != null ? first.getTimestamp() : Long.MIN_VALUE;
-                            long secondTimestamp = second != null && second.getTimestamp() != null ? second.getTimestamp() : Long.MIN_VALUE;
-                            return Long.compare(secondTimestamp, firstTimestamp);
-                        });
-                    }
-
-                    if (notificationList.isEmpty()) {
-                        actionableEventIds.clear();
-                        notificationAdapter.notifyDataSetChanged();
-                        notificationListView.setVisibility(View.GONE);
-                        emptyListView.setVisibility(View.VISIBLE);
-                    } else {
-                        notificationListView.setVisibility(View.VISIBLE);
-                        emptyListView.setVisibility(View.GONE);
-                        refreshActionableEventIds(entrantId);
-                    }
-                })
+                .addOnSuccessListener(returnedNotifications ->
+                        eventSearcherDBMan.getEvents()
+                                .addOnSuccessListener(events -> {
+                                    rebuildActionableEventIds(events, returnedNotifications, entrantId, organizerId);
+                                    bindNotifications(returnedNotifications);
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("Notification", "Failed to load events for entrant notification actions", e);
+                                    rebuildActionableEventIds(null, returnedNotifications, entrantId, organizerId);
+                                    bindNotifications(returnedNotifications);
+                                })
+                )
                 .addOnFailureListener(e -> {
-                    Log.e("Notification", "Failed to refresh Notification", e);
+                    Log.e("Notification", "Failed to refresh entrant notifications", e);
+                    notificationList.clear();
                     actionableEventIds.clear();
+                    notificationAdapter.notifyDataSetChanged();
                     notificationListView.setVisibility(View.GONE);
                     emptyListView.setVisibility(View.VISIBLE);
                 });
     }
 
-    private void refreshActionableEventIds(@NonNull String entrantId) {
-        EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();
+    private void rebuildActionableEventIds(@Nullable List<Event> events, @Nullable List<Notification> returnedNotifications, @NonNull String entrantId,@NonNull String organizerId) {
+        actionableEventIds.clear();
 
-        eventSearcherDBMan.getEvents()
-                .addOnSuccessListener(events -> {
-                    actionableEventIds.clear();
+        if (events != null) {
+            for (Event event : events) {
+                if (event == null || event.getEventId() == null) {
+                    continue;
+                }
 
-                    if (events != null) {
-                        for (Event event : events) {
-                            if (event != null
-                                    && event.getEventId() != null
-                                    && !hasEventStarted(event) // stop allowing enrtrants to take action on an over event
-                                    && event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).contains(entrantId)) {
-                                actionableEventIds.add(event.getEventId());
-                            }
+                if (event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).contains(entrantId)) {
+                    actionableEventIds.add(event.getEventId());
+                }
+            }
+        }
+
+        if (returnedNotifications != null) {
+            for (Notification notification : returnedNotifications) {
+                if (notification == null|| notification.getType() != Notification.NotificationType.CO_ORGANIZER_INVITE|| notification.getEventId() == null || notification.getEventId().trim().isEmpty()) {
+                    continue;
+                }
+
+                boolean alreadyHasAccess = false;
+
+                if (events != null) {
+                    for (Event event : events) {
+                        if (event != null && notification.getEventId().equals(event.getEventId()) && event.hasOrganizerAccess(organizerId)) {
+                            alreadyHasAccess = true;
+                            break;
                         }
                     }
+                }
 
-                    notificationAdapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Notification", "Failed to refresh actionable event IDs", e);
-                    actionableEventIds.clear();
-                    notificationAdapter.notifyDataSetChanged();
-                });
-
+                if (!alreadyHasAccess) {
+                    actionableEventIds.add(notification.getEventId());
+                }
+            }
+        }
     }
 
-    private boolean hasEventStarted(@NonNull Event event) {
-        long nowEpochSec = System.currentTimeMillis() / 1000L;
-        return nowEpochSec >= event.getEventStartEpochSec();
+    private void bindNotifications(@Nullable List<Notification> returnedNotifications) {
+        notificationList.clear();
+        if (returnedNotifications != null) {
+            notificationList.addAll(returnedNotifications);
+        }
+
+        Collections.sort(notificationList, (first, second) -> {
+            long firstTime = getTimestampValue(first);
+            long secondTime = getTimestampValue(second);
+            return Long.compare(secondTime, firstTime);
+        });
+
+        notificationAdapter.notifyDataSetChanged();
+
+        if (notificationList.isEmpty()) {
+            notificationListView.setVisibility(View.GONE);
+            emptyListView.setVisibility(View.VISIBLE);
+        } else {
+            notificationListView.setVisibility(View.VISIBLE);
+            emptyListView.setVisibility(View.GONE);
+        }
+    }
+
+    private long getTimestampValue(@Nullable Notification notification) {
+        if (notification == null || notification.getTimestamp() == null) {
+            return Long.MIN_VALUE;
+        }
+        return notification.getTimestamp();
     }
 }
