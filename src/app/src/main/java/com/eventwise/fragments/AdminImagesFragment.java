@@ -111,7 +111,7 @@ public class AdminImagesFragment extends Fragment {
                     }
 
                     if (event.getPosterPath() != null && !event.getPosterPath().isEmpty()) {
-                        imageItems.add(new AdminImageItem(event.getEventId(), event.getPosterPath(), event.getPosterPath(), event.getName(), "NEED TO ADD ORG NAME",  "NEED TO ADD TIMESTAMP?"));
+                        imageItems.add(new AdminImageItem(event.getEventId(), event.getPosterPath(), event.getPosterPath(), event.getName(), event.getOrganizerProfileId()));
                     }
 
                 }
