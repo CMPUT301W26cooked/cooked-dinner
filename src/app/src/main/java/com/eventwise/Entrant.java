@@ -38,6 +38,10 @@ public class Entrant extends Profile {
     /** Notification Ids associated with this entrant. */
     private ArrayList<String> notificationIds = new ArrayList<>();
 
+    /** List of all the user's interests. Null means no preferences**/
+    private ArrayList<Tag> interestsTags;
+
+
     /**
      * Required for Firestore.
      */
@@ -59,6 +63,7 @@ public class Entrant extends Profile {
         SessionStore session = new SessionStore(context);
         this.deviceId = session.getOrCreateDeviceId();
         setProfileId(this.deviceId + "_entrant");
+        interestsTags = null;
         Log.d("Entrant", "DeviceId/ProfileId: " + this.deviceId);
     }
 
@@ -69,6 +74,15 @@ public class Entrant extends Profile {
     public void setDeviceId(String deviceId) {
         this.deviceId = deviceId;
     }
+
+    public ArrayList<Tag> getInterestsTags() {
+        return interestsTags;
+    }
+
+    public void setInterestsTags(ArrayList<Tag> interestsTags) {
+        this.interestsTags = interestsTags;
+    }
+
 
     public ArrayList<EventStateEntry> getEventStates() {
         return eventStates;

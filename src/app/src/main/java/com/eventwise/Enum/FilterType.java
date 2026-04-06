@@ -5,5 +5,5 @@ public enum FilterType {
     END_TIMESTAMP,
     EVENT_CAPACITY,
     KEYWORDS,
-    TAG
+    TAGS
 }
