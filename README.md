@@ -1,111 +1,134 @@
 # cooked-dinner (CMPUT 301 Team Project)
 
-This repo is the **project repo** for our CMPUT 301 team (Org: `CMPUT301W26cooked`, Repo: `cooked-dinner`).
-It contains **everything** 
+## Project Overview
 
-## Current Phase
-- **Project Part 3** — Half-Way Checkpoint, updated UI mockups + storyboard sequences, updated CRC cards, and consistent GitHub usage.
+Cooked Dinner is an Android event lottery system application designed to help community
+organizations manage registrations for high demand events in a fair and accessible way.
 
-## Where everything lives
+Instead of requiring users to register on a first come basis, the system allows entrants
+to join a waiting list during a registration window. After the window closes, organizers
+can randomly select participants using a lottery system. Selected entrants are notified
+and may accept or decline their invitation, after which replacement entrants may be drawn
+automatically.
 
-### Project Board (Backlog + Task Tracking)
-- Location: **Organization → Projects → "Project Board"**
-- This is where we have:
-  - converting user stories into issues
-  - story points + risk
-  - progress (In Progress → Review → Done)
-- The rules for columns, story points, risk, and issue making in general are in the Wiki!!!
-
-### Wiki (Documentation + Instructions)
-- Location: **Repo → Wiki** it's an actual tab in github like Pull Requests and Projects
-- The Wiki contains:
-  - board rules + definitions
-  - git workflow + PR rules
-  - UI mockup & storyboard workflow (and where images go)
-  - CRC card workflow
-
-### Code
-- Android Studio project code lives at the repo root 
-- If we create additional documentation, it goes under `docs/`.
-
-### UI Mockups + Storyboards (MUST be stored in GitHub)
-- Folder: `docs/ui/`
-  - `docs/ui/mockups/` (images/PDFs)
-  - `docs/ui/storyboards/` (storyboard diagrams)
-  - `docs/ui/decisions/` (decision notes like which library were using, colors, etc...)
-
-### CRC Cards
-- Folder: `docs/crc/`
-- Store CRC cards as images (PNG) pls
+The application supports QR based event discovery, waitlist pooling, notifications,
+poster uploads, optional geolocation verification, and role based access for entrants,
+organizers, and administrators.
 
 
-## Quick links (inside GitHub)
-- **Board:** Org → Projects → Project Board
-- **Wiki:** Repo → Wiki
-- **Issues:** Repo → Issues
-- **Pull Requests:** Repo → Pull requests
+## Features
 
----
+### Entrant Features
+
+- Join and leave event waiting lists
+- Browse and search events
+- Filter events by availability and capacity
+- Scan QR codes to view event details
+- Receive lottery result notifications
+- Accept or decline event invitations
+- View event participation history
+- Manage personal profile information
+- Comment on events
+- Opt in/out of notifications
+
+### Organizer Features
+
+- Create public and private events
+- Generate promotional QR codes
+- Upload and update event posters
+- Set registration windows
+- View waiting list entrants
+- Enable or disable geolocation requirements
+- Sample entrants from waiting lists
+- Draw replacement entrants when needed
+- Send notifications to entrants
+- Export enrolled entrant lists (CSV)
+- Assign co-organizers
+- Moderate event comments
+
+### Administrator Features
+
+- Remove events, profiles, and images
+- Browse events and user profiles
+- Review uploaded images
+- Remove inappropriate organizers
+- Review logs of notifications
+- Remove event comments
+- Act as entrant and/or organizer within the system
 
 
-## Team Workflow (Git + PR)
+## Technologies Used
 
-### 1) Clone the repo
+The application is implemented using:
 
-```bash
-git clone <repo-url>
-cd cooked-dinner
-```
+- Java
+- Android Studio
+- Firebase Firestore (database)
+- Firebase Storage (poster uploads)
+- Google Maps API (geolocation features)
+- QR scanning libraries (Google QR tools)
 
-### 2) Make a personal branch (never work directly on main)
 
-Use your first name or a short handle:
+## Repository Structure
 
-```bash
-git switch -c <your-branch-name>
-# Example: git switch -c rebecca
-```
+app/  
+ Android application source code
 
-### 3) Confirm you're not on main
+docs/ui/mockups/  
+ UI mockups and interface sketches
 
-```bash
-git status
-```
+docs/ui/storyboards/  
+ Storyboard sequences
 
-### 4) Keep your branch up-to-date with main
+docs/ui/decisions/  
+ UI decision documentation
 
-Do this before you open a PR:
+docs/crc/  
+ CRC card images
 
-```bash
-git fetch origin
-git merge origin/main
-```
+docs/  
+ Supporting documentation assets
 
-If you hit merge conflicts:
-- resolve conflicts on **your branch**
-- do **not** commit directly to `main`
 
-### 5) Commit and push
+## Setup Instructions
 
-```bash
-git add -A
-git commit -m "Short, clear message"
-git push --set-upstream origin <your-branch-name>
-```
+To run the project locally:
 
-### 6) Open a Pull Request (PR)
+1. Clone the repository
+2. Open the project in Android Studio
+3. Add your Firebase configuration file:
 
-- Open PR from your branch → `main`
-- Add at least 1 reviewer 
-- Link the related Issue(s) in the PR description (example: `Closes #123`)
+   app/google-services.json
 
-### 7) Review teammates’ PRs
+4. Add your Google Maps API key to:
 
-- If someone requests your review pls try to respond quickly
+   local.properties
 
----
+5. Sync Gradle and run the application on an emulator or Android device
 
-## Notes
 
-- Our submission must be **self-contained in GitHub** (no external submission links).
-- UI diagrams/storyboards must be **embedded as images in the team wiki** (not external links).
+## System Roles
+
+The system supports three primary actor roles:
+
+Entrant  
+A user who joins event waiting lists and participates in lotteries
+
+Organizer  
+A user who creates events, manages waiting lists, and selects participants
+
+Administrator  
+A privileged user responsible for moderation and infrastructure oversight
+
+
+## Current Status
+
+Project Part 4 — Final Checkpoint
+
+Includes:
+
+- updated UI mockups
+- storyboard sequences
+- updated CRC cards
+- structured GitHub workflow
+- issue tracking via project board
