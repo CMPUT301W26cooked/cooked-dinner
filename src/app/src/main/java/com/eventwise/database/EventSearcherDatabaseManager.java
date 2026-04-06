@@ -103,9 +103,10 @@ public class EventSearcherDatabaseManager extends DatabaseManager{
             //Take out events based on keywords
             Stream<Event> eventStream = eventsArray.stream();
 
-            if (filter.getFilterTypes().contains(FilterType.TAG)) {
+            if (filter.getFilterTypes().contains(FilterType.TAGS)) {
                 eventStream = eventStream.filter(e -> e.getTags().stream()
-                        .anyMatch(tag -> tag.getCategory().equals(filter.getTag().getCategory())));
+                        .anyMatch(tag -> filter.getTags().stream()
+                                .anyMatch(filterTag -> filterTag.getCategory().equals(tag.getCategory()))));
             }
             //Search for keywords in a title string
             if (filter.getFilterTypes().contains(FilterType.KEYWORDS)) {
