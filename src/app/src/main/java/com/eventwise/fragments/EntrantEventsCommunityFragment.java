@@ -256,6 +256,9 @@ public class EntrantEventsCommunityFragment extends Fragment {
                 .addOnSuccessListener(returnedList -> {
                     eventList.clear();
 
+                    String currentEntrantId = getCurrentEntrantId();
+                    String currentOrganizerProfileId = organizerProfileIdFromEntrantId(currentEntrantId);
+
                     for (Event event : returnedList) {
                         if (event == null) {
                             continue;
@@ -266,6 +269,10 @@ public class EntrantEventsCommunityFragment extends Fragment {
                         }
 
                         if (event.isEventOverNow()) {
+                            continue;
+                        }
+
+                        if (!currentOrganizerProfileId.isEmpty() && event.hasOrganizerAccess(currentOrganizerProfileId)) {
                             continue;
                         }
 
@@ -377,5 +384,17 @@ public class EntrantEventsCommunityFragment extends Fragment {
                         Log.d("Notification", "Organizer notification created"))
                 .addOnFailureListener(e ->
                         Log.e("Notification", "Organizer notification failed", e));
+    }
+
+    private String organizerProfileIdFromEntrantId(@Nullable String entrantProfileId) {
+        if (entrantProfileId == null || entrantProfileId.trim().isEmpty()) {
+            return "";
+        }
+
+        if (entrantProfileId.endsWith("_entrant")) {
+            return entrantProfileId.substring(0, entrantProfileId.length() - "_entrant".length()) + "_organizer";
+        }
+
+        return entrantProfileId + "_organizer";
     }
 }

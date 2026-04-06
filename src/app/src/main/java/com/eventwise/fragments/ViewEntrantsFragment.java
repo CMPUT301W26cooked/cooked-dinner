@@ -1,13 +1,19 @@
 package com.eventwise.fragments;
 
+import android.content.ContentValues;
 import android.content.res.ColorStateList;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,6 +29,8 @@ import com.eventwise.database.EntrantDatabaseManager;
 import com.eventwise.database.OrganizerDatabaseManager;
 import com.eventwise.items.EntrantListItem;
 
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,6 +60,7 @@ public class ViewEntrantsFragment extends Fragment {
     private Button inviteesButton;
     private Button canceledButton;
     private Button registeredButton;
+    private Button exportCsvButton;
     private View backButton;
     private RecyclerView recyclerView;
     private TextView emptyText;
@@ -108,6 +117,7 @@ public class ViewEntrantsFragment extends Fragment {
         inviteesButton = view.findViewById(R.id.button_invitees);
         canceledButton = view.findViewById(R.id.button_canceled);
         registeredButton = view.findViewById(R.id.button_registered);
+        exportCsvButton = view.findViewById(R.id.button_export_csv);
         backButton = view.findViewById(R.id.button_back);
         recyclerView = view.findViewById(R.id.recycler_view_entrants);
         emptyText = view.findViewById(R.id.text_empty_entrants);
@@ -121,6 +131,7 @@ public class ViewEntrantsFragment extends Fragment {
         inviteesButton.setOnClickListener(v -> selectFilter(FILTER_INVITEES));
         canceledButton.setOnClickListener(v -> selectFilter(FILTER_CANCELED));
         registeredButton.setOnClickListener(v -> selectFilter(FILTER_REGISTERED));
+        exportCsvButton.setOnClickListener(v -> exportRegisteredEntrantsCsv());
 
         backButton.setOnClickListener(v ->
                 requireActivity().getSupportFragmentManager().popBackStack()
@@ -128,6 +139,7 @@ public class ViewEntrantsFragment extends Fragment {
 
         clearSelectedState();
         showEmptyStateOnly();
+        updateExportCsvButtonVisibility();
     }
 
     /**
@@ -138,6 +150,7 @@ public class ViewEntrantsFragment extends Fragment {
     private void selectFilter(String filter) {
         selectedFilter = filter;
         updateButtonColors();
+        updateExportCsvButtonVisibility();
         if (FILTER_WAITLISTED.equals(filter)) {
 
             mapContainer.setVisibility(View.VISIBLE);
@@ -363,5 +376,145 @@ public class ViewEntrantsFragment extends Fragment {
             return entrant.getProfileId();
         }
         return safeText(entrant.getProfileId());
+    }
+
+    /**
+     * Shows the export CSV button only for the registered filter.
+     */
+    private void updateExportCsvButtonVisibility() {
+        if (exportCsvButton == null) {
+            return;
+        }
+
+        if (FILTER_REGISTERED.equals(selectedFilter)) {
+            exportCsvButton.setVisibility(View.VISIBLE);
+        } else {
+            exportCsvButton.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Exports the currently loaded registered entrant list as a CSV in Downloads.
+     */
+    private void exportRegisteredEntrantsCsv() {
+        if (!FILTER_REGISTERED.equals(selectedFilter)) {
+            return;
+        }
+
+        if (displayedEntrants.isEmpty()) {
+            Toast.makeText(requireContext(), "No registered entrants to export.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            Toast.makeText(requireContext(), "CSV export requires Android 10 or newer.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String fileName = buildCsvFileName();
+        String csvContent = buildRegisteredEntrantsCsvContent();
+
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+        values.put(MediaStore.MediaColumns.MIME_TYPE, "text/csv");
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+        values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+
+        Uri uri = null;
+
+        try {
+            uri = requireContext().getContentResolver().insert(
+                    MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                    values
+            );
+
+            if (uri == null) {
+                throw new IllegalStateException("Could not create CSV file.");
+            }
+
+            try (OutputStream outputStream = requireContext().getContentResolver().openOutputStream(uri)) {
+                if (outputStream == null) {
+                    throw new IllegalStateException("Could not open CSV file.");
+                }
+
+                outputStream.write(csvContent.getBytes(StandardCharsets.UTF_8));
+            }
+
+            ContentValues completedValues = new ContentValues();
+            completedValues.put(MediaStore.MediaColumns.IS_PENDING, 0);
+            requireContext().getContentResolver().update(uri, completedValues, null, null);
+
+            Toast.makeText(requireContext(), "CSV exported to Downloads.", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Log.e("ViewEntrants", "Failed to export CSV", e);
+
+            if (uri != null) {
+                requireContext().getContentResolver().delete(uri, null, null);
+            }
+
+            Toast.makeText(requireContext(), "Failed to export CSV.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Builds the export CSV file name.
+     */
+    private String buildCsvFileName() {
+        String eventName = "";
+
+        if (currentEvent != null) {
+            eventName = safeText(currentEvent.getName());
+        }
+
+        if (eventName.trim().isEmpty()) {
+            eventName = safeText(eventId);
+        }
+
+        eventName = eventName.replaceAll("[\\\\/:*?\"<>|]", "_").trim();
+
+        if (eventName.isEmpty()) {
+            eventName = "event";
+        }
+
+        return "event_" + eventName + "_registered_entrants.csv";
+    }
+
+    /**
+     * Builds the CSV content for registered entrants.
+     */
+    private String buildRegisteredEntrantsCsvContent() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("User Id,Name,Email,Phone\n");
+
+        for (EntrantListItem entrant : displayedEntrants) {
+            builder.append(escapeCsv(removeUserIdPrefix(entrant.getDeviceId()))).append(",");
+            builder.append(escapeCsv(entrant.getName())).append(",");
+            builder.append(escapeCsv(entrant.getEmail())).append(",");
+            builder.append(escapeCsv(entrant.getPhone())).append("\n");
+        }
+
+        return builder.toString();
+    }
+
+    /**
+     * Escapes one CSV value.
+     */
+    private String escapeCsv(String value) {
+        String safeValue = value == null ? "" : value;
+        safeValue = safeValue.replace("\"", "\"\"");
+        return "\"" + safeValue + "\"";
+    }
+
+    /**
+     * Removes the display prefix from the entrant id for CSV export.
+     */
+    private String removeUserIdPrefix(String value) {
+        String safeValue = safeText(value);
+
+        if (safeValue.startsWith("User Id: ")) {
+            return safeValue.substring("User Id: ".length());
+        }
+
+        return safeValue;
     }
 }
