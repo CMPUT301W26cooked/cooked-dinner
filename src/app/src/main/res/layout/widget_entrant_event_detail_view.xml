@@ -53,23 +53,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    android:gravity="center_vertical"
+                    android:gravity="center"
                     android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/click_hint_text"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="16dp"
-                        android:layout_weight="1"
-                        android:text="@string/click_images_expanded"
-                        android:textColor="@color/moss_green"
-                        android:textSize="12sp" />
 
                     <ImageView
                         android:id="@+id/event_poster"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
                         android:layout_marginEnd="8dp"
                         android:background="@color/weird_piss"
                         android:contentDescription="@string/cd_event_poster"
@@ -78,8 +68,8 @@
 
                     <ImageView
                         android:id="@+id/qr_code"
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
                         android:background="@color/white"
                         android:contentDescription="@string/cd_qr_code"
                         android:src="@drawable/ic_launcher_background" />
