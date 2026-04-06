@@ -1,5 +1,4 @@
 package com.eventwise.adapters;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +12,8 @@ import com.eventwise.Enum.EventEntrantStatus;
 import com.eventwise.Event;
 import com.eventwise.R;
 
-import java.io.File;
+import com.bumptech.glide.Glide;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -276,15 +276,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         holder.eventRegisteredCount.setText("•  " + registered + " registered");
 
         if (event.getPosterPath() != null && !event.getPosterPath().isEmpty()) {
-            File file = new File(holder.itemView.getContext().getFilesDir(), event.getPosterPath());
-            if (file.exists()) {
-                holder.posterView.setImageURI(Uri.fromFile(file));
-            }
-            else{
-                holder.posterView.setImageResource(android.R.drawable.ic_menu_gallery);
-            }
-        }
-        else{
+            Glide.with(holder.itemView.getContext())
+                    .load(event.getPosterPath())
+                    .centerCrop()
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .into(holder.posterView);
+        } else {
             holder.posterView.setImageResource(android.R.drawable.ic_menu_gallery);
         }
 

@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.eventwise.items.ImageListItem;
 import com.eventwise.R;
 
@@ -60,7 +61,15 @@ public class ImageGalleryAdapter extends RecyclerView.Adapter<ImageGalleryAdapte
     @Override
     public void onBindViewHolder(ImageGalleryAdapter.ViewHolder viewHolder, int i) {
         viewHolder.image.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        viewHolder.image.setImageBitmap(galleryList.get(i).getImage());
+        String url = galleryList.get(i).getImageUrl();
+        if (url != null && !url.isEmpty()) {
+            Glide.with(viewHolder.itemView.getContext())
+                    .load(url)
+                    .centerCrop()
+                    .into(viewHolder.image);
+        } else {
+            viewHolder.image.setImageBitmap(galleryList.get(i).getImage());
+        }
     }
 
     // Returns the number of items in the gallery

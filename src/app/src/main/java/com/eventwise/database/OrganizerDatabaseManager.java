@@ -1,6 +1,5 @@
 package com.eventwise.database;
 
-import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -18,8 +17,9 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.UUID;
@@ -229,51 +229,43 @@ public class OrganizerDatabaseManager extends DatabaseManager{
 
 
     /**
-     * Saves the event poster image to local storage and updates the event's posterPath field in Firestore.
-     * <p>
-     * Note: Current implementation uses internal local storage. This is intended to be migrated
-     * to Firebase Storage in future iterations.
-     * </p>
+     * Uploads the event poster image to Firebase Storage and stores the download URL in Firestore.
      *
      * @param eventId   The unique identifier of the event for which the poster is being uploaded.
      * @param imageData The raw byte array of the image data to be saved.
-     * @param context   The application context used to access internal file storage.
-     * @return A {@link Task} that resolves to the local file path string where the image was saved.
-     * @see <a href="https://stackoverflow.com/questions/3625837/android-what-is-wrong-with-openfileoutput">Reference for openFileOutput</a>
-     */ // TODO - change local storage to Firebase
-    // saves the event poster image to local storage and updates the event's posterPath field in Firestore 
-    // reference: https://stackoverflow.com/questions/3625837/android-what-is-wrong-with-openfileoutput
-    public Task<String> uploadEventPoster(String eventId, byte[] imageData, Context context) {
-        String localPath = "event_posters_" + eventId + ".jpg";
-
+     * @return A {@link Task} that resolves to the download URL string of the uploaded image.
+     */
+    public Task<String> uploadEventPoster(String eventId, byte[] imageData) {
+        String storagePath = "event_posters/" + eventId + ".jpg";
         TaskCompletionSource<String> tcs = new TaskCompletionSource<>();
 
-        try {
-            FileOutputStream fos = context.openFileOutput(localPath, Context.MODE_PRIVATE);
-            fos.write(imageData);
-            fos.close();
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(storagePath);
 
-            super.updateEventPosterPath(eventId, localPath)
-                    .addOnSuccessListener(unused -> tcs.setResult(localPath))
-                    .addOnFailureListener(tcs::setException);
-        } catch (IOException e) {
-            tcs.setException(e);
-        }
+        storageRef.putBytes(imageData)
+                .addOnSuccessListener(taskSnapshot ->
+                        storageRef.getDownloadUrl()
+                                .addOnSuccessListener(uri -> {
+                                    String downloadUrl = uri.toString();
+                                    super.updateEventPosterPath(eventId, downloadUrl)
+                                            .addOnSuccessListener(unused -> tcs.setResult(downloadUrl))
+                                            .addOnFailureListener(tcs::setException);
+                                })
+                                .addOnFailureListener(tcs::setException))
+                .addOnFailureListener(tcs::setException);
 
         return tcs.getTask();
     }
 
 
     /**
-     * Updates and replaces an existing event poster image in local storage and updates the database reference.
+     * Updates and replaces an existing event poster image in Firebase Storage and updates the database reference.
      *
      * @param eventId   The unique Id of the event for which the poster is being updated.
      * @param imageData The raw byte array of the new poster image.
-     * @param context   The application context used to access internal storage.
-     * @return A {@link Task} that resolves to a {@link String} containing the local file path of the updated image.
-     */ // Updates and replace an event poster image in local storage
-    public Task<String> updateEventPoster(String eventId, byte[] imageData, Context context) {
-        return uploadEventPoster(eventId, imageData, context);
+     * @return A {@link Task} that resolves to the download URL string of the uploaded image.
+     */
+    public Task<String> updateEventPoster(String eventId, byte[] imageData) {
+        return uploadEventPoster(eventId, imageData);
     }
 
     public Task<Void> updateEntrantStatusInEvent(String entrantId,

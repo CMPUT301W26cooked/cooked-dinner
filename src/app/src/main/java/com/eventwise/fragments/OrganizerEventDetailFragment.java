@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.eventwise.CommentBottomSheet;
 import com.eventwise.Event;
 import com.eventwise.ProfileType;
@@ -95,6 +96,7 @@ public class OrganizerEventDetailFragment extends Fragment {
     private void bindViews(@NonNull View view) {
         ImageView backButton = view.findViewById(R.id.back_button);
         ImageView qrCode = view.findViewById(R.id.qr_code);
+        ImageView eventPoster = view.findViewById(R.id.event_poster);
 
         TextView detailTitle = view.findViewById(R.id.event_detail_title);
         TextView eventNameText = view.findViewById(R.id.event_name);
@@ -190,6 +192,13 @@ public class OrganizerEventDetailFragment extends Fragment {
         eventSpots.setText("•  " + currentEvent.getMaxWinnersToSample() + " event spots");
         eventWaitlisted.setText("•  " + currentEvent.getWaitingListCount() + " on the wait list");
         eventRegistered.setText("•  " + currentEvent.getEnrolledCount() + " registered");
+
+        //Update Poster
+        Glide.with(eventPoster.getContext())
+                .load(currentEvent.getPosterPath())
+                .centerCrop()
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .into(eventPoster);
 
         lotteryCloseDate.setText(formatDate(currentEvent.getRegistrationCloseEpochSec()));
         lotteryCloseTime.setText(formatTime(currentEvent.getRegistrationCloseEpochSec()));
