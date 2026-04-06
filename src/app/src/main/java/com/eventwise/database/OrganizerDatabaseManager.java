@@ -204,23 +204,29 @@ public class OrganizerDatabaseManager extends DatabaseManager{
 
         events.get().addOnSuccessListener(result -> {
             for (DocumentSnapshot document : result) {
-                // some events were mising their Id we need to restore the event Id for these.
-                Object organizerProfileId = document.getData() == null ? null : document.getData().get("organizerProfileId");
-                if (organizerProfileId != null && organizerProfileId.equals(organizerId)) {
-                    Event event = document.toObject(Event.class);
-                    if (event != null) {
-                        if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
-                            event.setEventId(document.getId());
-                        }
-                        eventsArray.add(event);
-                    }
+                Event event = document.toObject(Event.class);
+                if (event == null) {
+                    continue;
+                }
+
+                if (event.getEventId() == null || event.getEventId().trim().isEmpty()) {
+                    event.setEventId(document.getId());
+                }
+
+                if (event.hasOrganizerAccess(organizerId)) {
+                    eventsArray.add(event);
                 }
             }
+
             tcs.setResult(eventsArray);
         }).addOnFailureListener(exception ->
                 tcs.setException(new DatabaseException("Error getting organizers Events")));
 
         return tcs.getTask();
+    }
+
+    public Task<ArrayList<Entrant>> getAllEntrants() {
+        return super.getEntrants();
     }
 
     //**************************************************************************************************
@@ -640,6 +646,104 @@ public class OrganizerDatabaseManager extends DatabaseManager{
                         tcs.setException(new DatabaseException("Failed to load event")));
 
         return tcs.getTask();
+    }
+
+    public Task<Void> inviteCoOrganizer(String eventId, String entrantProfileId) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("Event Id is null"));
+            return tcs.getTask();
+        }
+
+        if (entrantProfileId == null || entrantProfileId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("Entrant profile Id is null"));
+            return tcs.getTask();
+        }
+
+        getEventById(eventId)
+                .addOnSuccessListener(event -> {
+                    String invitedOrganizerProfileId = organizerProfileIdFromEntrantId(entrantProfileId);
+
+                    if (event.hasOrganizerAccess(invitedOrganizerProfileId)) {
+                        tcs.setResult(null);
+                        return;
+                    }
+
+                    Notification notification = new Notification();
+                    notification.setNotificationId(UUID.randomUUID().toString());
+
+                    ArrayList<String> recipientIds = new ArrayList<>();
+                    recipientIds.add(entrantProfileId);
+
+                    notification.setEntrantIds(recipientIds);
+                    notification.setRecipientRole(Notification.RecipientRole.ENTRANT);
+                    notification.setOrganizerId(event.getOrganizerProfileId());
+                    notification.setEventId(event.getEventId());
+                    notification.setMessageTitle("Co-organizer Invite");
+                    notification.setMessageBody("You were invited to co-organize " + event.getName() + ".");
+                    notification.setType(Notification.NotificationType.CO_ORGANIZER_INVITE);
+                    notification.setTimestamp(System.currentTimeMillis() / 1000L);
+
+                    NotificationDatabaseManager notificationDatabaseManager =
+                            new NotificationDatabaseManager(super.db);
+
+                    notificationDatabaseManager.createNotification(notification)
+                            .addOnSuccessListener(unused -> tcs.setResult(null))
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Failed to send co-organizer invite")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Failed to load event")));
+
+        return tcs.getTask();
+    }
+
+    public Task<Void> acceptCoOrganizerInvite(String eventId, String entrantProfileId) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("Event Id is null"));
+            return tcs.getTask();
+        }
+
+        if (entrantProfileId == null || entrantProfileId.trim().isEmpty()) {
+            tcs.setException(new DatabaseException("Entrant profile Id is null"));
+            return tcs.getTask();
+        }
+
+        String organizerProfileId = organizerProfileIdFromEntrantId(entrantProfileId);
+
+        getEventById(eventId)
+                .addOnSuccessListener(event -> {
+                    if (event.hasOrganizerAccess(organizerProfileId)) {
+                        tcs.setResult(null);
+                        return;
+                    }
+
+                    event.addCoOrganizerProfileId(organizerProfileId);
+
+                    updateEvent(event)
+                            .addOnSuccessListener(unused -> tcs.setResult(null))
+                            .addOnFailureListener(e ->
+                                    tcs.setException(new DatabaseException("Failed to accept co-organizer invite")));
+                })
+                .addOnFailureListener(e ->
+                        tcs.setException(new DatabaseException("Failed to load event")));
+
+        return tcs.getTask();
+    }
+
+    private String organizerProfileIdFromEntrantId(String entrantProfileId) {
+        if (entrantProfileId == null || entrantProfileId.trim().isEmpty()) {
+            return "";
+        }
+
+        if (entrantProfileId.endsWith("_entrant")) {
+            return entrantProfileId.substring(0, entrantProfileId.length() - "_entrant".length()) + "_organizer";
+        }
+
+        return entrantProfileId + "_organizer";
     }
 
     /**

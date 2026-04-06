@@ -49,6 +49,8 @@ public class Event {
     private ArrayList<EntrantStatusEntry> entrantStatuses = new ArrayList<>();
     private  ArrayList<Comment> comments = new ArrayList<>();
 
+    private ArrayList<String> coOrganizerProfileIds = new ArrayList<>();
+
     public Event() {}
 
     public Event(
@@ -148,6 +150,64 @@ public class Event {
         this.entrantStatuses = entrantStatuses;
     }
 
+    public ArrayList<String> getCoOrganizerProfileIds() {
+        if (coOrganizerProfileIds == null) {
+            coOrganizerProfileIds = new ArrayList<>();
+        }
+        return coOrganizerProfileIds;
+    }
+
+    public void setCoOrganizerProfileIds(ArrayList<String> coOrganizerProfileIds) {
+        if (coOrganizerProfileIds == null) {
+            this.coOrganizerProfileIds = new ArrayList<>();
+        } else {
+            this.coOrganizerProfileIds = coOrganizerProfileIds;
+        }
+    }
+
+    public void addCoOrganizerProfileId(String organizerProfileId) {
+        if (organizerProfileId == null || organizerProfileId.trim().isEmpty()) {
+            return;
+        }
+
+        if (coOrganizerProfileIds == null) {
+            coOrganizerProfileIds = new ArrayList<>();
+        }
+
+        if (organizerProfileId.equals(organizerProfileId())) {
+            return;
+        }
+
+        if (!coOrganizerProfileIds.contains(organizerProfileId)) {
+            coOrganizerProfileIds.add(organizerProfileId);
+        }
+    }
+
+    public void removeCoOrganizerProfileId(String organizerProfileId) {
+        if (coOrganizerProfileIds == null || organizerProfileId == null) {
+            return;
+        }
+
+        coOrganizerProfileIds.remove(organizerProfileId);
+    }
+
+    @Exclude
+    public boolean hasOrganizerAccess(String organizerProfileId) {
+        if (organizerProfileId == null || organizerProfileId.trim().isEmpty()) {
+            return false;
+        }
+
+        if (organizerProfileId.equals(this.organizerProfileId)) {
+            return true;
+        }
+
+        return getCoOrganizerProfileIds().contains(organizerProfileId);
+    }
+
+    private String organizerProfileId() {
+        return organizerProfileId;
+    }
+
     /**
      * Adds a new entrant state or updates the entrant's current state.
      *
@@ -240,6 +300,19 @@ public class Event {
     }
 
     /**
+     * Checks whether the event is now over.
+     *
+     * An event is only over after its end time.
+     *
+     * @return true if current time is after event end
+     */
+    @Exclude
+    public boolean isEventOverNow() {
+        long nowEpochSec = System.currentTimeMillis() / 1000L;
+        return nowEpochSec > eventEndEpochSec;
+    }
+
+    /**
      * Returns the current waiting list count.
      *
      * @return waiting list count
@@ -294,7 +367,8 @@ public class Event {
                 && Objects.equals(posterPath, event.posterPath)
                 && Objects.equals(qrCodeId, event.qrCodeId)
                 && Objects.equals(entrantStatuses, event.entrantStatuses)
-                && Objects.equals(comments, event.comments);
+                && Objects.equals(comments, event.comments)
+                && Objects.equals(coOrganizerProfileIds, event.coOrganizerProfileIds);
     }
 
     @Override
@@ -316,6 +390,7 @@ public class Event {
                 maxWinnersToSample,
                 posterPath,
                 qrCodeId,
+                coOrganizerProfileIds,
                 entrantStatuses,
                 comments);
     }

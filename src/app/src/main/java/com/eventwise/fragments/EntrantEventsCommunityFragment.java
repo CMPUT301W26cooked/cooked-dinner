@@ -265,6 +265,10 @@ public class EntrantEventsCommunityFragment extends Fragment {
                             continue;
                         }
 
+                        if (event.isEventOverNow()) {
+                            continue;
+                        }
+
                         eventList.add(event);
                     }
 

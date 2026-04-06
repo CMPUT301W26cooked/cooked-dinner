@@ -46,6 +46,7 @@ public class AdminEventDetailFragment extends Fragment {
     private static final String ARG_MAX_SPOTS = "arg_max_spots";
     private static final String ARG_WAITLISTED = "arg_waitlisted";
     private static final String ARG_REGISTERED = "arg_registered";
+    private static final String ARG_PRIVATE_EVENT = "arg_private_event";
 
     private static final String ARG_EVENT_POSTER_PATH = "arg_event_poster_path";
 
@@ -61,6 +62,7 @@ public class AdminEventDetailFragment extends Fragment {
     private int maxSpots;
     private int waitlistedCount;
     private int registeredCount;
+    private boolean privateEvent;
 
     public AdminEventDetailFragment() {
     }
@@ -87,7 +89,7 @@ public class AdminEventDetailFragment extends Fragment {
         args.putInt(ARG_WAITLISTED, event.getWaitingListCount());
         args.putInt(ARG_REGISTERED, event.getEnrolledCount());
         args.putString(ARG_EVENT_POSTER_PATH, event.getPosterPath());
-
+        args.putBoolean(ARG_PRIVATE_EVENT, event.isPrivateEvent());
 
         fragment.setArguments(args);
         return fragment;
@@ -159,6 +161,7 @@ public class AdminEventDetailFragment extends Fragment {
         TextView eventLocationCity = view.findViewById(R.id.event_location_city);
         TextView eventGuidelines = view.findViewById(R.id.event_guidelines);
 
+        Button entrantActionsButton = view.findViewById(R.id.view_entrants_button);
         Button cancelEventButton = view.findViewById(R.id.cancel_event_button);
 
         Button eventCommentButton = view.findViewById(R.id.event_comment_button);
@@ -169,7 +172,7 @@ public class AdminEventDetailFragment extends Fragment {
         detailTitle.setText("Event Details");
         eventNameText.setText(eventName);
         eventOrganization.setText("Organization Name");
-        eventStatus.setText("Open");
+        eventStatus.setText(getEventStatusText());
         eventDescriptionText.setText(eventDescription);
 
         eventDate.setText(formatDate(eventStart));
@@ -195,6 +198,22 @@ public class AdminEventDetailFragment extends Fragment {
         eventGuidelines.setText("Rules and regulations limitations and considerations and other such things");
 
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+
+        entrantActionsButton.setOnClickListener(v -> {
+            if (eventId == null || eventId.trim().isEmpty()) {
+                return;
+            }
+
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .replace(
+                            R.id.admin_fragment_container,
+                            AdminEntrantActionsFragment.newInstance(eventId)
+                    )
+                    .addToBackStack(null)
+                    .commit();
+        });
+
         cancelEventButton.setOnClickListener(v -> cancelEvent());
         eventCommentButton.setOnClickListener(v -> {
 
@@ -237,6 +256,25 @@ public class AdminEventDetailFragment extends Fragment {
                     android.util.Log.e("Event", "Event delete failed from detail page", e);
                     getParentFragmentManager().popBackStack();
                 });
+    }
+
+    /**
+     * Returns the timing status text for this event.
+     *
+     * @return status text
+     */
+    private String getEventStatusText() {
+        long nowEpochSec = System.currentTimeMillis() / 1000L;
+
+        if (nowEpochSec > eventEnd) {
+            return "Over";
+        }
+
+        if (nowEpochSec > registrationClose) {
+            return "Closed";
+        }
+
+        return "Open";
     }
 
     /**

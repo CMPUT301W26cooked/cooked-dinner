@@ -146,6 +146,25 @@
             android:textSize="18sp" />
 
         <Button
+            android:id="@+id/button_invite_co_organizer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="Invite Co-organizer"
+            android:textAllCaps="false"
+            android:textColor="@color/lighter_green"
+            android:backgroundTint="@color/moss_green" />
+
+        <TextView
+            android:id="@+id/text_invite_co_organizer_reason"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/red"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <Button
             android:id="@+id/button_advanced_developer_actions"
             android:layout_width="match_parent"
             android:layout_height="56dp"

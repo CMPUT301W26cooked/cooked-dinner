@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,9 +38,15 @@ import java.util.List;
 
 public class EntrantMyEventsFragment extends Fragment {
 
-    private RecyclerView eventListView;
-    private EventAdapter eventAdapter;
-    private List<Event> eventList;
+    private RecyclerView currentEventListView;
+    private RecyclerView historyEventListView;
+    private EventAdapter currentEventAdapter;
+    private EventAdapter historyEventAdapter;
+    private List<Event> currentEventList;
+    private List<Event> historyEventList;
+
+    private TextView currentEmptyText;
+    private TextView historyEmptyText;
 
     public EntrantMyEventsFragment() {
     }
@@ -54,13 +61,32 @@ public class EntrantMyEventsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        eventListView = view.findViewById(R.id.my_events_list_view);
-        eventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        currentEventListView = view.findViewById(R.id.my_events_current_list_view);
+        historyEventListView = view.findViewById(R.id.my_events_history_list_view);
+        currentEmptyText = view.findViewById(R.id.empty_current_my_events_list);
+        historyEmptyText = view.findViewById(R.id.empty_history_my_events_list);
+        currentEventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        historyEventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        eventList = new ArrayList<>();
-        eventAdapter = new EventAdapter(eventList, EventAdapter.TYPE_EDIT_LEAVE, getCurrentEntrantId(), this::primaryButton, this::secondaryButton, this::openEventDetail);
-        eventListView.setAdapter(eventAdapter);
-        //Get events from Firebase
+        currentEventListView.setNestedScrollingEnabled(false);
+        historyEventListView.setNestedScrollingEnabled(false);
+        currentEventList = new ArrayList<>();
+        historyEventList = new ArrayList<>();
+
+        currentEventAdapter = new EventAdapter(currentEventList,EventAdapter.TYPE_EDIT_LEAVE,getCurrentEntrantId(),this::primaryButton,this::secondaryButton,this::openEventDetail);
+
+        historyEventAdapter = new EventAdapter(
+                historyEventList,
+                EventAdapter.TYPE_EDIT_LEAVE,
+                getCurrentEntrantId(),
+                this::primaryButton,
+                this::secondaryButton,
+                this::openEventDetail
+        );
+
+        currentEventListView.setAdapter(currentEventAdapter);
+        historyEventListView.setAdapter(historyEventAdapter);
+
         refreshEvents();
     }
 
@@ -96,7 +122,8 @@ public class EntrantMyEventsFragment extends Fragment {
             }
 
             event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
-            eventAdapter.notifyDataSetChanged();
+            currentEventAdapter.notifyDataSetChanged();
+            historyEventAdapter.notifyDataSetChanged();
 
             db.unregisterEntrantInEvent(entrantId, event.getEventId(), timestamp)
                     .addOnSuccessListener(unused -> {
@@ -107,7 +134,8 @@ public class EntrantMyEventsFragment extends Fragment {
                         Log.e("Event", "Leave failed", e);
 
                         event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.WAITLISTED, timestamp);
-                        eventAdapter.notifyDataSetChanged();
+                        currentEventAdapter.notifyDataSetChanged();
+                        historyEventAdapter.notifyDataSetChanged();
                     });
         } else {
             if (event.isPrivateEvent()) {
@@ -134,7 +162,8 @@ public class EntrantMyEventsFragment extends Fragment {
                                 Log.e("Event", "Join failed", e);
 
                                 event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
-                                eventAdapter.notifyDataSetChanged();
+                                currentEventAdapter.notifyDataSetChanged();
+                                historyEventAdapter.notifyDataSetChanged();
                             });
                 });
             } else {
@@ -149,11 +178,13 @@ public class EntrantMyEventsFragment extends Fragment {
                             Log.e("Event", "Join failed", e);
 
                             event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.LEFT_WAITLIST, timestamp);
-                            eventAdapter.notifyDataSetChanged();
+                            currentEventAdapter.notifyDataSetChanged();
+                            historyEventAdapter.notifyDataSetChanged();
                         });
             }
 
-            eventAdapter.notifyDataSetChanged();
+            currentEventAdapter.notifyDataSetChanged();
+            historyEventAdapter.notifyDataSetChanged();
         }
     }
 
@@ -190,44 +221,98 @@ public class EntrantMyEventsFragment extends Fragment {
 
         eventSearcherDBMan.getEvents()
                 .addOnSuccessListener(returnedList -> {
-                    eventList.clear();
+                    currentEventList.clear();
+                    historyEventList.clear();
 
                     for (Event event : returnedList) {
                         if (event == null) {
                             continue;
                         }
 
-                        boolean isWaitlisted =
-                                event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(entrantId);
-                        boolean isInvited =
-                                event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).contains(entrantId);
-                        boolean isEnrolled =
-                                event.getEntrantIdsByStatus(EventEntrantStatus.ENROLLED).contains(entrantId);
+                        if (!shouldShowEventForEntrant(event, entrantId)) {
+                            continue;
+                        }
 
-                        if (event.isPrivateEvent()) {
-                            if (isInvited || isEnrolled) {
-                                eventList.add(event);
-                            }
+                        if (event.isEventOverNow()) {
+                            historyEventList.add(event);
                         } else {
-                            if (isWaitlisted || isInvited || isEnrolled) {
-                                eventList.add(event);
-                            }
+                            currentEventList.add(event);
                         }
                     }
 
-                    Collections.sort(eventList, (eventOne, eventTwo) ->
+                    Collections.sort(currentEventList, (eventOne, eventTwo) ->
                             Long.compare(eventTwo.getEventStartEpochSec(), eventOne.getEventStartEpochSec())
                     );
 
-                    eventAdapter.notifyDataSetChanged();
+                    Collections.sort(historyEventList, (eventOne, eventTwo) ->
+                            Long.compare(eventTwo.getEventStartEpochSec(), eventOne.getEventStartEpochSec())
+                    );
+
+                    currentEventAdapter.notifyDataSetChanged();
+                    historyEventAdapter.notifyDataSetChanged();
+
+                    updateSectionEmptyStates();
                 })
                 .addOnFailureListener(e -> {
                     Log.e("Event", "Failed to refresh events", e);
+                    updateSectionEmptyStates();
                 });
     }
+
+    /**
+     * Applies the same entrant event membership rules as before.
+     *
+     * Current and history both only include events where the entrant is
+     * still waitlisted, invited, or enrolled.
+     *
+     * @param event event to check
+     * @param entrantId entrant id
+     * @return true if this event belongs in My Events
+     */
+    private boolean shouldShowEventForEntrant(@NonNull Event event, @Nullable String entrantId) {
+        if (entrantId == null || entrantId.trim().isEmpty()) {
+            return false;
+        }
+
+        boolean isWaitlisted =
+                event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).contains(entrantId);
+        boolean isInvited =
+                event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).contains(entrantId);
+        boolean isEnrolled =
+                event.getEntrantIdsByStatus(EventEntrantStatus.ENROLLED).contains(entrantId);
+
+        if (event.isPrivateEvent()) {
+            return isInvited || isEnrolled;
+        }
+
+        return isWaitlisted || isInvited || isEnrolled;
+    }
+
+    /**
+     * Updates the empty state for both sections.
+     */
+    private void updateSectionEmptyStates() {
+        if (currentEventList.isEmpty()) {
+            currentEventListView.setVisibility(View.GONE);
+            currentEmptyText.setVisibility(View.VISIBLE);
+        } else {
+            currentEventListView.setVisibility(View.VISIBLE);
+            currentEmptyText.setVisibility(View.GONE);
+        }
+
+        if (historyEventList.isEmpty()) {
+            historyEventListView.setVisibility(View.GONE);
+            historyEmptyText.setVisibility(View.VISIBLE);
+        } else {
+            historyEventListView.setVisibility(View.VISIBLE);
+            historyEmptyText.setVisibility(View.GONE);
+        }
+    }
+
     private void leaveEvent(Event event) {
         joinEvent(event);
     }
+
     private void acceptEvent(Event event) {
         String entrantId = getCurrentEntrantId();
         long timestamp = System.currentTimeMillis() / 1000L;
@@ -240,7 +325,8 @@ public class EntrantMyEventsFragment extends Fragment {
         EntrantDatabaseManager db = new EntrantDatabaseManager();
 
         event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.ENROLLED, timestamp);
-        eventAdapter.notifyDataSetChanged();
+        currentEventAdapter.notifyDataSetChanged();
+        historyEventAdapter.notifyDataSetChanged();
 
         db.setEntrantStatusForEvent(entrantId, event.getEventId(), EventEntrantStatus.ENROLLED, timestamp)
                 .addOnSuccessListener(unused -> {
@@ -252,7 +338,8 @@ public class EntrantMyEventsFragment extends Fragment {
                     Log.e("Event", "Accept failed", e);
 
                     event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.INVITED, timestamp);
-                    eventAdapter.notifyDataSetChanged();
+                    currentEventAdapter.notifyDataSetChanged();
+                    historyEventAdapter.notifyDataSetChanged();
                 });
     }
 
@@ -279,7 +366,8 @@ public class EntrantMyEventsFragment extends Fragment {
         }
 
         event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.DECLINED, timestamp);
-        eventAdapter.notifyDataSetChanged();
+        currentEventAdapter.notifyDataSetChanged();
+        historyEventAdapter.notifyDataSetChanged();
 
         db.setEntrantStatusForEvent(entrantId, event.getEventId(), EventEntrantStatus.DECLINED, timestamp)
                 .addOnSuccessListener(unused -> {
@@ -291,7 +379,8 @@ public class EntrantMyEventsFragment extends Fragment {
                     Log.e("Event", "Decline failed", e);
 
                     event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.INVITED, timestamp);
-                    eventAdapter.notifyDataSetChanged();
+                    currentEventAdapter.notifyDataSetChanged();
+                    historyEventAdapter.notifyDataSetChanged();
                 });
     }
 
@@ -317,7 +406,8 @@ public class EntrantMyEventsFragment extends Fragment {
         }
 
         event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.CANCELLED, timestamp);
-        eventAdapter.notifyDataSetChanged();
+        currentEventAdapter.notifyDataSetChanged();
+        historyEventAdapter.notifyDataSetChanged();
 
         db.setEntrantStatusForEvent(entrantId, event.getEventId(), EventEntrantStatus.CANCELLED, timestamp)
                 .addOnSuccessListener(unused -> {
@@ -328,7 +418,8 @@ public class EntrantMyEventsFragment extends Fragment {
                     Log.e("Event", "Leave enrolled failed", e);
 
                     event.addOrUpdateEntrantStatus(entrantId, EventEntrantStatus.ENROLLED, timestamp);
-                    eventAdapter.notifyDataSetChanged();
+                    currentEventAdapter.notifyDataSetChanged();
+                    historyEventAdapter.notifyDataSetChanged();
                 });
     }
 

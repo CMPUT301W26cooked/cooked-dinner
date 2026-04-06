@@ -166,12 +166,12 @@ public class OrganizerEventDetailFragment extends Fragment {
             return;
         }
 
-        boolean eventOver = hasEventStarted();
+        boolean eventOver = hasEventEnded();
 
         detailTitle.setText(currentEvent.isPrivateEvent() ? "Private Event Details" : "Event Details");
         eventNameText.setText(currentEvent.getName());
         eventOrganization.setText("Organization Name");
-        eventStatus.setText("Open");
+        eventStatus.setText(getEventStatusText(currentEvent));
         eventDescriptionText.setText(currentEvent.getDescription());
 
         try {
@@ -193,7 +193,6 @@ public class OrganizerEventDetailFragment extends Fragment {
         eventWaitlisted.setText("•  " + currentEvent.getWaitingListCount() + " on the wait list");
         eventRegistered.setText("•  " + currentEvent.getEnrolledCount() + " registered");
 
-        //Update Poster
         Glide.with(eventPoster.getContext())
                 .load(currentEvent.getPosterPath())
                 .centerCrop()
@@ -240,17 +239,50 @@ public class OrganizerEventDetailFragment extends Fragment {
     }
 
     /**
-     * Returns true when this event should be treated as over should be same as module behavior
+     * Returns true when this event should be treated as over.
      *
-     * @return true if the event has started
+     * @return true if the event has ended
      */
-    private boolean hasEventStarted() {
+    private boolean hasEventEnded() {
         if (currentEvent == null) {
             return false;
         }
 
         long nowEpochSec = System.currentTimeMillis() / 1000L;
-        return nowEpochSec >= currentEvent.getEventStartEpochSec();
+        return nowEpochSec > currentEvent.getEventEndEpochSec();
+    }
+
+    /**
+     * Returns true when registration is already closed.
+     *
+     * @return true if registration close time has passed
+     */
+    private boolean isRegistrationClosed() {
+        if (currentEvent == null) {
+            return false;
+        }
+
+        long nowEpochSec = System.currentTimeMillis() / 1000L;
+        return nowEpochSec > currentEvent.getRegistrationCloseEpochSec();
+    }
+
+    /**
+     * Gets the text status for the current event timing.
+     *
+     * @param event event to inspect
+     * @return status text
+     */
+    private String getEventStatusText(@NonNull Event event) {
+        if (event.isEventOverNow()) {
+            return "Over";
+        }
+
+        long nowEpochSec = System.currentTimeMillis() / 1000L;
+        if (nowEpochSec > event.getRegistrationCloseEpochSec()) {
+            return "Closed";
+        }
+
+        return "Open";
     }
 
     /**

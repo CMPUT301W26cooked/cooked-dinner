@@ -319,7 +319,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             registeredBadge.setVisibility(View.VISIBLE);
         }
 
-        boolean eventStarted = hasEventStarted(event);
+        boolean eventOver = isEventOver(event);
         boolean registrationClosed = isRegistrationClosed(event);
 
         if (holder.primaryButton != null) {
@@ -329,14 +329,18 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 holder.primaryButton.setText("Private");
             }
 
-            if (eventStarted) {
-                enablePrimary = false;
-            } else if (viewType == TYPE_JOIN) {
-                enablePrimary = event.isRegistrationOpenNow() && !event.isWaitingListFull() && !event.isPrivateEvent();
-            } else if (viewType == TYPE_ACCEPT_DECLINE) {
-                enablePrimary = !registrationClosed;
-            } else {
+            if (viewType == TYPE_CANCEL) {
                 enablePrimary = true;
+            } else if (viewType == TYPE_EDIT_CANCEL) {
+                enablePrimary = !eventOver;
+            } else if (viewType == TYPE_JOIN) {
+                enablePrimary = !eventOver && event.isRegistrationOpenNow() && !event.isWaitingListFull()  && !event.isPrivateEvent();
+            } else if (viewType == TYPE_ACCEPT_DECLINE) {
+                enablePrimary = !eventOver && !registrationClosed;
+            } else if (viewType == TYPE_WAITLISTED || viewType == TYPE_ENROLLED) {
+                enablePrimary = !eventOver;
+            } else {
+                enablePrimary = !eventOver;
             }
 
             holder.primaryButton.setEnabled(enablePrimary);
@@ -350,7 +354,16 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         }
 
         if (holder.secondaryButton != null) {
-            boolean enableSecondary = !eventStarted;
+            boolean enableSecondary;
+
+            if (viewType == TYPE_ACCEPT_DECLINE) {
+                enableSecondary = !eventOver;
+            } else if (viewType == TYPE_EDIT_CANCEL) {
+                enableSecondary = !eventOver;
+            } else {
+                enableSecondary = !eventOver;
+            }
+
             holder.secondaryButton.setEnabled(enableSecondary);
             holder.secondaryButton.setAlpha(enableSecondary ? 1.0f : 0.5f);
 
@@ -374,9 +387,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     }
 
 
-    private boolean hasEventStarted(Event event) {
-        long nowEpochSec = System.currentTimeMillis() / 1000L;
-        return nowEpochSec >= event.getEventStartEpochSec();
+    private boolean isEventOver(Event event) {
+        return event != null && event.isEventOverNow();
     }
 
     private boolean isRegistrationClosed(Event event) {
@@ -385,11 +397,11 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     }
 
     private boolean shouldDisablePrimaryButton(Event event) {
-        return hasEventStarted(event) || isRegistrationClosed(event);
+        return isEventOver(event) || isRegistrationClosed(event);
     }
 
     private int getEventStatusDrawable(Event event) {
-        if (hasEventStarted(event)) {
+        if (isEventOver(event)) {
             return R.drawable.event_over;
         }
         if (isRegistrationClosed(event)) {

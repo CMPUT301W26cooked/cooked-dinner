@@ -21,18 +21,15 @@ import com.eventwise.database.OrganizerDatabaseManager;
 import com.google.android.gms.tasks.Task;
 
 /**
- * organizer page for entrant event actions.
+ * Admin page for entrant event actions.
+ *
+ * This is the admin version of entrant actions and does not include
+ * Advanced Developer Actions.
  *
  * @author Becca Irving
- * @since Mar 25 2026
+ * @since March 26 2026
  */
-public class OrganizerEntrantActionsFragment extends Fragment {
-
-    /**
-     * TODO (EntrantActionsFragment.java)
-     * - Add tests for draw, re - draw, and cancel invitees later.
-     * - Add tests for Advanced Developer Actions nav l8r.
-     */
+public class AdminEntrantActionsFragment extends Fragment {
 
     private static final String ARG_EVENT_ID = "arg_event_id";
 
@@ -42,28 +39,22 @@ public class OrganizerEntrantActionsFragment extends Fragment {
     private Button drawEntrantsButton;
     private Button redrawEntrantsButton;
     private Button cancelInviteesButton;
-    private Button inviteCoOrganizerButton;
-    private Button advancedDeveloperActionsButton;
 
     private TextView drawEntrantsReasonText;
     private TextView redrawEntrantsReasonText;
     private TextView cancelInviteesReasonText;
-    private TextView inviteCoOrganizerReasonText;
 
-    public OrganizerEntrantActionsFragment() {
+    public AdminEntrantActionsFragment() {
     }
 
     /**
-     * Makes a new entrant actions fragment for one event.
+     * Makes a new admin entrant actions fragment for one event.
      *
      * @param eventId event id
      * @return configured fragment
-     *
-     * @author Becca Irving
-     * @since Mar 25 2026
      */
-    public static OrganizerEntrantActionsFragment newInstance(@NonNull String eventId) {
-        OrganizerEntrantActionsFragment fragment = new OrganizerEntrantActionsFragment();
+    public static AdminEntrantActionsFragment newInstance(@NonNull String eventId) {
+        AdminEntrantActionsFragment fragment = new AdminEntrantActionsFragment();
         Bundle args = new Bundle();
         args.putString(ARG_EVENT_ID, eventId);
         fragment.setArguments(args);
@@ -71,8 +62,7 @@ public class OrganizerEntrantActionsFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_entrant_actions, container, false);
     }
 
@@ -90,91 +80,64 @@ public class OrganizerEntrantActionsFragment extends Fragment {
         drawEntrantsButton = view.findViewById(R.id.button_draw_entrants);
         redrawEntrantsButton = view.findViewById(R.id.button_redraw_entrants);
         cancelInviteesButton = view.findViewById(R.id.button_cancel_invitees);
-        inviteCoOrganizerButton = view.findViewById(R.id.button_invite_co_organizer);
-        advancedDeveloperActionsButton = view.findViewById(R.id.button_advanced_developer_actions);
+        Button advancedDeveloperActionsButton = view.findViewById(R.id.button_advanced_developer_actions);
 
         drawEntrantsReasonText = view.findViewById(R.id.text_draw_entrants_reason);
         redrawEntrantsReasonText = view.findViewById(R.id.text_redraw_entrants_reason);
         cancelInviteesReasonText = view.findViewById(R.id.text_cancel_invitees_reason);
-        inviteCoOrganizerReasonText = view.findViewById(R.id.text_invite_co_organizer_reason);
+        advancedDeveloperActionsButton.setVisibility(View.GONE);
 
-        backButton.setOnClickListener(v ->
-                requireActivity().getSupportFragmentManager().popBackStack()
-        );
+        backButton.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
 
         viewEntrantsButton.setOnClickListener(v ->
                 requireActivity().getSupportFragmentManager()
                         .beginTransaction()
-                        .replace(R.id.organizer_fragment_container, ViewEntrantsFragment.newInstance(eventId))
+                        .replace(R.id.admin_fragment_container, ViewEntrantsFragment.newInstance(eventId))
                         .addToBackStack(null)
                         .commit()
         );
 
         drawEntrantsButton.setOnClickListener(v ->
-                runAction(
-                        "Draw Entrants",
-                        "Draw entrants for this event?",
-                        () -> {
-                            OrganizerDatabaseManager organizerDatabaseManager =
-                                    new OrganizerDatabaseManager();
-                            return organizerDatabaseManager.drawEntrants(eventId);
-                        },
-                        "Draw Complete",
-                        "Entrants were drawn successfully."
+                runAction("Draw Entrants", "Draw entrants for this event?",
+                        new ActionRunner() {
+                            @Override
+                            public Task<Void> run() {
+                                OrganizerDatabaseManager organizerDatabaseManager =
+                                        new OrganizerDatabaseManager();
+                                return organizerDatabaseManager.drawEntrants(eventId);
+                            }
+                        }, "Draw Complete", "Entrants were drawn successfully."
                 )
         );
 
         redrawEntrantsButton.setOnClickListener(v ->
-                runAction(
-                        "Re-draw Entrants",
-                        "Re-draw entrants to fill open spots?",
-                        () -> {
-                            OrganizerDatabaseManager organizerDatabaseManager =
-                                    new OrganizerDatabaseManager();
-                            return organizerDatabaseManager.redrawEntrants(eventId);
-                        },
-                        "Re-draw Complete",
-                        "Open spots were filled from the waitlist."
+                runAction("Re-draw Entrants", "Re-draw entrants to fill open spots?",
+                        new ActionRunner() {
+                            @Override
+                            public Task<Void> run() {
+                                OrganizerDatabaseManager organizerDatabaseManager =
+                                        new OrganizerDatabaseManager();
+                                return organizerDatabaseManager.redrawEntrants(eventId);
+                            }
+                        }, "Re-draw Complete", "Open spots were filled from the waitlist."
                 )
         );
 
         cancelInviteesButton.setOnClickListener(v ->
-                runAction(
-                        "Cancel Invitees",
-                        "Cancel all currently invited entrants for this event?",
-                        () -> {
-                            OrganizerDatabaseManager organizerDatabaseManager =
-                                    new OrganizerDatabaseManager();
-                            return organizerDatabaseManager.cancelInvitees(eventId);
-                        },
-                        "Invitees Cancelled",
-                        "All currently invited entrants were cancelled."
+                runAction("Cancel Invitees", "Cancel all currently invited entrants for this event?",
+                        new ActionRunner() {
+                            @Override
+                            public Task<Void> run() {
+                                OrganizerDatabaseManager organizerDatabaseManager =
+                                        new OrganizerDatabaseManager();
+                                return organizerDatabaseManager.cancelInvitees(eventId);
+                            }
+                        }, "Invitees Cancelled", "All currently invited entrants were cancelled."
                 )
         );
 
-        inviteCoOrganizerButton.setOnClickListener(v ->
-                requireActivity().getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(
-                                R.id.organizer_fragment_container,
-                                InviteProfileSelectionFragment.newCoOrganizerInviteInstance(eventId, false)
-                        )
-                        .addToBackStack(null)
-                        .commit()
-        );
-
-        advancedDeveloperActionsButton.setOnClickListener(v ->
-                requireActivity().getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(
-                                R.id.organizer_fragment_container,
-                                AdvancedDeveloperActionsFragment.newInstance(eventId)
-                        )
-                        .addToBackStack(null)
-                        .commit()
-        );
-
         refreshActionAvailability();
+
     }
 
     @Override
@@ -184,7 +147,7 @@ public class OrganizerEntrantActionsFragment extends Fragment {
     }
 
     /**
-     * Runs one organizer action with confirmation and a result popup.
+     * Runs one admin action with confirmation and a result popup.
      *
      * @param confirmTitle confirmation title
      * @param confirmMessage confirmation message
@@ -192,22 +155,14 @@ public class OrganizerEntrantActionsFragment extends Fragment {
      * @param successTitle success popup title
      * @param successMessage success popup message
      */
-    private void runAction(String confirmTitle,
-                           String confirmMessage,
-                           ActionRunner actionRunner,
-                           String successTitle,
-                           String successMessage) {
+    private void runAction(String confirmTitle, String confirmMessage, ActionRunner actionRunner, String successTitle, String successMessage) {
 
         if (eventId == null || eventId.trim().isEmpty()) {
             showStyledMessageDialog("Error", "Missing event Id.");
             return;
         }
 
-        showStyledDialog(
-                confirmTitle,
-                confirmMessage,
-                "Yes",
-                "No",
+        showStyledDialog(confirmTitle, confirmMessage, "Yes", "No",
                 new Runnable() {
                     @Override
                     public void run() {
@@ -253,21 +208,15 @@ public class OrganizerEntrantActionsFragment extends Fragment {
         drawEntrantsButton.setEnabled(enabled);
         redrawEntrantsButton.setEnabled(enabled);
         cancelInviteesButton.setEnabled(enabled);
-        inviteCoOrganizerButton.setEnabled(enabled);
-        advancedDeveloperActionsButton.setEnabled(enabled);
-
         viewEntrantsButton.setAlpha(enabled ? 1.0f : 0.5f);
         drawEntrantsButton.setAlpha(enabled ? 1.0f : 0.5f);
         redrawEntrantsButton.setAlpha(enabled ? 1.0f : 0.5f);
         cancelInviteesButton.setAlpha(enabled ? 1.0f : 0.5f);
-        inviteCoOrganizerButton.setAlpha(enabled ? 1.0f : 0.5f);
-        advancedDeveloperActionsButton.setAlpha(enabled ? 1.0f : 0.5f);
     }
+
 
     /**
      * Refreshes which entrant action buttons are currently allowed for this event.
-     *
-     * View Entrants and Advanced Developer Actions are always enabled.
      */
     private void refreshActionAvailability() {
         if (eventId == null || eventId.trim().isEmpty()) {
@@ -292,7 +241,6 @@ public class OrganizerEntrantActionsFragment extends Fragment {
                     drawEntrantsReasonText.setVisibility(View.GONE);
                     redrawEntrantsReasonText.setVisibility(View.GONE);
                     cancelInviteesReasonText.setVisibility(View.GONE);
-                    inviteCoOrganizerReasonText.setVisibility(View.GONE);
                 });
     }
 
@@ -305,7 +253,6 @@ public class OrganizerEntrantActionsFragment extends Fragment {
         int waitlistedCount = event.getEntrantIdsByStatus(EventEntrantStatus.WAITLISTED).size();
         int invitedCount = event.getEntrantIdsByStatus(EventEntrantStatus.INVITED).size();
         int enrolledCount = event.getEntrantIdsByStatus(EventEntrantStatus.ENROLLED).size();
-
         int attendanceLimit = event.getMaxWinnersToSample();
         int filledSpots = invitedCount + enrolledCount;
         int openSpots = attendanceLimit - filledSpots;
@@ -313,12 +260,8 @@ public class OrganizerEntrantActionsFragment extends Fragment {
         viewEntrantsButton.setEnabled(true);
         viewEntrantsButton.setAlpha(1.0f);
 
-        advancedDeveloperActionsButton.setEnabled(true);
-        advancedDeveloperActionsButton.setAlpha(1.0f);
-
         boolean drawEnabled;
         String drawReason = null;
-
         boolean redrawEnabled;
         String redrawReason = null;
 
@@ -354,15 +297,10 @@ public class OrganizerEntrantActionsFragment extends Fragment {
         boolean cancelInviteesEnabled = invitedCount > 0;
         String cancelInviteesReason = cancelInviteesEnabled ? null : "* no invited entrants at this time";
 
-        boolean inviteCoOrganizerEnabled = !event.isEventOverNow();
-        String inviteCoOrganizerReason = inviteCoOrganizerEnabled
-                ? null
-                : "* cannot invite co-organizers after the event is over";
 
         applyManagedButtonState(drawEntrantsButton, drawEntrantsReasonText, drawEnabled, drawReason);
         applyManagedButtonState(redrawEntrantsButton, redrawEntrantsReasonText, redrawEnabled, redrawReason);
         applyManagedButtonState(cancelInviteesButton, cancelInviteesReasonText, cancelInviteesEnabled, cancelInviteesReason);
-        applyManagedButtonState(inviteCoOrganizerButton, inviteCoOrganizerReasonText, inviteCoOrganizerEnabled, inviteCoOrganizerReason);
     }
 
     /**
@@ -373,10 +311,7 @@ public class OrganizerEntrantActionsFragment extends Fragment {
      * @param enabled true if the button should be clickable
      * @param reason reason to show when disabled
      */
-    private void applyManagedButtonState(@NonNull Button button,
-                                         @NonNull TextView reasonText,
-                                         boolean enabled,
-                                         @Nullable String reason) {
+    private void applyManagedButtonState(@NonNull Button button, @NonNull TextView reasonText, boolean enabled, @Nullable String reason) {
         button.setEnabled(enabled);
         button.setAlpha(enabled ? 1.0f : 0.5f);
 
@@ -407,14 +342,9 @@ public class OrganizerEntrantActionsFragment extends Fragment {
      * @param negativeText negative button text, or null to hide
      * @param onPositive action to run when the positive button is pressed
      */
-    private void showStyledDialog(String title,
-                                  String message,
-                                  String positiveText,
-                                  @Nullable String negativeText,
-                                  @Nullable Runnable onPositive) {
+    private void showStyledDialog(String title, String message, String positiveText, @Nullable String negativeText, @Nullable Runnable onPositive) {
 
-        View dialogView = LayoutInflater.from(requireContext())
-                .inflate(R.layout.widget_custom_dialog, null, false);
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.widget_custom_dialog, null, false);
 
         TextView titleText = dialogView.findViewById(R.id.dialog_title);
         TextView messageText = dialogView.findViewById(R.id.dialog_message);
@@ -425,9 +355,7 @@ public class OrganizerEntrantActionsFragment extends Fragment {
         messageText.setText(message);
         positiveButton.setText(positiveText);
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                .setView(dialogView)
-                .create();
+        AlertDialog dialog = new AlertDialog.Builder(requireContext()).setView(dialogView).create();
 
         if (negativeText == null || negativeText.trim().isEmpty()) {
             negativeButton.setVisibility(View.GONE);

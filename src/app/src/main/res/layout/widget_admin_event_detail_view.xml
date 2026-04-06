@@ -344,12 +344,26 @@
 
             </LinearLayout>
         </ScrollView>
+
+        <Button
+            android:id="@+id/view_entrants_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="@color/moss_green"
+            android:padding="8dp"
+            android:text="Entrant Actions"
+            android:textAllCaps="false"
+            android:textColor="@color/lighter_green"
+            android:textSize="14sp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginTop="12dp"
-            style="?android:attr/buttonBarButtonStyle" >
+            style="?android:attr/buttonBarButtonStyle">
+
             <Button
                 android:id="@+id/event_comment_button"
                 android:layout_weight="1"
@@ -362,6 +376,7 @@
                 android:text="@string/comments"
                 android:textColor="@color/lighter_green"
                 android:textSize="14sp" />
+
             <Button
                 android:id="@+id/cancel_event_button"
                 android:layout_weight="1"
@@ -372,8 +387,7 @@
                 android:layout_marginStart="4dp"
                 android:textColor="@color/lighter_green"
                 android:backgroundTint="@color/red"
-                android:padding="8dp"
-                 />
+                android:padding="8dp" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
