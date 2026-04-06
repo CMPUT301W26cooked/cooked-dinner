@@ -1,8 +1,6 @@
 package com.eventwise.fragments;
 
-import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,12 +8,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -56,11 +55,18 @@ public class EntrantEventsCommunityFragment extends Fragment {
 
     private EditText searchBar;
 
-    FloatingActionButton filterButton;
+    private FloatingActionButton filterButton;
 
     private EventFilter currentFilter = new EventFilter();
 
     private LinearLayout emptyState;
+
+    private Button clearFiltersButton;
+
+
+    private LinearLayout active_filters_bar;
+
+    private TextView activeFiltersLabel;
 
 
 
@@ -79,11 +85,13 @@ public class EntrantEventsCommunityFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
         eventListView = view.findViewById(R.id.events_community_list_view);
         eventListView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         //Empty state stuff
         emptyState = view.findViewById(R.id.empty_state);
+
 
 
         //Searchbar stuff
@@ -112,6 +120,21 @@ public class EntrantEventsCommunityFragment extends Fragment {
         filterButton.setOnClickListener(v -> {
             FilterBottomSheet sheet = new FilterBottomSheet();
             sheet.setFilterListener((startDate, endDate, minSpots) -> {
+
+                EntrantDatabaseManager entrantDBMan = new EntrantDatabaseManager();
+                entrantDBMan.getEntrantFromId(getCurrentEntrantId())
+                        .addOnSuccessListener(entrant -> {
+                            if (entrant == null) {
+                                return;
+                            }
+                            currentFilter.setTags(entrant.getInterestsTags());
+                        })
+                        .addOnFailureListener(e ->{
+                                    Log.e("Event", "Failed to get user preferences", e);
+                                    currentFilter.resetTags();
+                        });
+
+
                 EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();
                 currentFilter.setStartTimestamp(startDate);
                 currentFilter.setEndTimestamp(endDate);
@@ -126,6 +149,22 @@ public class EntrantEventsCommunityFragment extends Fragment {
             });
             sheet.show(getParentFragmentManager(), "filter_sheet");
         });
+
+        //Linear Layout for active filters
+        active_filters_bar = view.findViewById(R.id.active_filters_bar);
+
+        activeFiltersLabel = view.findViewById(R.id.active_filters_label);
+
+        //Clear Filters Button
+        clearFiltersButton = view.findViewById(R.id.clear_filters_button);
+        clearFiltersButton.setOnClickListener( not_used -> {
+                currentFilter.resetFilter();
+                searchBar.setText("");
+                active_filters_bar.setVisibility(View.GONE);
+                refreshEvents();
+        });
+
+
 
 
         eventList = new ArrayList<>();
@@ -250,6 +289,33 @@ public class EntrantEventsCommunityFragment extends Fragment {
     }
 
     private void refreshEvents() {
+
+        //Update active_filters_bar
+        if (!currentFilter.getFilterTypes().isEmpty()) {
+            String filterText = currentFilter.getFilterTypes().stream()
+                            .map(filterType -> {
+                                switch (filterType) {
+                                    case START_TIMESTAMP:
+                                        return "Start Date";
+                                    case END_TIMESTAMP:
+                                        return "End Date";
+                                    case EVENT_CAPACITY:
+                                        return "Capacity";
+                                    case KEYWORDS:
+                                        return "Keywords";
+                                    case TAGS:
+                                        return "Interests";
+                                }
+                                return "UNKNOWN ERROR";
+                            })
+                            .reduce((a, b) -> a + ", " + b)
+                            .orElse("No filters applied");
+
+            activeFiltersLabel.setText(filterText);
+            active_filters_bar.setVisibility(View.VISIBLE);
+        }
+
+
         EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();
 
         eventSearcherDBMan.getFilteredEvents(currentFilter)

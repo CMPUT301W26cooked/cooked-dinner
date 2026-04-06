@@ -23,7 +23,7 @@
             android:layout_height="48dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:background="#FFF3F6E5"
+            android:background="@color/bacon_color"
             android:paddingStart="12dp"
             android:paddingEnd="12dp">
 
@@ -37,11 +37,50 @@
                 android:paddingEnd="14dp"
                 android:hint="Search events..."
                 android:textSize="14sp"
-                android:textColor="#FF333333"
-                android:textColorHint="#FF999999"
+                android:textColor="@color/forest_green"
+                android:textColorHint="@color/forest_green"
                 android:inputType="text"
                 android:imeOptions="actionSearch"
                 android:singleLine="true" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/active_filters_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:background="#FFF3F6E5"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/active_filters_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Active Filters: None"
+                android:textColor="@color/moss_green"
+                android:textSize="12sp"
+                android:textStyle="italic" />
+
+            <Button
+                android:id="@+id/clear_filters_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="35dp"
+                android:text="Clear filters"
+                android:textSize="11sp"
+                android:textColor="@color/lighter_green"
+                android:backgroundTint="@color/forest_green"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp" />
 
         </LinearLayout>
 
