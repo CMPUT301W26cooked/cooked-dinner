@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="#FFF3F6E5"
+    android:background="@color/lighter_green"
     android:paddingStart="24dp"
     android:paddingEnd="24dp"
     android:paddingTop="16dp"
@@ -15,7 +15,7 @@
     <View
         android:layout_width="40dp"
         android:layout_height="4dp"
-        android:background="#FFCCCCCC"
+        android:background="@color/lighter_green"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="20dp" />
 
@@ -26,7 +26,7 @@
         android:text="Filter Events"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:textColor="#FF333333"
+        android:textColor="@color/forest_green"
         android:layout_marginBottom="24dp" />
 
     <!-- Date Section -->
@@ -35,7 +35,7 @@
         android:layout_height="wrap_content"
         android:text="Date Range"
         android:textSize="14sp"
-        android:textColor="#FF666666"
+        android:textColor="@color/forest_green"
         android:layout_marginBottom="10dp" />
 
     <LinearLayout
@@ -61,8 +61,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Start Date"
-                android:textSize="13sp"
-                android:textColor="#FF333333" />
+                android:textStyle="bold"
+                android:textSize="15sp"
+                android:textColor="@color/lighter_green" />
 
         </LinearLayout>
 
@@ -70,8 +71,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="→"
-            android:textSize="16sp"
-            android:textColor="#FF666666"
+            android:textSize="30sp"
+            android:textColor="@color/forest_green"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp" />
 
@@ -92,8 +93,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="End Date"
-                android:textSize="13sp"
-                android:textColor="#FF333333" />
+                android:textStyle="bold"
+                android:textSize="15sp"
+                android:textColor="@color/lighter_green" />
 
         </LinearLayout>
 
@@ -105,7 +107,7 @@
         android:layout_height="wrap_content"
         android:text="Minimum Free Spots"
         android:textSize="14sp"
-        android:textColor="#FF666666"
+        android:textColor="@color/forest_green"
         android:layout_marginTop="24dp"
         android:layout_marginBottom="4dp" />
 
@@ -116,7 +118,7 @@
         android:text="Any"
         android:textSize="22sp"
         android:textStyle="bold"
-        android:textColor="#FF333333"
+        android:textColor="@color/forest_green"
         android:layout_marginBottom="8dp" />
 
     <SeekBar
@@ -124,6 +126,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:max="50"
+        android:progressTint="@color/forest_green"
+        android:progressBackgroundTint="@color/moss_green"
+        android:thumbTint="@color/forest_green"
         android:progress="0" />
 
     <LinearLayout
@@ -136,7 +141,7 @@
             android:layout_height="wrap_content"
             android:text="Any"
             android:textSize="12sp"
-            android:textColor="#FF999999" />
+            android:textColor="@color/lighter_green" />
 
         <View
             android:layout_width="0dp"
@@ -148,7 +153,7 @@
             android:layout_height="wrap_content"
             android:text="50+"
             android:textSize="12sp"
-            android:textColor="#FF999999" />
+            android:textColor="@color/lighter_green" />
 
     </LinearLayout>
 
@@ -168,7 +173,7 @@
             android:text="Apply Filters"
             android:textSize="15sp"
             android:textStyle="bold"
-            android:textColor="#FFF3F6E5" />
+            android:textColor="@color/lighter_green" />
 
     </LinearLayout>
 
