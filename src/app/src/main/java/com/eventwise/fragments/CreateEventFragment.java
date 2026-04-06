@@ -360,7 +360,7 @@ public class CreateEventFragment extends Fragment {
         }
 
         SessionStore sessionStore = new SessionStore(requireContext());
-        String organizerProfileId = sessionStore.getOrganizerProfileId();
+        String organizerProfileId = sessionStore.getOrCreateDeviceId();
         double price = 0.00;
         long registrationOpenEpochSec = System.currentTimeMillis() / 1000L;
         String posterPath = null;

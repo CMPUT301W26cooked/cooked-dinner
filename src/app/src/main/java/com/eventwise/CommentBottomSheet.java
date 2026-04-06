@@ -87,12 +87,12 @@ public class CommentBottomSheet extends BottomSheetDialogFragment {
             String commentText = commentEditText.getText().toString();
             if (!commentText.isEmpty()) {
                 SessionStore store = new SessionStore(requireContext());
-                String entrantProfileId = store.getEntrantProfileId();
+                String entrantId = store.getOrCreateDeviceId();
 
 
                 long timestamp = System.currentTimeMillis() / 1000L;
 
-                Comment newComment = new Comment(commentText, entrantProfileId, timestamp, profileType);
+                Comment newComment = new Comment(commentText, entrantId, timestamp, profileType);
                 //Add to beginning of list
                 comments.add(0,newComment);
 

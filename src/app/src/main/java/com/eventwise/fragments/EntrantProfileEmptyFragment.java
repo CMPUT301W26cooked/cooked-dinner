@@ -114,11 +114,11 @@ public class EntrantProfileEmptyFragment extends Fragment {
 
     private void persistNotificationPreference() {
         SessionStore sessionStore = new SessionStore(requireContext());
-        String entrantProfileId = sessionStore.getEntrantProfileId();
+        String entrantId = sessionStore.getOrCreateDeviceId();
 
         EntrantDatabaseManager entrantDatabaseManager = new EntrantDatabaseManager();
 
-        entrantDatabaseManager.getEntrantFromId(entrantProfileId)
+        entrantDatabaseManager.getEntrantFromId(entrantId)
                 .addOnSuccessListener(entrant -> {
                     if (entrant == null) {
                         createStubEntrantWithNotifications(entrantDatabaseManager);

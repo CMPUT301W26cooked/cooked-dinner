@@ -112,7 +112,7 @@ public class OrganizerProfileEmptyFragment extends Fragment {
 
     private void persistNotificationPreference() {
         SessionStore sessionStore = new SessionStore(requireContext());
-        String organizerId = sessionStore.getOrganizerProfileId();
+        String organizerId = sessionStore.getOrCreateDeviceId();
 
         OrganizerDatabaseManager organizerDatabaseManager = new OrganizerDatabaseManager();
         organizerDatabaseManager.getOrganizerFromId(organizerId)

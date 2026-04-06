@@ -14,7 +14,6 @@ import com.eventwise.fragments.EntrantEventsCommunityFragment;
 import com.eventwise.fragments.EntrantEventsFragment;
 import com.eventwise.fragments.EntrantNotificationsFragment;
 import com.eventwise.fragments.EntrantProfileEmptyFragment;
-import com.eventwise.fragments.QRScannerFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.core.app.ActivityCompat;
@@ -84,10 +83,7 @@ public class EntrantMainActivity extends AppCompatActivity {
             }
 
             if (item.getItemId() == R.id.qr_scanner_icon) {
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.entrant_fragment_container, new QRScannerFragment())
-                        .commit();
+                // TODO: replace with QRScannerFragment later
                 return true;
             }
 
@@ -103,7 +99,7 @@ public class EntrantMainActivity extends AppCompatActivity {
 
     private void openProfileTab() {
         SessionStore sessionStore = new SessionStore(this);
-        String entrantId = sessionStore.getEntrantProfileId();
+        String entrantId = sessionStore.getOrCreateDeviceId();
 
         EntrantDatabaseManager entrantDatabaseManager = new EntrantDatabaseManager();
 
@@ -141,23 +137,23 @@ public class EntrantMainActivity extends AppCompatActivity {
 
     private void ensureEntrantExists() {
         SessionStore sessionStore = new SessionStore(this);
-        String entrantProfileId = sessionStore.getEntrantProfileId();
+        String deviceId = sessionStore.getOrCreateDeviceId();
 
-        if (entrantProfileId == null || entrantProfileId.trim().isEmpty()) {
+        if (deviceId == null || deviceId.trim().isEmpty()) {
             Log.e("EntrantMainActivity", "Failed to create device Id");
             return;
         }
 
         EntrantDatabaseManager db = new EntrantDatabaseManager();
 
-        db.getEntrantFromId(entrantProfileId)
+        db.getEntrantFromId(deviceId)
                 .addOnSuccessListener(entrant -> {
                     if (entrant != null){
-                        Log.d("EntrantMainActivity", "Entrant already exists: " + entrantProfileId);
+                        Log.d("EntrantMainActivity", "Entrant already exists: " + deviceId);
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Log.d("EntrantMainActivity", "Entrant not found, creating new entrant: " + entrantProfileId);
+                    Log.d("EntrantMainActivity", "Entrant not found, creating new entrant: " + deviceId);
 
                     Entrant newEntrant = new Entrant(
                             RandomNameGen.getRandomName(),

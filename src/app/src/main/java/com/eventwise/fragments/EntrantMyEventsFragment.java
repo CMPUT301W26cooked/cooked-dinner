@@ -179,9 +179,9 @@ public class EntrantMyEventsFragment extends Fragment {
 
     private String getCurrentEntrantId() {
         SessionStore sessionStore = new SessionStore(requireContext());
-        String entrantProfileId = sessionStore.getEntrantProfileId();
-        Log.d("Event", "Current entrant/device Id: " + entrantProfileId);
-        return entrantProfileId;
+        String deviceId = sessionStore.getOrCreateDeviceId();
+        Log.d("Event", "Current entrant/device Id: " + deviceId);
+        return deviceId;
     }
 
     private void refreshEvents() {

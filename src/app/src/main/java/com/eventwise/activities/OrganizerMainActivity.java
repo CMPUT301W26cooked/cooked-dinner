@@ -15,17 +15,13 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.eventwise.Entrant;
-import com.eventwise.Organizer;
 import com.eventwise.R;
-import com.eventwise.database.DatabaseManager;
 import com.eventwise.database.EntrantDatabaseManager;
-import com.eventwise.database.OrganizerDatabaseManager;
 import com.eventwise.database.SessionStore;
 import com.eventwise.fragments.OrganizerProfileEmptyFragment;
 import com.eventwise.fragments.OrganizerProfileExistsFormFragment;
 import com.eventwise.fragments.OrganizerNotificationsFragment;
 import com.eventwise.fragments.OrganizerYourEventsFragment;
-import com.eventwise.fragments.QRScannerFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 /**
@@ -43,8 +39,6 @@ public class OrganizerMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_organizer);
-
-        ensureOrganizerExists();
 
         if (savedInstanceState == null) {
             getSupportFragmentManager()
@@ -74,10 +68,7 @@ public class OrganizerMainActivity extends AppCompatActivity {
             }
 
             if (item.getItemId() == R.id.qr_scanner_icon) {
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.organizer_fragment_container, new QRScannerFragment())
-                        .commit();
+                // TODO: replace with QRScannerFragment later
                 return true;
             }
 
@@ -92,23 +83,23 @@ public class OrganizerMainActivity extends AppCompatActivity {
 
     private void openProfileTab() {
         SessionStore sessionStore = new SessionStore(this);
-        String organizerId = sessionStore.getOrganizerProfileId();
+        String organizerId = sessionStore.getOrCreateDeviceId();
 
-        OrganizerDatabaseManager organizerDatabaseManager = new OrganizerDatabaseManager();
+        EntrantDatabaseManager entrantDatabaseManager = new EntrantDatabaseManager();
 
-        organizerDatabaseManager.getOrganizerFromId(organizerId)
-                .addOnSuccessListener(organizer -> {
+        entrantDatabaseManager.getEntrantFromId(organizerId)
+                .addOnSuccessListener(entrant -> {
                     Fragment fragmentToShow;
 
-                    if (organizer != null && organizer.hasCompletedProfile()) {
+                    if (entrant != null && entrant.hasCompletedProfile()) {
                         fragmentToShow = OrganizerProfileExistsFormFragment.newUpdateInstance(
-                                organizer.getName(),
-                                organizer.getEmail(),
-                                organizer.getPhone(),
-                                organizer.getNotificationsEnabled()
+                                entrant.getName(),
+                                entrant.getEmail(),
+                                entrant.getPhone(),
+                                entrant.getNotificationsEnabled()
                         );
                     } else {
-                        boolean notificationsEnabled = organizer == null || organizer.getNotificationsEnabled();
+                        boolean notificationsEnabled = entrant == null || entrant.getNotificationsEnabled();
                         fragmentToShow = OrganizerProfileEmptyFragment.newInstance(notificationsEnabled);
                     }
 
@@ -130,25 +121,25 @@ public class OrganizerMainActivity extends AppCompatActivity {
 
     private void ensureOrganizerExists() {
         SessionStore sessionStore = new SessionStore(this);
-        String organizationProfileId = sessionStore.getOrganizerProfileId();
+        String deviceId = sessionStore.getOrCreateDeviceId();
 
-        if (organizationProfileId == null || organizationProfileId.trim().isEmpty()) {
-            Log.e("OrganizerMainActivity", "Failed to create device Id");
+        if (deviceId == null || deviceId.trim().isEmpty()) {
+            Log.e("EntrantMainActivity", "Failed to create device Id");
             return;
         }
 
-        OrganizerDatabaseManager db = new OrganizerDatabaseManager();
+        EntrantDatabaseManager db = new EntrantDatabaseManager();
 
-        db.getOrganizerFromId(organizationProfileId)
-                .addOnSuccessListener(organizer -> {
-                    if (organizer != null){
-                        Log.d("OrganizerMainActivity", "Organizer already exists: " + organizationProfileId);
+        db.getEntrantFromId(deviceId)
+                .addOnSuccessListener(entrant -> {
+                    if (entrant != null){
+                        Log.d("EntrantMainActivity", "Organizer already exists: " + deviceId);
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Log.d("OrganizerMainActivity", "Organizer not found, creating new organizer: " + organizationProfileId);
+                    Log.d("EntrantMainActivity", "Organizer not found, creating new Organizer: " + deviceId);
 
-                    Organizer newOrganizer = new Organizer(
+                    Entrant newEntrant = new Entrant(
                             "SuperCoolOrganizer",
                             "",
                             "",
@@ -156,11 +147,11 @@ public class OrganizerMainActivity extends AppCompatActivity {
                             this
                     );
 
-                    db.addOrganizer(newOrganizer)
+                    db.addEntrant(newEntrant)
                             .addOnSuccessListener(unused ->
-                                    Log.d("OrganizerMainActivity", "Organizer created successfully"))
+                                    Log.d("EntrantMainActivity", "Entrant created successfully"))
                             .addOnFailureListener(createError ->
-                                    Log.e("OrganizerMainActivity", "Failed to create organizer", createError));
+                                    Log.e("EntrantMainActivity", "Failed to create entrant", createError));
                 });
     }
 

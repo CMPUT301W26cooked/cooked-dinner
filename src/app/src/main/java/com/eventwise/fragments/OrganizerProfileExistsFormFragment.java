@@ -392,7 +392,7 @@ public class OrganizerProfileExistsFormFragment extends Fragment {
 
         deleteProfileButton.setOnClickListener(v -> {
             SessionStore sessionStore = new SessionStore(requireContext());
-            String organizerId = sessionStore.getOrganizerProfileId();
+            String organizerId = sessionStore.getOrCreateDeviceId();
 
             OrganizerDatabaseManager organizerDatabaseManager = new OrganizerDatabaseManager();
             organizerDatabaseManager.clearOrganizerProfile(organizerId)
@@ -415,7 +415,7 @@ public class OrganizerProfileExistsFormFragment extends Fragment {
      */
     private void persistProfileToBackend() {
         SessionStore sessionStore = new SessionStore(requireContext());
-        String organizerId = sessionStore.getOrganizerProfileId();
+        String organizerId = sessionStore.getOrCreateDeviceId();
 
         OrganizerDatabaseManager organizerDatabaseManager = new OrganizerDatabaseManager();
 

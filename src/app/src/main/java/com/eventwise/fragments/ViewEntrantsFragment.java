@@ -359,8 +359,8 @@ public class ViewEntrantsFragment extends Fragment {
      * Chooses the best available entrant identifier for display.
      */
     private String safeEntrantId(Entrant entrant) {
-        if (entrant.getProfileId() != null && !entrant.getProfileId().trim().isEmpty()) {
-            return entrant.getProfileId();
+        if (entrant.getDeviceId() != null && !entrant.getDeviceId().trim().isEmpty()) {
+            return entrant.getDeviceId();
         }
         return safeText(entrant.getProfileId());
     }
