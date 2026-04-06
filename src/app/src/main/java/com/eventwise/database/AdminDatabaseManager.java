@@ -89,4 +89,8 @@ public class AdminDatabaseManager extends DatabaseManager {
 
         return tcs.getTask();
     }
+
+    public Task<Profile> getProfileFromId(String profileId) {
+        return super.getProfileFromId(profileId);
+    }
 }

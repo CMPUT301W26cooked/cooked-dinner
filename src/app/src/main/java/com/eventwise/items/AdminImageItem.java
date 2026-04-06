@@ -12,16 +12,13 @@ public class AdminImageItem{
 
     private final String imgUploadingOrg;
 
-    private final String timestampString;
 
-
-    public AdminImageItem(String eventId, String filepath, String imageUrl, String imageTitle, String imgUploadingOrg, String timestampString) {
+    public AdminImageItem(String eventId, String filepath, String imageUrl, String imageTitle, String imgUploadingOrg) {
         this.eventId = eventId;
         this.filepath = filepath;
         this.imageUrl = imageUrl;
         this.imageTitle = imageTitle;
         this.imgUploadingOrg = imgUploadingOrg;
-        this.timestampString = timestampString;
     }
 
     public String getEventId() {
@@ -44,7 +41,4 @@ public class AdminImageItem{
         return imgUploadingOrg;
     }
 
-    public String getTimestampString() {
-        return timestampString;
-    }
 }
