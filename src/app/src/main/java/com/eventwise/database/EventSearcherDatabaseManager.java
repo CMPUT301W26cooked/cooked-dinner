@@ -51,6 +51,14 @@ public class EventSearcherDatabaseManager extends DatabaseManager{
         return events.document(event.getEventId()).delete();
     }
 
+    /**
+     * Retrieves a list of events from the database that match the criteria specified in the provided filter.
+     *
+     * @param filter The {@link EventFilter} object containing the filtering criteria.
+     *
+     * This method performs a multi-stage filtering process:
+     * @return A {@link Task} that, when complete, contains an {@link ArrayList} of {@link Event} objects.
+     */
     public Task<ArrayList<Event>> getFilteredEvents(EventFilter filter){
         TaskCompletionSource<ArrayList<Event>> tcs = new TaskCompletionSource<ArrayList<Event>>();
 

@@ -4,7 +4,9 @@ import com.eventwise.Comment;
 import com.eventwise.Entrant;
 import com.eventwise.Event;
 import com.eventwise.Enum.EventEntrantStatus;
+import com.eventwise.RandomNameGen;
 import com.eventwise.Location;
+import com.eventwise.RandomNameGen;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -73,7 +75,7 @@ public class EntrantDatabaseManager extends DatabaseManager {
                         return;
                     }
 
-                    entrant.setName("");
+                    entrant.setName(RandomNameGen.getRandomName());
                     entrant.setEmail("");
                     entrant.setPhone("");
 
