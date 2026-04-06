@@ -67,10 +67,10 @@ public class QRScannerFragment extends Fragment {
         super.onResume();
 
         // Optional: auto-launch the scanner the first time this tab opens
-        if (!hasStartedScanner) {
-            hasStartedScanner = true;
-            launchScanner();
-        }
+//        if (!hasStartedScanner) {
+//            hasStartedScanner = true;
+//            launchScanner();
+//        }
     }
 
     private void launchScanner() {
