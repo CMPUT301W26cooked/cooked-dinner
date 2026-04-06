@@ -292,7 +292,7 @@ public class EntrantEventsCommunityFragment extends Fragment {
 
         //Update active_filters_bar
         if (!currentFilter.getFilterTypes().isEmpty()) {
-            String filterText = currentFilter.getFilterTypes().stream()
+            String filterText = "Active Filters: " + currentFilter.getFilterTypes().stream()
                             .map(filterType -> {
                                 switch (filterType) {
                                     case START_TIMESTAMP:
