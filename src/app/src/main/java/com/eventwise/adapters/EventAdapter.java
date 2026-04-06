@@ -1,4 +1,5 @@
 package com.eventwise.adapters;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import com.eventwise.Event;
 import com.eventwise.R;
 
 import com.bumptech.glide.Glide;
+import com.eventwise.database.OrganizerDatabaseManager;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -58,6 +60,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     private final OnSecondaryButtonClickListener secondaryButtonClickListener;
     private final OnEventCardClickListener eventCardClickListener;
+
+    private final OrganizerDatabaseManager organizerDBMan = new OrganizerDatabaseManager();
+
 
     /**
      * Makes an event adapter without a card click callback.
@@ -261,7 +266,15 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         holder.eventStartDateText.setText(formatEpoch(event.getEventStartEpochSec()));
         holder.eventEndDateText.setText(formatEpoch(event.getEventEndEpochSec()));
 
-        holder.eventOrganization.setText("Organization Name");
+        //Get Organizeres Name
+        organizerDBMan.getOrganizerFromId(event.getOrganizerProfileId()).addOnSuccessListener(organizer -> {
+            if (holder.eventOrganization != null){
+                holder.eventOrganization.setText(organizer.getName());
+            }
+        }).addOnFailureListener(e -> {
+            Log.d("Event", "Failed to get organizer name", e);
+            holder.eventOrganization.setText("Organization Name");
+        });
 
         if (holder.eventStatusIcon != null) {
             holder.eventStatusIcon.setImageResource(getEventStatusDrawable(event));
