@@ -273,7 +273,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             }
         }).addOnFailureListener(e -> {
             Log.d("Event", "Failed to get organizer name", e);
-            holder.eventOrganization.setText("Unknown Organization");
+            holder.eventOrganization.setText("Organization Name");
         });
 
         if (holder.eventStatusIcon != null) {
