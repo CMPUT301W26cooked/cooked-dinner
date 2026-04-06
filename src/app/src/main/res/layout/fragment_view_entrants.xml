@@ -160,6 +160,23 @@
                     android:textSize="18sp" />
             </LinearLayout>
 
+            <Button
+                android:id="@+id/button_export_csv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="18dp"
+                android:backgroundTint="@color/moss_green"
+                android:paddingStart="24dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="24dp"
+                android:paddingBottom="8dp"
+                android:text="Export CSV"
+                android:textAllCaps="false"
+                android:textColor="@color/lighter_green"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
             <FrameLayout
                 android:id="@+id/map_container"
                 android:layout_width="match_parent"
@@ -216,4 +233,3 @@
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
-

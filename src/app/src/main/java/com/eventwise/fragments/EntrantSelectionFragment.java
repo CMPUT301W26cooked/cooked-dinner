@@ -59,11 +59,12 @@ public class EntrantSelectionFragment extends Fragment {
     private static final String ARG_ACTION = "arg_action";
     private static final String ARG_RETURN_TO_ORGANIZER_EVENTS = "arg_return_to_organizer_events";
     private static final String ARG_CONTINUE_TO_PRIVATE_SELECTION = "arg_continue_to_private_selection";
-
+    private static final String ARG_EXCLUDED_PRIVATE_ENTRANT_IDS = "arg_excluded_private_entrant_ids";
     private String eventId = "";
     private String action = "";
     private boolean returnToOrganizerEvents = false;
     private boolean continueToPrivateSelection = false;
+    private final ArrayList<String> excludedPrivateEntrantIds = new ArrayList<>();
 
     private TextView titleText;
     private TextView subtitleText;
@@ -108,11 +109,16 @@ public class EntrantSelectionFragment extends Fragment {
      * @return configured fragment
      */
     public static EntrantSelectionFragment newPrivateInviteInstance(@NonNull String eventId) {
+        return newPrivateInviteInstance(eventId, new ArrayList<>());
+    }
+
+    public static EntrantSelectionFragment newPrivateInviteInstance(@NonNull String eventId, @NonNull ArrayList<String> excludedEntrantIds) {
         EntrantSelectionFragment fragment = new EntrantSelectionFragment();
         Bundle args = new Bundle();
         args.putString(ARG_EVENT_ID, eventId);
         args.putString(ARG_ACTION, ACTION_PRIVATE_INVITE_SEARCH);
         args.putBoolean(ARG_RETURN_TO_ORGANIZER_EVENTS, true);
+        args.putStringArrayList(ARG_EXCLUDED_PRIVATE_ENTRANT_IDS, excludedEntrantIds);
         fragment.setArguments(args);
         return fragment;
     }
@@ -161,6 +167,12 @@ public class EntrantSelectionFragment extends Fragment {
             action = args.getString(ARG_ACTION, "");
             returnToOrganizerEvents = args.getBoolean(ARG_RETURN_TO_ORGANIZER_EVENTS, false);
             continueToPrivateSelection = args.getBoolean(ARG_CONTINUE_TO_PRIVATE_SELECTION, false);
+
+            ArrayList<String> passedExcludedIds = args.getStringArrayList(ARG_EXCLUDED_PRIVATE_ENTRANT_IDS);
+            excludedPrivateEntrantIds.clear();
+            if (passedExcludedIds != null) {
+                excludedPrivateEntrantIds.addAll(passedExcludedIds);
+            }
         }
 
         View backButton = view.findViewById(R.id.button_back);
@@ -283,6 +295,15 @@ public class EntrantSelectionFragment extends Fragment {
 
         for (Entrant entrant : entrants) {
             if (entrant == null || entrant.getProfileId() == null || entrant.getProfileId().trim().isEmpty()) {
+                continue;
+            }
+
+            if (ACTION_CO_ORGANIZER_INVITE.equals(action) && safeText(entrant.getProfileId()).equals(getCurrentEntrantProfileId())) {
+                continue;
+            }
+
+            if ((ACTION_PRIVATE_INVITE_SEARCH.equals(action) || ACTION_SYNC_PRIVATE_SELECTION.equals(action))
+                    && shouldExcludeFromPrivateEntrantInvites(safeText(entrant.getProfileId()))) {
                 continue;
             }
 
@@ -411,7 +432,10 @@ public class EntrantSelectionFragment extends Fragment {
                     .beginTransaction()
                     .replace(
                             R.id.organizer_fragment_container,
-                            EntrantSelectionFragment.newPrivateInviteInstance(eventId)
+                            EntrantSelectionFragment.newPrivateInviteInstance(
+                                    eventId,
+                                    new ArrayList<>(disabledInviteProfileIds)
+                            )
                     )
                     .addToBackStack(null)
                     .commit();
@@ -789,5 +813,27 @@ public class EntrantSelectionFragment extends Fragment {
 
     private String safeText(@Nullable String value) {
         return value == null ? "" : value;
+    }
+
+    private String getCurrentEntrantProfileId() {
+        return new com.eventwise.database.SessionStore(requireContext()).getEntrantProfileId();
+    }
+
+    private boolean shouldExcludeFromPrivateEntrantInvites(@NonNull String entrantProfileId) {
+        if (currentEvent == null) {
+            return false;
+        }
+
+        if (entrantProfileId.equals(entrantProfileIdFromOrganizerId(currentEvent.getOrganizerProfileId()))) {
+            return true;
+        }
+
+        for (String coOrganizerProfileId : currentEvent.getCoOrganizerProfileIds()) {
+            if (entrantProfileId.equals(entrantProfileIdFromOrganizerId(coOrganizerProfileId))) {
+                return true;
+            }
+        }
+
+        return excludedPrivateEntrantIds.contains(entrantProfileId);
     }
 }
