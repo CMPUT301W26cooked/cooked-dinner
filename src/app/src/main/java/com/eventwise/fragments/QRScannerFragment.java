@@ -19,6 +19,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.eventwise.activities.EntrantMainActivity;
+import com.eventwise.activities.OrganizerMainActivity;
 import com.eventwise.fragments.EntrantEventDetailFragment;
 import com.eventwise.R;
 import com.eventwise.database.EventSearcherDatabaseManager;
@@ -99,15 +101,28 @@ public class QRScannerFragment extends Fragment {
                         Toast.makeText(requireContext(), "Could not identify user", Toast.LENGTH_SHORT).show();
                         return;
                     }
+                    if (requireActivity() instanceof EntrantMainActivity){
+                        EntrantEventDetailFragment fragment =
+                                EntrantEventDetailFragment.newInstance(eventId, entrantId);
+                        requireActivity().getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.entrant_fragment_container, fragment)
+                                .addToBackStack(null)
+                                .commitAllowingStateLoss();
 
-                    EntrantEventDetailFragment fragment =
-                            EntrantEventDetailFragment.newInstance(eventId, entrantId);
-
-                    requireActivity().getSupportFragmentManager()
-                            .beginTransaction()
-                            .replace(R.id.entrant_fragment_container, fragment)
-                            .addToBackStack(null)
-                            .commitAllowingStateLoss();
+                    }
+                    else if (requireActivity() instanceof OrganizerMainActivity){
+                        OrganizerEventDetailFragment fragment =
+                                OrganizerEventDetailFragment.newInstance(eventId);
+                        requireActivity().getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.organizer_fragment_container, fragment)
+                                .addToBackStack(null)
+                                .commitAllowingStateLoss();
+                    }
+                    else{
+                        return;
+                    }
                 })
                 .addOnCanceledListener(() -> {
                     // user backed out of scanner
