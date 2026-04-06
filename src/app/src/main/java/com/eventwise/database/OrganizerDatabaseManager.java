@@ -968,6 +968,15 @@ public class OrganizerDatabaseManager extends DatabaseManager{
         return super.updateProfile(organizer);
     }
 
+    /**
+     * Clears the personal information from an organizer's profile, including their name,
+     * email, and phone number. This effectively resets the profile while maintaining
+     * the document structure in the database.
+     *
+     * @param organizerId The unique identifier of the organizer whose profile is to be cleared.
+     * @return A {@link Task} that resolves to null when the profile has been successfully cleared.
+     * @throws DatabaseException If the organizerId is invalid or if an error occurs during the database operation.
+     */
     public Task<Void> clearOrganizerProfile(String organizerId) {
         TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
