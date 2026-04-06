@@ -6,4 +6,13 @@
     </style>
 
     <style name="Theme.EventWise" parent="Base.Theme.EventWise" />
+
+    <style name="CustomDatePicker" parent="ThemeOverlay.Material3.MaterialCalendar">
+        <item name="colorPrimary">@color/forest_green</item>
+        <item name="colorOnPrimary">@color/lighter_green</item>
+        <item name="colorSurface">@color/lighter_green</item>
+        <item name="colorOnSurface">@color/forest_green</item>
+        <item name="android:textColorPrimary">@color/forest_green</item>
+        <item name="android:textColorSecondary">@color/moss_green</item>
+    </style>
 </resources>

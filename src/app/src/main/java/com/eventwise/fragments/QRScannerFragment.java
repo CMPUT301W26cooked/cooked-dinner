@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,9 +19,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.eventwise.activities.EntrantMainActivity;
+import com.eventwise.activities.OrganizerMainActivity;
 import com.eventwise.fragments.EntrantEventDetailFragment;
 import com.eventwise.R;
 import com.eventwise.database.EventSearcherDatabaseManager;
+import com.eventwise.database.SessionStore;
 import com.google.mlkit.vision.barcode.BarcodeScanner;
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
 import com.google.mlkit.vision.barcode.BarcodeScanning;
@@ -65,10 +69,10 @@ public class QRScannerFragment extends Fragment {
         super.onResume();
 
         // Optional: auto-launch the scanner the first time this tab opens
-        if (!hasStartedScanner) {
-            hasStartedScanner = true;
-            launchScanner();
-        }
+//        if (!hasStartedScanner) {
+//            hasStartedScanner = true;
+//            launchScanner();
+//        }
     }
 
     private void launchScanner() {
@@ -91,10 +95,34 @@ public class QRScannerFragment extends Fragment {
                     }
 
                     String eventId = parseEventIdFromQR(rawValue);
+                    String entrantId = getCurrentEntrantId();
 
-                    Intent intent = new Intent(requireContext(), EntrantEventDetailFragment.class);
-                    intent.putExtra("event_id", eventId);
-                    startActivity(intent);
+                    if (entrantId == null || entrantId.trim().isEmpty()) {
+                        Toast.makeText(requireContext(), "Could not identify user", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (requireActivity() instanceof EntrantMainActivity){
+                        EntrantEventDetailFragment fragment =
+                                EntrantEventDetailFragment.newInstance(eventId, entrantId);
+                        requireActivity().getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.entrant_fragment_container, fragment)
+                                .addToBackStack(null)
+                                .commitAllowingStateLoss();
+
+                    }
+                    else if (requireActivity() instanceof OrganizerMainActivity){
+                        OrganizerEventDetailFragment fragment =
+                                OrganizerEventDetailFragment.newInstance(eventId);
+                        requireActivity().getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.organizer_fragment_container, fragment)
+                                .addToBackStack(null)
+                                .commitAllowingStateLoss();
+                    }
+                    else{
+                        return;
+                    }
                 })
                 .addOnCanceledListener(() -> {
                     // user backed out of scanner
@@ -102,6 +130,11 @@ public class QRScannerFragment extends Fragment {
                 .addOnFailureListener(e ->
                         Toast.makeText(requireContext(), "Scanning failed", Toast.LENGTH_SHORT).show()
                 );
+    }
+
+    private String getCurrentEntrantId() {
+        SessionStore sessionStore = new SessionStore(requireContext());
+        return sessionStore.getEntrantProfileId();
     }
 
     private String parseEventIdFromQR(String qrValue) {

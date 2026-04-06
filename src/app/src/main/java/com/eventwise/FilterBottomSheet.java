@@ -1,5 +1,6 @@
 package com.eventwise;
 
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -7,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.datepicker.MaterialDatePicker;
@@ -63,6 +66,7 @@ public class FilterBottomSheet extends BottomSheetDialogFragment {
         view.findViewById(R.id.start_date_picker).setOnClickListener(v -> {
             MaterialDatePicker<Long> picker = MaterialDatePicker.Builder.datePicker()
                     .setTitleText("Select start date")
+                    .setTheme(R.style.CustomDatePicker)
                     .build();
             picker.addOnPositiveButtonClickListener(selection -> {
                 //Adjust for Timezone difference
@@ -74,12 +78,21 @@ public class FilterBottomSheet extends BottomSheetDialogFragment {
                 startDateLabel.setText(sdf.format(startDate));
             });
             picker.show(getParentFragmentManager(), "start_date");
+
+            view.post(() -> {
+                if (picker.getDialog() != null && picker.getDialog().getWindow() != null) {
+                    picker.getDialog().getWindow().setBackgroundDrawable(
+                            new ColorDrawable(ContextCompat.getColor(requireContext(), R.color.lighter_green))
+                    );
+                }
+            });
         });
 
         // End date picker
         view.findViewById(R.id.end_date_picker).setOnClickListener(v -> {
             MaterialDatePicker<Long> picker = MaterialDatePicker.Builder.datePicker()
                     .setTitleText("Select end date")
+                    .setTheme(R.style.CustomDatePicker)
                     .build();
             picker.addOnPositiveButtonClickListener(selection -> {
                 //Adjust for Timezone difference
@@ -92,6 +105,13 @@ public class FilterBottomSheet extends BottomSheetDialogFragment {
                 endDateLabel.setText(sdf.format(endDate));
             });
             picker.show(getParentFragmentManager(), "end_date");
+            view.post(() -> {
+                if (picker.getDialog() != null && picker.getDialog().getWindow() != null) {
+                    picker.getDialog().getWindow().setBackgroundDrawable(
+                            new ColorDrawable(ContextCompat.getColor(requireContext(), R.color.lighter_green))
+                    );
+                }
+            });
         });
 
         // Spots slider

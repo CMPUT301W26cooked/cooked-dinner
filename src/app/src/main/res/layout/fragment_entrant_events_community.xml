@@ -65,7 +65,7 @@
                 android:layout_height="wrap_content"
                 android:text="No events match your filters"
                 android:textSize="16sp"
-                android:textColor="#FF999999" />
+                android:textColor="@color/moss_green" />
 
         </LinearLayout>
 
