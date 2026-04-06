@@ -8,8 +8,11 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 
-import androidx.fragment.app.testing.FragmentScenario;
-import androidx.test.core.app.ApplicationProvider;
+import android.widget.FrameLayout;
+
+import androidx.fragment.app.FragmentActivity;
+
+import org.robolectric.Robolectric;
 
 import com.eventwise.Event;
 import com.eventwise.Tag;
@@ -42,10 +45,19 @@ public class CreateEventFragmentUnitTest {
 
     @Before
     public void setUp() {
-        FragmentScenario<CreateEventFragment> scenario =
-                FragmentScenario.launchInContainer(CreateEventFragment.class);
+        FragmentActivity activity =
+                Robolectric.buildActivity(FragmentActivity.class).setup().get();
 
-        scenario.onFragment(f -> fragment = f);
+        FrameLayout container = new FrameLayout(activity);
+        container.setId(R.id.organizer_fragment_container);
+        activity.setContentView(container);
+
+        fragment = new CreateEventFragment();
+
+        activity.getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.organizer_fragment_container, fragment)
+                .commitNow();
     }
 
     @Test
