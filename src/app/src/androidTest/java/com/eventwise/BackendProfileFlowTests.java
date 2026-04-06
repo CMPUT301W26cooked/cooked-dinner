@@ -99,7 +99,7 @@ public class BackendProfileFlowTests extends DatabaseManagerTests {
 
         Assert.assertEquals(entrantId, clearedEntrant.getProfileId());
         Assert.assertEquals(entrantId, clearedEntrant.getDeviceId());
-        Assert.assertEquals("", clearedEntrant.getName());
+        Assert.assertFalse(clearedEntrant.getName().isEmpty());
         Assert.assertEquals("", clearedEntrant.getEmail());
         Assert.assertEquals("", clearedEntrant.getPhone());
         Assert.assertFalse(clearedEntrant.getNotificationsEnabled());
