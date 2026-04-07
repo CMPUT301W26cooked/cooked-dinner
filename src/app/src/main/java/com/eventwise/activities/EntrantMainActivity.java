@@ -29,6 +29,8 @@ import android.widget.Toast;
 
 import com.eventwise.Entrant;
 
+import java.util.HashSet;
+
 /**
  * This is the landing page for the entrant profile.
  * @author Luke Forster

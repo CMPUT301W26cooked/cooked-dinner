@@ -1,14 +1,18 @@
 package com.eventwise.fragments;
 
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -17,6 +21,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.eventwise.Entrant;
@@ -24,6 +29,14 @@ import com.eventwise.ProfileDropdownHelper;
 import com.eventwise.R;
 import com.eventwise.database.EntrantDatabaseManager;
 import com.eventwise.database.SessionStore;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Reusable entrant profile form fragment.
@@ -92,6 +105,12 @@ public class EntrantProfileExistsFormFragment extends Fragment {
     private String originalEmail = "";
     private String originalPhone = "";
     private boolean originalNotificationsEnabled = true;
+
+    Set<String> selectedInterests = new HashSet<>();
+    Set <String> originalInterests = new HashSet<>();
+    AutoCompleteTextView dropdown;
+    ChipGroup chipGroup;
+
 
     public EntrantProfileExistsFormFragment() {
     }
@@ -194,6 +213,51 @@ public class EntrantProfileExistsFormFragment extends Fragment {
                 "Entrant"
         );
 
+        List<String> interests = Arrays.asList("Music", "Sports", "Art", "Technology", "Food", "Gaming");
+
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_dropdown_item_1line,
+                interests
+        );
+
+        dropdown = view.findViewById(R.id.interests_dropdown);
+        chipGroup = view.findViewById(R.id.interests_chip_group);
+        dropdown.setAdapter(adapter);
+
+        dropdown.setOnItemClickListener((parent, v, position, id) -> {
+            String interest = interests.get(position);
+            if (selectedInterests.contains(interest)) return; // avoid duplicates
+
+            selectedInterests.add(interest);
+
+            // add a chip for the selected interest
+            Chip chip = new Chip(new ContextThemeWrapper(requireContext(), R.style.EventWiseChip));
+            chip.setChipBackgroundColor(ColorStateList.valueOf(
+                    ContextCompat.getColor(requireContext(), R.color.forest_green)));
+            chip.setTextColor(ContextCompat.getColor(requireContext(), R.color.lighter_green));
+            chip.setCloseIconTint(ColorStateList.valueOf(
+                    ContextCompat.getColor(requireContext(), R.color.lighter_green)));
+            chip.setText(interest);
+            chip.setCloseIconVisible(true);
+            chip.setOnCloseIconClickListener(c -> {
+                chipGroup.removeView(chip);
+                selectedInterests.remove(interest);
+            });
+            chipGroup.addView(chip);
+
+            updateActionButtonsState();
+
+
+
+            dropdown.setText("", false); // reset dropdown
+        });
+
+
+
+
+
         loadArguments();
         populateInitialValues();
         configureModeUi();
@@ -231,6 +295,7 @@ public class EntrantProfileExistsFormFragment extends Fragment {
             originalName = "";
             originalEmail = "";
             originalPhone = "";
+            selectedInterests = new HashSet<>();
             originalNotificationsEnabled = true;
             return;
         }
@@ -240,6 +305,8 @@ public class EntrantProfileExistsFormFragment extends Fragment {
         originalEmail = args.getString(ARG_EMAIL, "");
         originalPhone = args.getString(ARG_PHONE, "");
         originalNotificationsEnabled = args.getBoolean(ARG_NOTIFICATIONS, true);
+
+        selectedInterests = new HashSet<>();
     }
 
     /**
@@ -251,6 +318,7 @@ public class EntrantProfileExistsFormFragment extends Fragment {
         phoneEditText.setText(originalPhone);
 
         receiveNotificationsEnabled = originalNotificationsEnabled;
+        selectedInterests = originalInterests;
         updateNotificationsCheckboxIcon();
 
         nameTouched = false;
@@ -425,6 +493,8 @@ public class EntrantProfileExistsFormFragment extends Fragment {
                         return;
                     }
 
+                    existingEntrant.setInterestsTags(new ArrayList<String>(selectedInterests));
+
 
                     existingEntrant.setName(getTrimmedText(nameEditText));
                     existingEntrant.setEmail(getTrimmedText(emailEditText));
@@ -450,6 +520,8 @@ public class EntrantProfileExistsFormFragment extends Fragment {
                 receiveNotificationsEnabled,
                 requireContext()
         );
+
+        entrant.setInterestsTags(new ArrayList<String>(selectedInterests));
 
         entrantDatabaseManager.addEntrant(entrant)
                 .addOnSuccessListener(unused -> handleSuccessfulProfileSave())
@@ -481,6 +553,7 @@ public class EntrantProfileExistsFormFragment extends Fragment {
         originalEmail = getTrimmedText(emailEditText);
         originalPhone = getTrimmedText(phoneEditText);
         originalNotificationsEnabled = receiveNotificationsEnabled;
+        originalInterests = selectedInterests;
 
         nameTouched = false;
         emailTouched = false;
@@ -751,7 +824,8 @@ public class EntrantProfileExistsFormFragment extends Fragment {
         return !getTrimmedText(nameEditText).equals(originalName)
                 || !getTrimmedText(emailEditText).equals(originalEmail)
                 || !getTrimmedText(phoneEditText).equals(originalPhone)
-                || receiveNotificationsEnabled != originalNotificationsEnabled;
+                || receiveNotificationsEnabled != originalNotificationsEnabled
+                || !selectedInterests.equals(originalInterests);
     }
 
     /**

@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.eventwise.Enum.FilterType;
 import com.eventwise.Event;
+import com.eventwise.Tag;
 import com.eventwise.database.exceptions.DatabaseException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -105,8 +106,12 @@ public class EventSearcherDatabaseManager extends DatabaseManager{
 
             if (filter.getFilterTypes().contains(FilterType.TAGS)) {
                 eventStream = eventStream.filter(e -> e.getTags().stream()
-                        .anyMatch(tag -> filter.getTags().stream()
-                                .anyMatch(filterTag -> filterTag.getCategory().equals(tag.getCategory()))));
+                        .anyMatch(tag -> {
+                            Log.d("FilterDebug", "event tags: " + e.getTags());
+                            Log.d("FilterDebug", "filter tags: " + filter.getTags());
+                            Log.d("FilterDebug", "tag category: " + tag.getCategory());
+                            return filter.getTags().contains(tag.getCategory());
+                        }));
             }
             //Search for keywords in a title string
             if (filter.getFilterTypes().contains(FilterType.KEYWORDS)) {
@@ -115,11 +120,20 @@ public class EventSearcherDatabaseManager extends DatabaseManager{
                                 //Match whole words only (the .*\\b is word boundaries)
                                 .matches(".*\\b" + Pattern.quote(keyword.toLowerCase()) + "\\b.*")));
             }
-            tcs.setResult(new ArrayList<Event>(eventStream.collect(Collectors.toList())));
+
+            ArrayList<Event> test = new ArrayList<Event>(eventStream.collect(Collectors.toList()));
+
+            Log.d("FilterDebug", "result count: " + test.size());
+            for (Event e : test) {
+                Log.d("FilterDebug", "kept: " + e.getName() + " | tags: " +
+                        e.getTags().stream().map(Tag::getCategory).collect(Collectors.joining(", ")));
+            }
+            tcs.setResult(test);
         }).addOnFailureListener(e -> {
             Log.e("Event", "Failed to get events", e);
             tcs.setException(new DatabaseException("Error getting events for filtering", e));
         });
+
         return tcs.getTask();
     }
 
