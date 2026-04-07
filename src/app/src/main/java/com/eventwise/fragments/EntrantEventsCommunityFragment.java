@@ -130,8 +130,8 @@ public class EntrantEventsCommunityFragment extends Fragment {
                             currentFilter.setTags(entrant.getInterestsTags());
                         })
                         .addOnFailureListener(e ->{
-                                    Log.e("Event", "Failed to get user preferences", e);
-                                    currentFilter.resetTags();
+                            Log.e("Event", "Failed to get user preferences", e);
+                            currentFilter.resetTags();
                         });
 
 
@@ -158,10 +158,10 @@ public class EntrantEventsCommunityFragment extends Fragment {
         //Clear Filters Button
         clearFiltersButton = view.findViewById(R.id.clear_filters_button);
         clearFiltersButton.setOnClickListener( not_used -> {
-                currentFilter.resetFilter();
-                searchBar.setText("");
-                active_filters_bar.setVisibility(View.GONE);
-                refreshEvents();
+            currentFilter.resetFilter();
+            searchBar.setText("");
+            active_filters_bar.setVisibility(View.GONE);
+            refreshEvents();
         });
 
 
@@ -293,23 +293,23 @@ public class EntrantEventsCommunityFragment extends Fragment {
         //Update active_filters_bar
         if (!currentFilter.getFilterTypes().isEmpty()) {
             String filterText = "Active Filters: " + currentFilter.getFilterTypes().stream()
-                            .map(filterType -> {
-                                switch (filterType) {
-                                    case START_TIMESTAMP:
-                                        return "Start Date";
-                                    case END_TIMESTAMP:
-                                        return "End Date";
-                                    case EVENT_CAPACITY:
-                                        return "Capacity";
-                                    case KEYWORDS:
-                                        return "Keywords";
-                                    case TAGS:
-                                        return "Interests";
-                                }
-                                return "UNKNOWN ERROR";
-                            })
-                            .reduce((a, b) -> a + ", " + b)
-                            .orElse("No filters applied");
+                    .map(filterType -> {
+                        switch (filterType) {
+                            case START_TIMESTAMP:
+                                return "Start Date";
+                            case END_TIMESTAMP:
+                                return "End Date";
+                            case EVENT_CAPACITY:
+                                return "Capacity";
+                            case KEYWORDS:
+                                return "Keywords";
+                            case TAGS:
+                                return "Interests";
+                        }
+                        return "UNKNOWN ERROR";
+                    })
+                    .reduce((a, b) -> a + ", " + b)
+                    .orElse("No filters applied");
 
             activeFiltersLabel.setText(filterText);
             active_filters_bar.setVisibility(View.VISIBLE);
@@ -320,6 +320,11 @@ public class EntrantEventsCommunityFragment extends Fragment {
 
         eventSearcherDBMan.getFilteredEvents(currentFilter)
                 .addOnSuccessListener(returnedList -> {
+
+                    if (!isAdded() || getContext() == null || getView() == null) {
+                        Log.d("Event", "Fragment detached — skipping refresh");
+                        return;
+                    }
                     eventList.clear();
 
                     String currentEntrantId = getCurrentEntrantId();

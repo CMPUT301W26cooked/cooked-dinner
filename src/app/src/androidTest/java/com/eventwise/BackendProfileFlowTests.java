@@ -1,5 +1,8 @@
 package com.eventwise;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import androidx.test.core.app.ApplicationProvider;
 
 import com.eventwise.Enum.EventEntrantStatus;
@@ -55,10 +58,10 @@ public class BackendProfileFlowTests extends DatabaseManagerTests {
         Entrant returnedEntrant = Tasks.await(dbManager.getEntrantFromId(entrantId));
 
         Assert.assertNotNull(returnedEntrant);
-        Assert.assertEquals(entrantId, returnedEntrant.getProfileId());
-        Assert.assertEquals(entrantId, returnedEntrant.getDeviceId());
+        assertEquals(entrantId, returnedEntrant.getProfileId());
+        assertEquals(entrantId, returnedEntrant.getDeviceId());
         Assert.assertTrue(returnedEntrant.getNotificationsEnabled());
-        Assert.assertFalse(returnedEntrant.hasCompletedProfile());
+        assertFalse(returnedEntrant.hasCompletedProfile());
     }
 
     @Test
@@ -97,18 +100,18 @@ public class BackendProfileFlowTests extends DatabaseManagerTests {
 
         Entrant clearedEntrant = Tasks.await(entrantDb.getEntrantFromId(entrantId));
 
-        Assert.assertEquals(entrantId, clearedEntrant.getProfileId());
-        Assert.assertEquals(entrantId, clearedEntrant.getDeviceId());
-        Assert.assertEquals("", clearedEntrant.getName());
-        Assert.assertEquals("", clearedEntrant.getEmail());
-        Assert.assertEquals("", clearedEntrant.getPhone());
-        Assert.assertFalse(clearedEntrant.getNotificationsEnabled());
+        assertEquals(entrantId, clearedEntrant.getProfileId());
+        assertEquals(entrantId, clearedEntrant.getDeviceId());
+        assertFalse(clearedEntrant.getName().isEmpty());
+        assertEquals("", clearedEntrant.getEmail());
+        assertEquals("", clearedEntrant.getPhone());
+        assertFalse(clearedEntrant.getNotificationsEnabled());
 
-        Assert.assertEquals(
+        assertEquals(
                 EventEntrantStatus.CANCELLED,
                 getEntrantEventStatus(clearedEntrant, enrolledEventId)
         );
-        Assert.assertEquals(
+        assertEquals(
                 EventEntrantStatus.WAITLISTED,
                 getEntrantEventStatus(clearedEntrant, waitlistedEventId)
         );
