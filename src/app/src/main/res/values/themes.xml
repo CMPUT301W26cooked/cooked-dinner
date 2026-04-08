@@ -7,6 +7,13 @@
 
     <style name="Theme.EventWise" parent="Base.Theme.EventWise" />
 
+    <!-- Splash Screen Theme -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/weird_piss</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.EventWise</item>
+    </style>
+
     <style name="CustomDatePicker" parent="ThemeOverlay.Material3.MaterialCalendar">
         <item name="colorPrimary">@color/forest_green</item>
         <item name="colorOnPrimary">@color/lighter_green</item>

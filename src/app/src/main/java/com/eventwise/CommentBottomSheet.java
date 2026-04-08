@@ -87,7 +87,7 @@ public class CommentBottomSheet extends BottomSheetDialogFragment {
             String commentText = commentEditText.getText().toString();
             if (!commentText.isEmpty()) {
                 SessionStore store = new SessionStore(requireContext());
-                String entrantProfileId = store.getEntrantProfileId();
+                String entrantProfileId = store.getOrganizerProfileId();
 
 
                 long timestamp = System.currentTimeMillis() / 1000L;

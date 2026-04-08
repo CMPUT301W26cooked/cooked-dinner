@@ -11,9 +11,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventwise.Comment;
+import com.eventwise.Organizer;
 import com.eventwise.ProfileType;
 import com.eventwise.R;
+import com.eventwise.database.AdminDatabaseManager;
 import com.eventwise.database.EntrantDatabaseManager;
+import com.eventwise.database.OrganizerDatabaseManager;
 
 import java.util.List;
 
@@ -44,14 +47,15 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
                 java.util.Locale.getDefault()).format(new java.util.Date(comment.getTimestamp() * 1000)));
 
         //Dont know how to feel about this as it pulls from the database each time creating a small delay when updating...
-        EntrantDatabaseManager entrantDBManager = new EntrantDatabaseManager();
-        entrantDBManager.getEntrantFromId(comment.getAuthorId())
-                        .addOnSuccessListener( entrant -> {
-                                    if (entrant == null) {
+        OrganizerDatabaseManager organizerDatabaseManager = new OrganizerDatabaseManager();
+        AdminDatabaseManager adminDatabaseManager = new AdminDatabaseManager();
+        adminDatabaseManager.getProfileFromId(comment.getAuthorId())
+                        .addOnSuccessListener( profile -> {
+                                    if (profile == null) {
                                         holder.username.setText("Unknown User");
                                         return;
                                     } else {
-                                        holder.username.setText(entrant.getName());
+                                        holder.username.setText(profile.getName());
                                     }
                         }).addOnFailureListener(e->
                         {
