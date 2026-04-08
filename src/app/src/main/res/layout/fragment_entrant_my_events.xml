@@ -6,10 +6,12 @@
     Version: 1
     Date: 2026-03-16
 -->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bacon_color">
+    android:background="@color/bacon_color"
+    android:fillViewport="true"
+    android:overScrollMode="never">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -25,7 +27,8 @@
                 android:id="@+id/my_events_current_list_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false" />
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
 
             <TextView
                 android:id="@+id/empty_current_my_events_list"
@@ -97,7 +100,8 @@
                 android:id="@+id/my_events_history_list_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false" />
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
 
             <TextView
                 android:id="@+id/empty_history_my_events_list"
@@ -114,4 +118,4 @@
         </FrameLayout>
 
     </LinearLayout>
-</ScrollView>
+</androidx.core.widget.NestedScrollView>
