@@ -117,22 +117,22 @@ public class EntrantEventsCommunityFragment extends Fragment {
 
         //Filter button stuff
         filterButton = view.findViewById(R.id.fab_filter);
+        EntrantDatabaseManager entrantDBMan = new EntrantDatabaseManager();
+        entrantDBMan.getEntrantFromId(getCurrentEntrantId())
+                .addOnSuccessListener(entrant -> {
+                    if (entrant == null) {
+                        return;
+                    }
+                    currentFilter.setTags(entrant.getInterestsTags());
+                    refreshEvents();
+                })
+                .addOnFailureListener(e ->{
+                    Log.e("Event", "Failed to get user preferences", e);
+                    currentFilter.resetTags();
+                });
         filterButton.setOnClickListener(v -> {
             FilterBottomSheet sheet = new FilterBottomSheet();
             sheet.setFilterListener((startDate, endDate, minSpots) -> {
-
-                EntrantDatabaseManager entrantDBMan = new EntrantDatabaseManager();
-                entrantDBMan.getEntrantFromId(getCurrentEntrantId())
-                        .addOnSuccessListener(entrant -> {
-                            if (entrant == null) {
-                                return;
-                            }
-                            currentFilter.setTags(entrant.getInterestsTags());
-                        })
-                        .addOnFailureListener(e ->{
-                            Log.e("Event", "Failed to get user preferences", e);
-                            currentFilter.resetTags();
-                        });
 
 
                 EventSearcherDatabaseManager eventSearcherDBMan = new EventSearcherDatabaseManager();

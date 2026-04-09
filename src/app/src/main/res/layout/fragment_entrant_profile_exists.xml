@@ -241,6 +241,55 @@
             android:textSize="12sp"
             android:visibility="invisible" />
     </LinearLayout>
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/interests_dropdown_layout"
+        style="@style/EventWiseDropdown"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="20dp"
+        android:hint="Add an interest"
+        app:boxStrokeColor="@color/forest_green"
+        app:boxBackgroundColor="@color/lighter_green"
+        app:hintTextColor="@color/moss_green"
+        app:startIconTint="@color/forest_green"
+        android:textColorHint="@color/moss_green"
+        app:layout_constraintTop_toBottomOf="@id/phone_field_block"
+        app:layout_constraintStart_toStartOf="@id/white_inner_background"
+        app:layout_constraintEnd_toEndOf="@id/white_inner_background">
+
+        <AutoCompleteTextView
+            android:id="@+id/interests_dropdown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:cursorVisible="false"
+            android:textColor="@color/forest_green"
+            android:popupBackground="@color/lighter_green" />
+
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/interests_chip_scroll"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintTop_toBottomOf="@id/interests_dropdown_layout"
+        app:layout_constraintStart_toStartOf="@id/white_inner_background"
+        app:layout_constraintEnd_toEndOf="@id/white_inner_background">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/interests_chip_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleLine="true" />
+
+    </HorizontalScrollView>
 
     <LinearLayout
         android:id="@+id/layout_receive_notifications"
@@ -251,7 +300,7 @@
         android:gravity="center_vertical"
         android:clickable="true"
         android:focusable="true"
-        app:layout_constraintTop_toBottomOf="@id/phone_field_block"
+        app:layout_constraintTop_toBottomOf="@id/interests_chip_scroll"
         app:layout_constraintStart_toStartOf="@id/white_inner_background"
         app:layout_constraintEnd_toEndOf="@id/white_inner_background">
 
