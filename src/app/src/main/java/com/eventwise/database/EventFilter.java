@@ -25,7 +25,7 @@ import java.util.EnumSet;
 
         private ArrayList<String> keywords = null;
 
-        private ArrayList<Tag> tags = null;
+        private ArrayList<String> interests = null;
 
         /**
          * Constructs an EventFilter with the specified criteria.
@@ -37,7 +37,7 @@ import java.util.EnumSet;
          * @param keywords A list of strings to search for in event details, or null if no keyword filtering is required.
          * @param tags A specific list of category tags to filter by, or null if no tag filtering is required.
          */
-        public EventFilter(Long startTimestamp, Long endTimestamp, Integer eventCapacity, ArrayList<String> keywords, ArrayList<Tag> tags){
+        public EventFilter(Long startTimestamp, Long endTimestamp, Integer eventCapacity, ArrayList<String> keywords, ArrayList<String> tags){
             filterTypes = EnumSet.noneOf(FilterType.class);
             if (startTimestamp != null){
                 filterTypes.add(FilterType.START_TIMESTAMP);
@@ -57,7 +57,7 @@ import java.util.EnumSet;
             }
             if (tags != null){
                 filterTypes.add(FilterType.TAGS);
-                this.tags = tags;
+                this.interests = tags;
             }
         }
 
@@ -82,14 +82,14 @@ import java.util.EnumSet;
             return filterTypes;
         }
 
-        public ArrayList<Tag> getTags() { return tags; }
+        public ArrayList<String> getTags() { return interests; }
 
         public void resetFilter(){
             filterTypes.clear();
             startTimestamp = null;
             endTimestamp = null;
             eventCapacity = null;
-            tags = null;
+            interests = null;
             keywords = null;
         }
 
@@ -111,7 +111,7 @@ import java.util.EnumSet;
         }
         public void resetTags(){
             filterTypes.remove(FilterType.TAGS);
-            tags = null;
+            interests = null;
         }
 
 
@@ -155,9 +155,9 @@ import java.util.EnumSet;
             }
         }
 
-        public void setTags(ArrayList<Tag> tags) {
-            if (tags != null){
-                this.tags = tags;
+        public void setTags(ArrayList<String> interests) {
+            if (interests != null){
+                this.interests = interests;
                 filterTypes.add(FilterType.TAGS);
             }
             else {

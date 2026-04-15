@@ -39,7 +39,7 @@ public class Entrant extends Profile {
     private ArrayList<String> notificationIds = new ArrayList<>();
 
     /** List of all the user's interests. Null means no preferences**/
-    private ArrayList<Tag> interestsTags;
+    private ArrayList<String> interestsTags;
 
 
     /**
@@ -75,11 +75,11 @@ public class Entrant extends Profile {
         this.deviceId = deviceId;
     }
 
-    public ArrayList<Tag> getInterestsTags() {
+    public ArrayList<String> getInterestsTags() {
         return interestsTags;
     }
 
-    public void setInterestsTags(ArrayList<Tag> interestsTags) {
+    public void setInterestsTags(ArrayList<String> interestsTags) {
         this.interestsTags = interestsTags;
     }
 

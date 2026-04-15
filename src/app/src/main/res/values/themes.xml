@@ -22,4 +22,17 @@
         <item name="android:textColorPrimary">@color/forest_green</item>
         <item name="android:textColorSecondary">@color/moss_green</item>
     </style>
+
+    <style name="EventWiseChip" parent="Widget.Material3.Chip.Input">
+        <item name="chipBackgroundColor">@color/forest_green</item>
+        <item name="android:textColor">@color/lighter_green</item>
+        <item name="closeIconTint">@color/lighter_green</item>
+    </style>
+
+    <style name="EventWiseDropdown" parent="Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <item name="boxBackgroundColor">@color/lighter_green</item>
+        <item name="boxStrokeColor">@color/forest_green</item>
+        <item name="hintTextColor">@color/moss_green</item>
+        <item name="android:textColorHint">@color/moss_green</item>
+    </style>
 </resources>
